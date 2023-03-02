@@ -106,39 +106,28 @@ void    Server::accept_connection()
 
 void    Server::start()
 {
-    int poll_count;
-
     while (true)
     {
-        
-        if ((poll_count = poll(_pfds, _nfds, -1)) < 0)
+        if (poll(_pfds, _nfds, -1) > 0)
         {
-            perror("poll");
-            exit(-1);
-        }
-
-        // Check for incoming connections.
-        if (_pfds[0].revents & POLLIN)
-        {
-            std::cout << "new connection" << std::endl;
-            accept_connection();
-        }
-
-        // Check for established connections messages.
-        for (int i = 1; i < CONN_LIMIT; i++)
-        {
-            // printf("%d %d\n", _pfds[i].fd, _pfds[i].revents);
-            if (_pfds[i].revents & POLLHUP)
+            // Check for incoming connections.
+            if (_pfds[0].revents & POLLIN)
             {
-                _pfds[i].fd = 0;
-                _pfds[i].events = 0;
-                _pfds[i].revents = 0;
-                _nfds--;
-                printf("mok zwina\n");
+                std::cout << "new connection" << std::endl;
+                accept_connection();
             }
-            _pfds[i].revents = 0;
+            // Check for established connections messages.
+            for (int i = 1; i < CONN_LIMIT; i++)
+            {
+                if (_pfds[i].revents & POLLHUP)
+                {
+                    std::cout << "client disconnected" << std::endl;
+                    memset(&_pfds[i], 0x00, sizeof(_pfds[i]));
+                    _nfds--;
+                }
+                _pfds[i].revents = 0;
+            }
         }
-        // std::cout << "mok 4\n";
     }
 }
 
