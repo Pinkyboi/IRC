@@ -5,17 +5,18 @@ Server::~Server()
 
 Server::Server(const char *port, const char *pass): _port(port), _pass(pass)
 {
-    this->_conn_limit = 10;
-    this->_sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    fcntl(this->_sockfd, F_SETFL, O_NONBLOCK);
-    if (this->_sockfd < 0)
-        exit(-1);
-    std::cout << this->_sockfd << std::endl;
-}
+    int on = 1;
 
-int Server::get_conn_limit()
-{
-    return this->_conn_limit;
+    _sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (_sockfd < 0)
+        throw std::exception();
+
+    setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+    fcntl(_sockfd, F_SETFL, O_NONBLOCK);
+
+    _pfds[0].fd = _sockfd;
+    _pfds[0].events = POLLIN;
+    _nfds = 1;
 }
 
 const char * Server::get_port()
@@ -38,86 +39,101 @@ void Server::set_sockaddr(struct sockaddr_in *addr)
     this->_sockaddr = addr;
 }
 
-int    main()
+void    Server::setup()
 {
-    struct sockaddr addr;
-    socklen_t       addrlen;
-    Server  serv("6667", "mokzwina");
     struct addrinfo hints;
     struct addrinfo *res, *p;
 
+    hints = (struct addrinfo){0};
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
 
-    std::cout << getaddrinfo("127.0.0.1", serv.get_port(), &hints, &res) << std::endl;
-        
-    serv.set_sockaddr((struct sockaddr_in *)(res->ai_addr));
-    printf("%s\n", inet_ntoa(serv.get_sockaddr()->sin_addr));
-    // if (connect(serv.get_sockfd(), (struct sockaddr *)serv.get_sockaddr(), sizeof(struct sockaddr_in)) < 0)
-    // {
-    //     // std::cout << "mok 1\n";
-    
-    //     perror("connect");
-    //     exit(errno);
-    // }
-    if (bind(serv.get_sockfd(), (struct sockaddr *)serv.get_sockaddr(), sizeof(struct sockaddr_in)) < 0)
+    int rv;
+    if ((rv = getaddrinfo(NULL, this->get_port(), &hints, &res)))
     {
-
-        perror("bind");
-        exit(errno);
+        std::cout << "getaddrinfo: " << gai_strerror(rv) << std::endl;
+        throw std::exception();
+    }
+    for (p = res; p; p = p->ai_next)
+    {
+        if (p->ai_family == AF_INET && p->ai_socktype == SOCK_STREAM)
+            break;
     }
 
-        std::cout << "mok 2\n";
-
-
-    if (listen(serv.get_sockfd(), serv.get_conn_limit()) < 0)
+    if (p == NULL)
     {
-
-        perror("listen");
-        exit(errno);
+        throw std::exception();
     }
-        std::cout << "mok 3\n";
 
-    struct pollfd pfds[10];
-    pfds[0].fd = serv.get_sockfd();
-    std::cout << "pfds[0].fd: " << pfds[0].fd << std::endl;
+    this->set_sockaddr((struct sockaddr_in *)(res->ai_addr));
 
-    int i = 0;
+    if (bind(this->get_sockfd(), (struct sockaddr *)this->get_sockaddr(), sizeof(struct sockaddr_in)) < 0)
+        throw std::exception();
+    if (listen(this->get_sockfd(), CONN_LIMIT) < 0)
+        throw std::exception();
+}
+
+void    Server::start()
+{
+    struct sockaddr addr;
+    socklen_t       addrlen;
+
+    int j = 1;
     while (true)
     {
-        std::cout << "poll count\n";
-        int poll_count = poll(pfds, 10, -1);
-        std::cout << "poll count: " << poll_count << "\n";
+        int poll_count = poll(_pfds, _nfds, -1);
         if (poll_count == -1)
         {
             perror("poll");
             exit(-1);
         }
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < 2; i++)
         {
-            if (pfds[i].revents & POLLIN)
+            if (_pfds[i].revents & POLLIN)
             {
-                    printf("Errr\n");
-                if (pfds[i].fd == serv.get_sockfd())
+                if (_pfds[i].fd == get_sockfd())
                 {
-                    int fd = accept(serv.get_sockfd(), (struct sockaddr *)&addr, &addrlen);
+                    int fd = accept(get_sockfd(), &addr, &addrlen);
 
                     if (fd < 0)
                     {
-
                         perror("accept");
                         exit(errno);
                     }
                     else
                     {
-                        char buf[256] = "hello world\0";
+                        std::cout << "new connection from: " << inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr) << std::endl;
+                        char buf[256] = "hello world\n";
                         send(fd, buf, sizeof(buf), 0);
-                        std::cout << "new connection: " << ++i << "\n";
+                        _pfds[j].fd = fd;
+                        _pfds[j].events = POLLIN | POLLHUP;
                     }
                 }
             }
+            else if (_pfds[j].revents & POLLHUP)
+            {
+                _pfds[j].fd = 0;
+                _pfds[j].events = 0;
+                _pfds[j].revents = 0;
+                printf("mok zwina\n");
+            }
+            _pfds[i].revents = 0;
         }
-        // std::cout << "mok 4\n";
+        std::cout << "mok 4\n";
     }
+}
+
+
+int main()
+{
+    try {
+        Server  serv("6667", "mokzwina");
+        serv.setup();
+        serv.start();
+    } catch (std::exception & e) {
+        std::cout << e.what() << std::endl;
+    }
+
     return (0);
 }

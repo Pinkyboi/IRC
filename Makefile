@@ -28,11 +28,9 @@ $(NAME) : $(OBJ)
 	$(CC) $(OBJ) -o $@
 
 clean :
-	make -C libft clean
 	/bin/rm -rf $(OBJ_PATH) 2> /dev/null
 
 fclean : clean
-	make -C libft fclean
 	/bin/rm -f $(NAME)
 
 re : fclean all

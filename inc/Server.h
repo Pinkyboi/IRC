@@ -14,26 +14,30 @@
 # include <fcntl.h>
 # include <poll.h>
 # include <vector>
+# include <stdexcept>
+
+# define CONN_LIMIT 256
 
 class Server
 {
     public:
         Server(const char *port, const char *pass);
         ~Server();
+        void        start();
+        void        setup();
         struct sockaddr_in *get_sockaddr();
-        int get_sockfd();
-        const char * get_port();
-        int get_conn_limit();
-        void    loop();
-        void set_sockaddr(struct sockaddr_in *addr);
+        int         get_sockfd();
+        const char  *get_port();
+        void        loop();
+        void        set_sockaddr(struct sockaddr_in *addr);
 
     private:
-        const char  *_port;
-        const char  *_pass;
-        int         _sockfd;
-        // std::map<int, Client::Client> _users;
-        int   _conn_limit;
+        const char          *_port;
+        const char          *_pass;
+        int                 _sockfd;
         struct sockaddr_in  *_sockaddr;
+        struct pollfd       _pfds[CONN_LIMIT];
+        int                 _nfds;
 };
 
 #endif
