@@ -83,25 +83,20 @@ void    Server::accept_connection()
 
     if ((new_fd = accept(_sockfd, &addr, &addrlen)) < 0)
     {
-        perror("accept");
-    }
-
-    // TODO: Check for saturation
-
-    i = 1;
-    while (i < CONN_LIMIT)
-    {
-        if (_pfds[i].fd == 0)
+        for (int i = 0; i < CONN_LIMIT; i++)
         {
-            _clients.insert(std::pair<int, Client>(new_fd, Client(new_fd, addr)));
-            _pfds[i].fd = new_fd;
-            _pfds[i].events = POLLIN | POLLHUP;
-            _pfds[i].revents = 0;
-            _nfds++;
-            break ;
+            if ((_pfds[i].fd | _pfds[i].events | _pfds[i].revents) == 0)
+            {
+                _clients.insert(std::pair<int, Client>(new_fd, Client(new_fd, addr)));
+                _pfds[i].fd = new_fd;
+                _pfds[i].events = POLLIN | POLLHUP;
+                _pfds[i].revents = 0;
+                _nfds++;
+                break ;
+            }
         }
-        i++;
     }
+    std::cout << "new connection: " << new_fd << std::endl;
 }
 
 void    Server::start()
@@ -111,21 +106,20 @@ void    Server::start()
         if (poll(_pfds, _nfds, -1) > 0)
         {
             // Check for incoming connections.
-            if (_pfds[0].revents & POLLIN)
-            {
-                std::cout << "new connection" << std::endl;
-                accept_connection();
-            }
             // Check for established connections messages.
-            for (int i = 1; i < CONN_LIMIT; i++)
+            for (int i = 0; i < CONN_LIMIT; i++)
             {
-                if (_pfds[i].revents & POLLHUP)
+                if (_pfds[i].fd == _sockfd && _pfds[i].revents & POLLIN)
+                {
+                    std::cout << "new connection" << std::endl;
+                    accept_connection();
+                }
+                else if (_pfds[i].revents & POLLHUP)
                 {
                     std::cout << "client disconnected" << std::endl;
                     memset(&_pfds[i], 0x00, sizeof(_pfds[i]));
                     _nfds--;
                 }
-                _pfds[i].revents = 0;
             }
         }
     }
@@ -138,7 +132,8 @@ int main()
         Server  serv("6667", "mokzwina");
         serv.setup();
         serv.start();
-    } catch (std::exception & e) {
+    }
+    catch (std::exception & e) {
         std::cout << e.what() << std::endl;
     }
 
