@@ -81,12 +81,15 @@ void    Server::accept_connection()
     socklen_t       addrlen;
     int             i;
 
-    if ((new_fd = accept(_sockfd, &addr, &addrlen)) < 0)
+    memset(&addr, 0x0, sizeof(struct sockaddr));
+    addrlen = sizeof(struct sockaddr);
+    if ((new_fd = accept(_sockfd, &addr, &addrlen)) > 0)
     {
         for (int i = 0; i < CONN_LIMIT; i++)
         {
-            if ((_pfds[i].fd | _pfds[i].events | _pfds[i].revents) == 0)
+            if (_pfds[i].fd  == 0)
             {
+                std::cout << "new connection: " << new_fd << std::endl;
                 _clients.insert(std::pair<int, Client>(new_fd, Client(new_fd, addr)));
                 _pfds[i].fd = new_fd;
                 _pfds[i].events = POLLIN | POLLHUP;
@@ -96,7 +99,6 @@ void    Server::accept_connection()
             }
         }
     }
-    std::cout << "new connection: " << new_fd << std::endl;
 }
 
 void    Server::start()
@@ -110,10 +112,7 @@ void    Server::start()
             for (int i = 0; i < CONN_LIMIT; i++)
             {
                 if (_pfds[i].fd == _sockfd && _pfds[i].revents & POLLIN)
-                {
-                    std::cout << "new connection" << std::endl;
                     accept_connection();
-                }
                 else if (_pfds[i].revents & POLLHUP)
                 {
                     std::cout << "client disconnected" << std::endl;
