@@ -3,7 +3,7 @@
 Server::~Server()
 {}
 
-Server::Server(const char *port, const char *pass): _port(port), _pass(pass)
+Server::Server(const char *port, const char *pass): _port(port)
 {
     int on = 1;
 
@@ -12,8 +12,10 @@ Server::Server(const char *port, const char *pass): _port(port), _pass(pass)
         throw std::exception();
 
     setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+    // setsockopt(_sockfd, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on));
     fcntl(_sockfd, F_SETFL, O_NONBLOCK);
 
+    memset(_pfds, 0x00, sizeof(_pfds));
     _pfds[0].fd = _sockfd;
     _pfds[0].events = POLLIN;
     _nfds = 1;
@@ -62,9 +64,7 @@ void    Server::setup()
     }
 
     if (p == NULL)
-    {
         throw std::exception();
-    }
 
     this->set_sockaddr((struct sockaddr_in *)(res->ai_addr));
 
@@ -74,53 +74,71 @@ void    Server::setup()
         throw std::exception();
 }
 
-void    Server::start()
+void    Server::accept_connection()
 {
+    int             new_fd;
     struct sockaddr addr;
     socklen_t       addrlen;
+    int             i;
 
-    int j = 1;
+    if ((new_fd = accept(_sockfd, &addr, &addrlen)) < 0)
+    {
+        perror("accept");
+    }
+
+    // TODO: Check for saturation
+
+    i = 1;
+    while (i < CONN_LIMIT)
+    {
+        if (_pfds[i].fd == 0)
+        {
+            _clients.insert(std::pair<int, Client>(new_fd, Client(new_fd, addr)));
+            _pfds[i].fd = new_fd;
+            _pfds[i].events = POLLIN | POLLHUP;
+            _pfds[i].revents = 0;
+            _nfds++;
+            break ;
+        }
+        i++;
+    }
+}
+
+void    Server::start()
+{
+    int poll_count;
+
     while (true)
     {
-        int poll_count = poll(_pfds, _nfds, -1);
-        if (poll_count == -1)
+        
+        if ((poll_count = poll(_pfds, _nfds, -1)) < 0)
         {
             perror("poll");
             exit(-1);
         }
-        for (int i = 0; i < 2; i++)
-        {
-            if (_pfds[i].revents & POLLIN)
-            {
-                if (_pfds[i].fd == get_sockfd())
-                {
-                    int fd = accept(get_sockfd(), &addr, &addrlen);
 
-                    if (fd < 0)
-                    {
-                        perror("accept");
-                        exit(errno);
-                    }
-                    else
-                    {
-                        std::cout << "new connection from: " << inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr) << std::endl;
-                        char buf[256] = "hello world\n";
-                        send(fd, buf, sizeof(buf), 0);
-                        _pfds[j].fd = fd;
-                        _pfds[j].events = POLLIN | POLLHUP;
-                    }
-                }
-            }
-            else if (_pfds[j].revents & POLLHUP)
+        // Check for incoming connections.
+        if (_pfds[0].revents & POLLIN)
+        {
+            std::cout << "new connection" << std::endl;
+            accept_connection();
+        }
+
+        // Check for established connections messages.
+        for (int i = 1; i < CONN_LIMIT; i++)
+        {
+            // printf("%d %d\n", _pfds[i].fd, _pfds[i].revents);
+            if (_pfds[i].revents & POLLHUP)
             {
-                _pfds[j].fd = 0;
-                _pfds[j].events = 0;
-                _pfds[j].revents = 0;
+                _pfds[i].fd = 0;
+                _pfds[i].events = 0;
+                _pfds[i].revents = 0;
+                _nfds--;
                 printf("mok zwina\n");
             }
             _pfds[i].revents = 0;
         }
-        std::cout << "mok 4\n";
+        // std::cout << "mok 4\n";
     }
 }
 

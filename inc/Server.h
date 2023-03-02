@@ -1,20 +1,8 @@
 #ifndef SERVER_H
 # define SERVER_H
-// # include <cstdint>
-# include <sys/types.h>
-# include <sys/socket.h>
-# include <netinet/in.h>
-# include <sys/errno.h>
-# include <netdb.h>
-# include <arpa/inet.h>
-# include <cstdlib>
-# include <iostream>
-# include <map>
-# include <cstdio>
-# include <fcntl.h>
-# include <poll.h>
-# include <vector>
-# include <stdexcept>
+
+# include "Irc.h"
+# include "Client.h"
 
 # define CONN_LIMIT 256
 
@@ -23,21 +11,27 @@ class Server
     public:
         Server(const char *port, const char *pass);
         ~Server();
-        void        start();
-        void        setup();
-        struct sockaddr_in *get_sockaddr();
-        int         get_sockfd();
-        const char  *get_port();
-        void        loop();
-        void        set_sockaddr(struct sockaddr_in *addr);
+
+        // Getters
+        struct sockaddr_in  *get_sockaddr();
+        int                 get_sockfd();
+        const char          *get_port();
+        void                set_sockaddr(struct sockaddr_in *addr);
+
+        void                start();
+        void                setup();
+        void                loop();
+        void                accept_connection();
+
 
     private:
-        const char          *_port;
-        const char          *_pass;
-        int                 _sockfd;
-        struct sockaddr_in  *_sockaddr;
-        struct pollfd       _pfds[CONN_LIMIT];
-        int                 _nfds;
+        const char                      *_port;
+        const char                      *_pass;
+        int                             _sockfd;
+        struct sockaddr_in              *_sockaddr;
+        struct pollfd                   _pfds[CONN_LIMIT];
+        int                             _nfds;
+        std::map<int, Client>           _clients;
 };
 
 #endif
