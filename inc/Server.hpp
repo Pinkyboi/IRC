@@ -52,7 +52,6 @@ class Server
         const char                      *_port;
         const char                      *_pass;
         int                             _sockfd;
-        struct sockaddr_in              *_sockaddr;
         struct pollfd                   _pfds[CONN_LIMIT];
         int                             _nfds;
 

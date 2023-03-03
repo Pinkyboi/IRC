@@ -43,12 +43,12 @@ void    Server::setup()
 
 void    Server::accept_connection()
 {
-    int             new_fd;
     struct sockaddr addr;
     socklen_t       addrlen;
+    int             new_fd;
 
+    addr = (sockaddr){0};
     addrlen = sizeof(struct sockaddr_in);
-    memset(&addr, 0x0, sizeof(struct sockaddr));
     if ((new_fd = accept(_sockfd, &addr, &addrlen)) > 0)
     {
         std::cout << "new connection: " << new_fd << std::endl;
