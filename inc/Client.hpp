@@ -1,7 +1,7 @@
 #ifndef CLIENT_H
 # define CLIENT_H
 
-# include "Irc.h"
+# include <netinet/in.h>
 
 class Client
 {

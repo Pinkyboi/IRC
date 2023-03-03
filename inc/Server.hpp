@@ -1,8 +1,26 @@
 #ifndef SERVER_H
 # define SERVER_H
 
-# include "Irc.h"
-# include "Client.h"
+# include "Client.hpp"
+// # include "Channel.hpp"
+
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <sys/errno.h>
+# include <netinet/in.h>
+# include <netdb.h>
+# include <arpa/inet.h>
+# include <cstdlib>
+# include <cstdio>
+# include <cstring>
+# include <unistd.h>
+# include <stdexcept>
+# include <iostream>
+# include <fcntl.h>
+# include <poll.h>
+
+# include <map>
+
 
 # define CONN_LIMIT 256
 
@@ -26,7 +44,9 @@ class Server
         void                setup();
 
     private:
-        void                accept_connection();
+        void                            print_msg(int fd);
+        void                            accept_connection();
+        void                            remove_connection(int user_index);
 
     private:
         const char                      *_port;
@@ -35,7 +55,9 @@ class Server
         struct sockaddr_in              *_sockaddr;
         struct pollfd                   _pfds[CONN_LIMIT];
         int                             _nfds;
+
         std::map<int, Client>           _clients;
+        // std::map<const char*, Channel> _channels;
 };
 
 #endif
