@@ -20,26 +20,6 @@ Server::Server(const char *port, const char *pass): _port(port)
     _nfds = 1;
 }
 
-const char * Server::get_port()
-{
-    return this->_port;
-}
-
-int Server::get_sockfd()
-{
-    return this->_sockfd;
-}
-
-struct sockaddr_in *Server::get_sockaddr()
-{
-    return this->_sockaddr;
-}
-
-void Server::set_sockaddr(struct sockaddr_in *addr)
-{
-    this->_sockaddr = addr;
-}
-
 void    Server::setup()
 {
     struct addrinfo hints;
@@ -50,7 +30,7 @@ void    Server::setup()
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
 
-    if (getaddrinfo(NULL, this->get_port(), &hints, &res))
+    if (getaddrinfo(NULL, this->_port, &hints, &res))
         throw Server::ServerException("Couldn't resolve host.");
     for (p = res; p; p = p->ai_next)
     {
@@ -59,10 +39,12 @@ void    Server::setup()
     }
     if (p == NULL)
         throw Server::ServerException("Couldn't resolve host.");
-    this->set_sockaddr((struct sockaddr_in *)(res->ai_addr));
-    if (bind(this->get_sockfd(), (struct sockaddr *)this->get_sockaddr(), sizeof(struct sockaddr_in)) < 0)
+
+    this->_sockaddr = (struct sockaddr_in *)(p->ai_addr);
+
+    if (bind(this->_sockfd, (struct sockaddr *)this->_sockaddr, sizeof(struct sockaddr_in)) < 0)
         throw Server::ServerException("Couldn't bind socket.");
-    if (listen(this->get_sockfd(), CONN_LIMIT) < 0)
+    if (listen(this->_sockfd, CONN_LIMIT) < 0)
         throw Server::ServerException("Couldn't listen on socket.");
 }
 

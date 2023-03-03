@@ -17,19 +17,15 @@ class Server
             private:
                 const char  *_msg;
         };
+
     public:
         Server(const char *port, const char *pass);
         ~Server();
 
-        // Getters
-        struct sockaddr_in  *get_sockaddr();
-        int                 get_sockfd();
-        const char          *get_port();
-        void                set_sockaddr(struct sockaddr_in *addr);
-
         void                start();
         void                setup();
-        void                loop();
+
+    private:
         void                accept_connection();
 
     private:
