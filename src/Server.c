@@ -107,6 +107,7 @@ void    Server::start()
                     accept_connection();
                 else if (_pfds[i].revents & POLLHUP)
                 {
+                    std::cout << "client disconnected: " << _pfds[i].fd << std::endl;
                     memset(&_pfds[i], 0x00, sizeof(_pfds[i]));
                     _nfds--;
                 }
