@@ -9,6 +9,15 @@
 class Server
 {
     public:
+        class ServerException : public std::exception
+        {
+            public:
+                ServerException(const char *msg):_msg(msg){};
+                const char* what() { return this->_msg; };
+            private:
+                const char  *_msg;
+        };
+    public:
         Server(const char *port, const char *pass);
         ~Server();
 
@@ -22,7 +31,6 @@ class Server
         void                setup();
         void                loop();
         void                accept_connection();
-
 
     private:
         const char                      *_port;

@@ -8,8 +8,8 @@ Server::Server(const char *port, const char *pass): _port(port)
     int on = 1;
 
     _sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (_sockfd < 0)
-        throw std::exception();
+    if (_sockfd > 0)
+        throw Server::ServerException("socket() failed");
 
     setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
     // setsockopt(_sockfd, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on));
@@ -51,27 +51,20 @@ void    Server::setup()
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
 
-    int rv;
-    if ((rv = getaddrinfo(NULL, this->get_port(), &hints, &res)))
-    {
-        std::cout << "getaddrinfo: " << gai_strerror(rv) << std::endl;
-        throw std::exception();
-    }
+    if (getaddrinfo(NULL, this->get_port(), &hints, &res))
+        throw Server::ServerException("Couldn't resolve host.");
     for (p = res; p; p = p->ai_next)
     {
         if (p->ai_family == AF_INET && p->ai_socktype == SOCK_STREAM)
             break;
     }
-
     if (p == NULL)
-        throw std::exception();
-
+        throw Server::ServerException("Couldn't resolve host.");
     this->set_sockaddr((struct sockaddr_in *)(res->ai_addr));
-
     if (bind(this->get_sockfd(), (struct sockaddr *)this->get_sockaddr(), sizeof(struct sockaddr_in)) < 0)
-        throw std::exception();
+        throw Server::ServerException("Couldn't bind socket.");
     if (listen(this->get_sockfd(), CONN_LIMIT) < 0)
-        throw std::exception();
+        throw Server::ServerException("Couldn't listen on socket.");
 }
 
 void    Server::accept_connection()
@@ -115,7 +108,6 @@ void    Server::start()
                     accept_connection();
                 else if (_pfds[i].revents & POLLHUP)
                 {
-                    std::cout << "client disconnected" << std::endl;
                     memset(&_pfds[i], 0x00, sizeof(_pfds[i]));
                     _nfds--;
                 }
@@ -132,7 +124,7 @@ int main()
         serv.setup();
         serv.start();
     }
-    catch (std::exception & e) {
+    catch (Server::ServerException & e) {
         std::cout << e.what() << std::endl;
     }
 
