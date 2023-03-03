@@ -8,13 +8,12 @@ Server::Server(const char *port, const char *pass): _port(port)
     int on = 1;
 
     _sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (_sockfd > 0)
-        throw Server::ServerException("socket() failed");
+    if (_sockfd < 0)
+        throw Server::ServerException("Couldn't create socket.");
 
     setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
     // setsockopt(_sockfd, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on));
     fcntl(_sockfd, F_SETFL, O_NONBLOCK);
-
     memset(_pfds, 0x00, sizeof(_pfds));
     _pfds[0].fd = _sockfd;
     _pfds[0].events = POLLIN;
