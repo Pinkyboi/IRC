@@ -22,6 +22,7 @@
 # include <map>
 
 
+
 # define CONN_LIMIT 256
 
 class Server
@@ -35,7 +36,6 @@ class Server
             private:
                 const char  *_msg;
         };
-
     public:
         Server(const char *port, const char *pass);
         ~Server();

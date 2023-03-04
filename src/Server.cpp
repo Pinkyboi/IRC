@@ -4,7 +4,7 @@ Server::~Server(){}
 
 Server::Server(const char *port, const char *pass): _port(port), _nfds(0)
 {
-    int on = 1;
+    bool on = true;
 
     if ((_sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
         throw Server::ServerException("Couldn't create socket.");
@@ -12,8 +12,8 @@ Server::Server(const char *port, const char *pass): _port(port), _nfds(0)
     setsockopt(_sockfd, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on));
     fcntl(_sockfd, F_SETFL, O_NONBLOCK);
     memset(_pfds, 0x00, sizeof(_pfds));
-    _pfds[_nfds]= (pollfd){ .fd = _sockfd,
-                            .events = POLLIN };
+    _pfds[_nfds]= (struct pollfd){  .fd = _sockfd,
+                                    .events = POLLIN };
     _nfds++;
 }
 
@@ -75,28 +75,33 @@ void    Server::print_msg(int fd)
 
     memset(msg_buffer, 0x0, sizeof msg_buffer);
     if (recv(fd, msg_buffer, 512, MSG_DONTWAIT) > 0)
+    {
         std::cout << "msg: " << msg_buffer << std::endl;
+        std::string msg_string(msg_buffer);
+
+        int it = msg_string.find("\r\n");
+        std::cout << "found at: " << it << std::endl;
+    }
+    // if (it == msg_string.end())
+    //     std::cout << "Alla2h";
+    // else
+    //     std::cout << "Yipppe";
 }
 
 void    Server::start()
 {
     while (true)
     {
-        if (poll(_pfds, _nfds, -1) > 0)
+        if (poll(_pfds, _nfds, -1) < 0)
+            continue;
+        for (int i = 0; i < _nfds; i++)
         {
-            // Check for incoming connections.
-            // Check for established connections messages.
-            for (int i = 0; i < _nfds; i++)
+            if (_pfds[i].revents & POLLIN)
             {
-                // if (_pfds[i].revents & (POLLHUP | POLLERR))
-                //     remove_connection(i);
-                if (_pfds[i].revents & POLLIN)
-                {
-                    if (_pfds[i].fd != _sockfd)
-                        print_msg(_pfds[i].fd);
-                    else
-                        accept_connection();
-                }
+                if (_pfds[i].fd != _sockfd)
+                    print_msg(_pfds[i].fd);
+                else
+                    accept_connection();
             }
         }
     }
