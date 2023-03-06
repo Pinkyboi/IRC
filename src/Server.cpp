@@ -1,6 +1,13 @@
 #include "Server.hpp"
 
-Server::~Server(){}
+Server *Server::_instance = nullptr;
+
+Server::~Server()
+{
+    // close all open file decriptors
+    for (int i = 0; i < _nfds; i++)
+        close(_pfds[i].fd);
+}
 
 Server::Server(const char *port, const char *pass): _port(port), _nfds(0)
 {
@@ -107,13 +114,36 @@ void    Server::start()
     }
 }
 
+Server* Server::getInstance()
+{
+    return Server::_instance;
+};
+
+void    Server::deleteInstance()
+{
+    if (Server::_instance != nullptr)
+    {
+        delete Server::_instance;
+        Server::_instance = nullptr;
+    }
+}
+
+void     Server::initServer(const char *port, const char *pass)
+{
+    if (Server::_instance == nullptr)
+        Server::_instance = new Server(port, pass);
+    else
+        throw Server::ServerException("Server already initialized.");
+};
 
 int main()
 {
     try {
-        Server  serv("6667", "mokzwina");
-        serv.setup();
-        serv.start();
+        Server::initServer("6667", "mokzwina");
+        Server *serv =  Server::getInstance();
+
+        serv->setup();
+        serv->start();
     }
     catch (Server::ServerException & e) {
         std::cout << e.what() << std::endl;
