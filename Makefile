@@ -1,36 +1,48 @@
 NAME = irc
+CC = clang++ -std=c++98
+CFLAGS = #-Wall -Werror -Wextra
 
-SRC_PATH = ./src
-OBJ_PATH = ./obj
 
-SRC_FILES = Server.cpp Client.cpp Channel.cpp
+SRC_FOLDER = src
+INC_FOLDER = inc
+
+OBJ_FOLDER = ./obj
+
+CLASS_FOLDERS = Server\
+				Client\
+				Channel
+
+SRC_FOLDERS = $(addprefix  $(SRC_FOLDER)/, $(CLASS_FOLDERS))
+
+VPATH = $(SRC_FOLDERS)
+
+SRC_FILES = Server.cpp\
+			Client.cpp\
+			Channel.cpp\
+			main.cpp
 
 OBJ_FILES = $(SRC_FILES:.cpp=.o)
 
-SRC = $(addprefix $(SRC_PATH)/,$(SRC_FILES))
-OBJ = $(addprefix $(OBJ_PATH)/,$(OBJ_FILES))
-
-DEPS = 
-
-INC = -Iinc
-
-CC = g++ -std=c++98
-
-CFLAGS = #-Wall -Werror -Wextra
+CLASS_INC = $(addsuffix  /$(INC_FOLDER), $(SRC_FOLDERS))
+INC = $(addprefix -I, $(CLASS_INC))
+OBJ = $(addprefix $(OBJ_FOLDER)/,$(OBJ_FILES))
 
 all : $(NAME)
 
-$(OBJ_PATH)/%.o : $(SRC_PATH)/%.cpp $(DEPS)
-	@mkdir -p $(OBJ_PATH)
-	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
+$(OBJ_FOLDER)/%.o : %.cpp $(CLASS_INC)
+	@mkdir -p $(OBJ_FOLDER)
+	@echo "Compiling $< ..."
+	@$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 
 $(NAME) : $(OBJ)
-	$(CC) $(OBJ) -o $@
+	@echo "Linking $@ ..."
+	@$(CC) $(OBJ) -o $@
+	@echo "Done."
 
 clean :
-	/bin/rm -rf $(OBJ_PATH) 2> /dev/null
+	@rm -rf $(OBJ_FOLDER)
 
 fclean : clean
-	/bin/rm -f $(NAME)
+	@rm -f $(NAME)
 
 re : fclean all
