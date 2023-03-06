@@ -136,9 +136,20 @@ void     Server::initServer(const char *port, const char *pass)
         throw Server::ServerException("Server already initialized.");
 };
 
+void sig_handler(int signo)
+{
+    if (signo == SIGINT)
+    {
+        std::cout << "Server shutting down..." << std::endl;
+        Server::deleteInstance();
+        exit(0);
+    }
+}
+
 int main()
 {
     try {
+        signal(SIGINT, sig_handler);
         Server::initServer("6667", "mokzwina");
         Server *serv =  Server::getInstance();
 
