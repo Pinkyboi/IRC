@@ -2,7 +2,7 @@
 # define CLIENT_H
 
 # include <queue>
-# include <string.h>
+# include <string>
 # include <netinet/in.h>
 
 class Client

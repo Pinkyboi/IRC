@@ -15,7 +15,7 @@ class Channel
 
     private:
         const char              * _name;
-        std::map<int, Client&>  _clients;
+       // std::map<int, Client&>  _clients;
 };
 
 #endif
