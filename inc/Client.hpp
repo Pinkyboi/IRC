@@ -8,7 +8,7 @@
 class Client
 {
     public:
-        Client(int fd, struct sockaddr addr);
+        Client(int fd, struct sockaddr addr, bool operator);
         ~Client();
 
     public:
@@ -16,6 +16,7 @@ class Client
         void        add_command(const char *cmd, size_t size);
 
     private:
+        bool                                        _operator;
         int                                         _fd;
         struct in_addr                              _addr;
         // std::queue< std::pair<std::string, bool> >  _commands;

@@ -1,7 +1,8 @@
 # include "Client.hpp"
 
-Client::Client(int fd, struct sockaddr addr)
+Client::Client(int fd, struct sockaddr addr, bool operator)
 {
+    _operator = operator;
     _fd = fd;
     _addr = ((struct sockaddr_in *)&addr)->sin_addr;
 }
