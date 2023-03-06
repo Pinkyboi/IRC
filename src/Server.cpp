@@ -105,10 +105,11 @@ void    Server::start()
         {
 #if defined(__linux__)
             if (_pfds[i].revents & POLLRDHUP)
+                remove_connection(i);
 #elif defined(__APPLE__)
             if (_pfds[i].revents & POLLHUP)
-#endif
                 remove_connection(i);
+#endif
             else if (_pfds[i].revents & POLLIN)
             {
                 if (_pfds[i].fd != _sockfd)
