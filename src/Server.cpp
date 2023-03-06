@@ -1,10 +1,9 @@
 #include "Server.hpp"
 
-Server *Server::_instance = nullptr;
+Server *Server::_instance = NULL;
 
 Server::~Server()
 {
-    // close all open file decriptors
     for (int i = 0; i < _nfds; i++)
         close(_pfds[i].fd);
 }
@@ -29,9 +28,9 @@ void    Server::setup()
     struct addrinfo hints;
     struct addrinfo *res, *p;
 
-    hints = (struct addrinfo){  .ai_family = AF_INET,
-                                .ai_socktype = SOCK_STREAM,
-                                .ai_flags = AI_PASSIVE };
+    hints = (struct addrinfo){  .ai_flags = AI_PASSIVE,
+                                .ai_family = AF_INET,
+                                .ai_socktype = SOCK_STREAM };
     if (getaddrinfo(NULL, this->_port, &hints, &res))
         throw Server::ServerException("Couldn't resolve host.");
     for (p = res; p; p = p->ai_next)
@@ -60,8 +59,13 @@ void    Server::accept_connection()
     {
         std::cout << "new connection: " << new_fd << std::endl;
         _clients.insert(std::pair<int, Client>(new_fd, Client(new_fd, addr)));
+#if defined(__linux__)
         _pfds[_nfds] = (struct pollfd){ .fd = new_fd,
-                                        .events = POLLIN };
+                                        .events = POLLIN | POLLRDHUP };
+#elif defined(__APPLE__)
+        _pfds[_nfds] = (struct pollfd){ .fd = new_fd,
+                                        .events = POLLIN | POLLHUP };
+#endif
         _nfds++;
     }
 }
@@ -89,10 +93,6 @@ void    Server::print_msg(int fd)
         int it = msg_string.find("\r\n");
         std::cout << "found at: " << it << std::endl;
     }
-    // if (it == msg_string.end())
-    //     std::cout << "Alla2h";
-    // else
-    //     std::cout << "Yipppe";
 }
 
 void    Server::start()
@@ -103,7 +103,13 @@ void    Server::start()
             continue;
         for (int i = 0; i < _nfds; i++)
         {
-            if (_pfds[i].revents & POLLIN)
+#if defined(__linux__)
+            if (_pfds[i].revents & POLLRDHUP)
+#elif defined(__APPLE__)
+            if (_pfds[i].revents & POLLHUP)
+#endif
+                remove_connection(i);
+            else if (_pfds[i].revents & POLLIN)
             {
                 if (_pfds[i].fd != _sockfd)
                     print_msg(_pfds[i].fd);
@@ -121,16 +127,16 @@ Server* Server::getInstance()
 
 void    Server::deleteInstance()
 {
-    if (Server::_instance != nullptr)
+    if (Server::_instance != NULL)
     {
         delete Server::_instance;
-        Server::_instance = nullptr;
+        Server::_instance = NULL;
     }
 }
 
 void     Server::initServer(const char *port, const char *pass)
 {
-    if (Server::_instance == nullptr)
+    if (Server::_instance == NULL)
         Server::_instance = new Server(port, pass);
     else
         throw Server::ServerException("Server already initialized.");
@@ -159,6 +165,5 @@ int main()
     catch (Server::ServerException & e) {
         std::cout << e.what() << std::endl;
     }
-
     return (0);
 }
