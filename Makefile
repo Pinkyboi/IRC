@@ -19,6 +19,7 @@ VPATH = $(SRC_FOLDERS)
 SRC_FILES = Server.cpp\
 			Client.cpp\
 			Channel.cpp\
+			CircularBuffer.cpp\
 			main.cpp
 
 OBJ_FILES = $(SRC_FILES:.cpp=.o)

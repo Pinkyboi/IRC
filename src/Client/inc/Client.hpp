@@ -4,6 +4,9 @@
 # include <queue>
 # include <string>
 # include <netinet/in.h>
+# include <CommandBuffer.hpp>
+
+# define MAX_COMMAND_SIZE 512
 
 class Client
 {
@@ -28,7 +31,7 @@ class Client
         struct in_addr                              _addr;
         std::string                                 _nick;
         std::string                                 _username;
-        std::queue< std::pair<std::string, bool> >  _commands;
+        std::queue< std::pair< CircularBuffer, bool> >  _commands;
 };
 
 #endif

@@ -6,19 +6,11 @@ Client::Client(int id, struct sockaddr addr)
     _addr = ((struct sockaddr_in *)&addr)->sin_addr;
 }
 
-Client::~Client()
-{
-
-}
-
-int    Client::get_id() const
-{
-    return (_id);
-}
+Client::~Client(){}
 
 std::string Client::get_command()
 {
-    std::string cmd = _commands.front().first;
+    char *cmd = _commands.front().first.get_buffer();
     if (! _commands.front().second)
         return NULL;
     _commands.pop();
@@ -35,7 +27,7 @@ void    Client::set_username(const std::string &username)
     _username = username;
 }
 
-void    Client::get_id() const
+int    Client::get_id() const
 {
     return (_id);
 }

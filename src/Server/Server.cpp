@@ -82,10 +82,10 @@ void    Server::remove_connection(int user_index)
 
 void    Server::print_msg(int fd)
 {
-    static char msg_buffer[512];
+    static char msg_buffer[MAX_COMMAND_SIZE];
 
     memset(msg_buffer, 0x0, sizeof msg_buffer);
-    if (recv(fd, msg_buffer, 512, MSG_DONTWAIT) > 0)
+    if (recv(fd, msg_buffer, MAX_COMMAND_SIZE, MSG_DONTWAIT) > 0)
     {
         std::cout << "msg: " << msg_buffer << std::endl;
         std::string msg_string(msg_buffer);
