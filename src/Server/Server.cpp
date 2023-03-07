@@ -89,9 +89,6 @@ void    Server::print_msg(int fd)
     {
         std::cout << "msg: " << msg_buffer << std::endl;
         std::string msg_string(msg_buffer);
-
-        int it = msg_string.find("\r\n");
-        std::cout << "found at: " << it << std::endl;
     }
 }
 

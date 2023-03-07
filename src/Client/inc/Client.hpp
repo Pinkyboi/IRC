@@ -8,17 +8,19 @@
 class Client
 {
     public:
-        Client(int fd, struct sockaddr addr);
+        Client(int id, struct sockaddr addr);
+        Client(){};
         ~Client();
 
     public:
         std::string get_command();
-        void        add_command(const char *cmd, size_t size);
-
+        void        add_command(const std::string &cmd);
+        void        get_addr();
+        int         get_id() const;
     private:
-        int                                         _fd;
+        int                                         _id;
         struct in_addr                              _addr;
-        // std::queue< std::pair<std::string, bool> >  _commands;
+        std::queue< std::pair<std::string, bool> >  _commands;
 };
 
 #endif

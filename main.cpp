@@ -16,6 +16,7 @@ int main()
 {
     try {
         signal(SIGINT, sig_handler);
+
         Server::initServer("6667", "mokzwina");
         Server *serv =  Server::getInstance();
 
@@ -23,7 +24,7 @@ int main()
         serv->start();
     }
     catch (Server::ServerException & e) {
-        std::cout << e.what() << std::endl;
+        std::cout << "irc: " << e.what() << std::endl;
     }
     return (0);
 }

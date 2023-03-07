@@ -7,15 +7,19 @@
 class Channel
 {
     public:
-                    Channel(const char * name);
-                    ~Channel();
-        void        addClient(Client& client);
-        void        removeClient(Client& client);
-        Client&     getClient(int fd);
+                                Channel(Client& creator, const char * name);
+                                ~Channel();
+        void                    add_client(Client& client);
+        Client&                 get_client(int fd);
+        void                    remove_client(Client& client);
+        void                    add_operator(Client& client);
 
     private:
-        const char              * _name;
-       // std::map<int, Client&>  _clients;
+        const char              *_name;
+        char                    *_topic;
+        uint16_t                _modes;
+        std::map<int, Client&>  _clients;
+        std::map<int, Client&>  _operators;
 };
 
 #endif
