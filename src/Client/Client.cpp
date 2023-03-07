@@ -11,8 +11,6 @@ Client::~Client()
     while(_commands.size() > 0)
         _commands.pop();
 }
-#include <iostream>
-#include <string>
 
 void    Client::add_command(std::string cmd)
 {
@@ -41,15 +39,15 @@ void    Client::add_command(std::string cmd)
             _commands.back().second->push_back(cmd.c_str());
         else
         {
-            cmd_buffer = new CircularBuffer(MAX_COMMAND_SIZE, cmd_chunck.c_str());
+            cmd_buffer = new CircularBuffer(MAX_COMMAND_SIZE, cmd.c_str());
             _commands.push(std::make_pair(false, cmd_buffer));
         }
     }
 }
 
-std::string Client::get_command()
+char *Client::get_command()
 {
-    char *cmd;
+    char* cmd;
 
     if (_commands.front().first == false)
         return NULL;

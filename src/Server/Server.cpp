@@ -77,20 +77,23 @@ void    Server::remove_connection(int user_index)
     std::cout << "client disconnected: " << userfd->fd << std::endl;
     close(userfd->fd);
     memmove(userfd, userfd + 1, sizeof(struct pollfd) * (_nfds - user_index - 1));
+    _clients.erase(userfd->fd);
     _nfds--;
 }
 
 void    Server::print_msg(int fd)
 {
     static char msg_buffer[MAX_COMMAND_SIZE];
-    size_t      msg_size;
+    size_t      msg_len;
+    char * command;
 
-    memset(msg_buffer, 0x0, sizeof msg_buffer);
-    if ((msg_size = recv(fd, msg_buffer, MAX_COMMAND_SIZE, MSG_DONTWAIT)) > 0)
+    if ( (msg_len = recv(fd, msg_buffer, MAX_COMMAND_SIZE, MSG_DONTWAIT)) > 0)
     {
-        std::cout << "msg: " << msg_buffer << std::endl;
+        msg_buffer[msg_len] = '\0';
         _clients[fd].add_command(std::string(msg_buffer));
     }
+    while((command = _clients[fd].get_command()) != NULL)
+        std::cout << command << std::endl;
 }
 
 void    Server::start()

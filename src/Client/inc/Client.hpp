@@ -16,7 +16,7 @@ class Client
         ~Client();
 
     public:
-        std::string get_command();
+        char        *get_command();
         void        add_command(std::string cmd);
     public:
         void        set_nick(const std::string &nick);
