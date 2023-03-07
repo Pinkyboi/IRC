@@ -70,13 +70,13 @@ void    Server::accept_connection()
     }
 }
 
-void    Server::remove_connection(int user_index)
+void    Server::remove_connection(int user_id)
 {
-    struct pollfd *userfd = &_pfds[user_index];
+    struct pollfd *userfd = &_pfds[user_id];
 
     std::cout << "client disconnected: " << userfd->fd << std::endl;
     close(userfd->fd);
-    memmove(userfd, userfd + 1, sizeof(struct pollfd) * (_nfds - user_index - 1));
+    memmove(userfd, userfd + 1, sizeof(struct pollfd) * (_nfds - user_id - 1));
     _clients.erase(userfd->fd);
     _nfds--;
 }

@@ -2,7 +2,7 @@
 # define SERVER_H
 
 # include "Client.hpp"
-// # include "Channel.hpp"
+# include "Channel.hpp"
 
 # include <sys/types.h>
 # include <sys/socket.h>
@@ -19,8 +19,6 @@
 # include <fcntl.h>
 # include <poll.h>
 # include <map>
-
-
 
 # define CONN_LIMIT 256
 # define MAX_COMMAND_SIZE 512
@@ -42,23 +40,35 @@ class Server
         static void                     deleteInstance();
     public:
         ~Server();
-        void                            start();
         void                            setup();
+        void                            start();
     private:
                                         Server(const char *port, const char *pass);
         void                            print_msg(int fd);
         void                            accept_connection();
-        void                            remove_connection(int user_index);
+        void                            remove_connection(int user_id);
     private:
-        static Server                   *_instance;
+        void                            list_cmd(std::string &c_name);
+        void                            nick_cmd(int usr_id, std::string &nick);
+        void                            user_cmd(int usr_id, std::string &name);
+        void                            pass_cmd(int usr_id, std::string &pass);
+        void                            kick_cmd(int usr_id, const std::string &c_name, std::string &message);
+        void                            join_cmd(int usr_id, const std::string &c_name, std::string &message);
+        void                            part_cmd(int usr_id, const std::string &c_name, std::string &message);
+        void                            msg_cmd(int  usr_id, const std::string &c_name, std::string &message);
+        void                            privmsg_cmd(int send_id, int recv_id, std::string message);
+        void                            notice_cmd(int send_id, int recv_id, std::string message);
     private:
-        const char                      *_port;
-        const char                      *_pass;
-        int                             _sockfd;
-        struct pollfd                   _pfds[CONN_LIMIT];
-        int                             _nfds;
-        std::map<int, Client>           _clients;
-        // std::map<const char*, Channel> _channels;
+        static Server                           *_instance;
+    private:
+        const char                              *_port;
+        const char                              *_pass;
+        int                                     _sockfd;
+        struct pollfd                           _pfds[CONN_LIMIT];
+        int                                     _nfds;
+        std::map<int, Client>                   _clients;
+        // probably we should add a way to access users with their nickname
+        std::map<const std::string, Channel>    _channels;
 };
 
 #endif
