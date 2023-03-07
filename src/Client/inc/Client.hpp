@@ -17,7 +17,7 @@ class Client
 
     public:
         std::string get_command();
-        void        add_command(const std::string &cmd);
+        void        add_command(std::string cmd);
     public:
         void        set_nick(const std::string &nick);
         void        set_username(const std::string &username);
@@ -26,12 +26,13 @@ class Client
         int         get_id() const;
         std::string get_nick() const;
         std::string get_username() const;
+        std::string get_commands();
     private:
         int                                         _id;
         struct in_addr                              _addr;
         std::string                                 _nick;
         std::string                                 _username;
-        std::queue< std::pair< CircularBuffer, bool> >  _commands;
+        std::queue< std::pair< bool, CircularBuffer *> >  _commands;
 };
 
 #endif
