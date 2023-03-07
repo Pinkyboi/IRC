@@ -15,11 +15,19 @@ class Client
     public:
         std::string get_command();
         void        add_command(const std::string &cmd);
-        void        get_addr();
+    public:
+        void        set_nick(const std::string &nick);
+        void        set_username(const std::string &username);
+    public:
+        void        get_addr() const;
         int         get_id() const;
+        std::string get_nick() const;
+        std::string get_username() const;
     private:
         int                                         _id;
         struct in_addr                              _addr;
+        std::string                                 _nick;
+        std::string                                 _username;
         std::queue< std::pair<std::string, bool> >  _commands;
 };
 

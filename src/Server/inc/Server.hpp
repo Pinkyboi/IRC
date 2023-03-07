@@ -23,6 +23,7 @@
 
 
 # define CONN_LIMIT 256
+# define MAX_COMMAND_SIZE 512
 
 class Server
 {
