@@ -45,6 +45,7 @@ class Server
     private:
                                         Server(const char *port, const char *pass);
         void                            print_msg(int fd);
+        void                            send_msg(int fd, const std::string &msg);
         void                            accept_connection();
         void                            remove_connection(int user_id);
     private:
@@ -52,7 +53,7 @@ class Server
         void                            nick_cmd(int usr_id, std::string &nick);
         void                            user_cmd(int usr_id, std::string &name);
         void                            pass_cmd(int usr_id, std::string &pass);
-        void                            kick_cmd(int usr_id, const std::string &c_name, std::string &message);
+        void                            kick_cmd(int usr_id, int target_id, const std::string &c_name, std::string &message);
         void                            join_cmd(int usr_id, const std::string &c_name, std::string &message);
         void                            part_cmd(int usr_id, const std::string &c_name, std::string &message);
         void                            msg_cmd(int  usr_id, const std::string &c_name, std::string &message);

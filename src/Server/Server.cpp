@@ -81,6 +81,35 @@ void    Server::remove_connection(int user_id)
     _nfds--;
 }
 
+void    Server::send_msg(int fd, const std::string &msg)
+{
+    send(fd, msg.c_str(), msg.length(), 0);
+}
+
+void    list_cmd(int usr_id, std::string &c_name)
+{
+
+}
+
+void    Server::kick_cmd(int usr_id, int target_id, const std::string &c_name, std::string &message)
+{
+    if (_channels.find(c_name) != _channels.end())
+    {
+        if (_channels.at(c_name).is_operator(usr_id) &&
+                !_channels.at(c_name).is_operator(target_id))
+            _channels.at(c_name).remove_client(target_id);
+    }
+}
+void    Server::join_cmd(int usr_id, const std::string &c_name, std::string &message)
+{
+    Client& client = _clients.at(usr_id);
+    if (_channels.find(c_name) == _channels.end())
+        _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
+    else
+        _channels.at(c_name).add_client(client);
+    client.set_channel(_channels.at(c_name));
+}
+
 void    Server::print_msg(int fd)
 {
     static char msg_buffer[MAX_COMMAND_SIZE];
