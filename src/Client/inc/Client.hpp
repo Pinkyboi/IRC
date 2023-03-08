@@ -12,7 +12,6 @@ class Client
 {
     public:
         Client(int id, struct sockaddr addr);
-        Client(){};
         ~Client();
 
     public:

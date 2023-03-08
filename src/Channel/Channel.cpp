@@ -18,7 +18,7 @@ void    Channel::add_client(Client& client)
 
 Client& Channel::get_client(int id)
 {
-    return (_clients[id]);
+    return (_clients.at(id));
 }
 
 void    Channel::remove_client(Client& client)
