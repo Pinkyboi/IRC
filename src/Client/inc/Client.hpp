@@ -24,6 +24,7 @@ class Client
         void        get_addr() const;
         int         get_id() const;
         std::string get_nick() const;
+        std::string get_active_nick() const;
         std::string get_username() const;
         std::string get_command();
         std::string get_channel() const;

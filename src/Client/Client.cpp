@@ -90,6 +90,11 @@ std::string Client::get_nick() const
     return (_nick);
 }
 
+std::string Client::get_active_nick() const
+{
+    return (_active_nick);
+}
+
 std::string Client::get_username() const
 {
     return (_username);

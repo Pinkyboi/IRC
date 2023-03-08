@@ -26,6 +26,8 @@
 
 class Server
 {
+    typedef void (Server::*cmd_func)(int, std::vector<std::string> &);
+
     public:
         class ServerException : public std::exception
         {
@@ -49,14 +51,15 @@ class Server
         void                            send_msg(int fd, const std::string &msg);
         void                            accept_connection();
         void                            remove_connection(int user_id);
+        void                            init_commands();
     private:
         void                            list_cmd(int usr_id, std::vector<std::string> &args);
-        void                            nick_cmd(int usr_id, std::vector<std::string> &args);
-        void                            user_cmd(int usr_id, std::vector<std::string> &args);
+        void                            nick_cmd(int usr_id, std::vector<std::string> &args); // basic version done
+        void                            user_cmd(int usr_id, std::vector<std::string> &args); // basic version done
         void                            pass_cmd(int usr_id, std::vector<std::string> &args);
-        void                            kick_cmd(int usr_id, std::vector<std::string> &args);
-        void                            join_cmd(int usr_id, std::vector<std::string> &args);
-        void                            part_cmd(int usr_id, std::vector<std::string> &args);
+        void                            kick_cmd(int usr_id, std::vector<std::string> &args); // basic version done
+        void                            join_cmd(int usr_id, std::vector<std::string> &args); // basic version done
+        void                            part_cmd(int usr_id, std::vector<std::string> &args); // basic version done
         void                            msg_cmd(int  usr_id, std::vector<std::string> &args);
     private:
         static Server                           *_instance;
@@ -68,6 +71,7 @@ class Server
         int                                     _nfds;
         std::map<int, Client>                   _clients;
         std::map<const std::string, Channel>    _channels;
+        std::map<std::string, cmd_func>         _commands;
 };
 
 #endif

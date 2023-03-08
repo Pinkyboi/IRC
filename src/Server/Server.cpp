@@ -12,6 +12,7 @@ Server::Server(const char *port, const char *pass): _port(port), _nfds(0)
 {
     bool on = true;
 
+    init_commands();
     if ((_sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
         throw Server::ServerException("Couldn't create socket.");
     setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
@@ -21,6 +22,15 @@ Server::Server(const char *port, const char *pass): _port(port), _nfds(0)
     _pfds[_nfds]= (struct pollfd){  .fd = _sockfd,
                                     .events = POLLIN };
     _nfds++;
+}
+
+void    Server::init_commands()
+{
+    _commands.insert(std::pair<std::string, cmd_func>("NICK", &Server::nick_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("USER", &Server::user_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("KICK", &Server::kick_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("JOIN", &Server::join_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("PART", &Server::part_cmd));
 }
 
 void    Server::setup()
@@ -89,6 +99,13 @@ void    Server::send_msg(int fd, const std::string &msg)
 void    list_cmd(int usr_id, std::string &c_name)
 {
 
+}
+
+void    Server::user_cmd(int usr_id, std::vector<std::string> &args)
+{
+    std::string username = args.front();
+
+    _clients.at(usr_id).set_username(username);
 }
 
 void    Server::nick_cmd(int usr_id, std::vector<std::string> &args)
