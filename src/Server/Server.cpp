@@ -91,18 +91,54 @@ void    list_cmd(int usr_id, std::string &c_name)
 
 }
 
-void    Server::kick_cmd(int usr_id, int target_id, std::string &c_name, std::string &message)
+void    Server::nick_cmd(int usr_id, std::vector<std::string> &args)
 {
+    std::string nick  = args.front();
+
+    if (_clients.at(usr_id).get_channel() == "")
+        _clients.at(usr_id).set_nick(nick);
+    else
+    {
+        Channel &current_channel = _channels.at(_clients.at(usr_id).get_channel());
+        if (!current_channel.is_nick_used(nick))
+            current_channel.set_nick(usr_id, nick);
+    }
+}
+
+void    Server::part_cmd(int usr_id, std::vector<std::string> &args)
+{
+    std::string c_name  = args.front();
+    std::string message = args.back();
+    Client      &client = _clients.at(usr_id);
+
     if (_channels.find(c_name) != _channels.end())
     {
-        if (_channels.at(c_name).is_operator(usr_id) &&
-                !_channels.at(c_name).is_operator(target_id))
+        if (_channels.at(c_name).is_client(usr_id))
+            _channels.at(c_name).remove_client(usr_id);
+    }
+    client.unset_channel();
+}
+
+void    Server::kick_cmd(int usr_id, std::vector<std::string> &args)
+{
+    std::string c_name  = args.front();
+    std::string message = args.back();
+    std::string t_name  = args.at(1);
+
+    Channel    &channel   = _channels.at(c_name);    
+    int        target_id = channel.get_client_id(t_name);
+    if (_channels.find(c_name) != _channels.end())
+    {
+        if (_channels.at(c_name).is_operator(usr_id) && _channels.at(c_name).is_client(target_id))
             _channels.at(c_name).remove_client(target_id);
     }
 }
-void    Server::join_cmd(int usr_id, std::string &c_name, std::string &message)
+
+void    Server::join_cmd(int usr_id, std::vector<std::string> &args)
 {
-    Client& client = _clients.at(usr_id);
+    std::string c_name  = args.front();
+    std::string message = args.back();
+    Client      &client = _clients.at(usr_id);
 
     if (_channels.find(c_name) == _channels.end())
         _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));

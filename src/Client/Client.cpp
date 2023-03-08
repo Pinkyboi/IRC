@@ -65,9 +65,14 @@ void    Client::set_username(const std::string &username)
     _username = username;
 }
 
-void    Client::set_channel(std::string &channel)
+void    Client::set_channel(const std::string &channel)
 {
     _active_channel = channel;
+}
+
+void    Client::unset_channel()
+{
+    _active_channel = "";
 }
 
 int    Client::get_id() const

@@ -17,7 +17,8 @@ class Client
     public:
         void        set_nick(const std::string &nick);
         void        set_username(const std::string &username);
-        void        set_channel(std::string &channel);
+        void        set_channel(const std::string &channel);
+        void        unset_channel();
     public:
         void        get_addr() const;
         int         get_id() const;
