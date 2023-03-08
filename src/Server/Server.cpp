@@ -145,11 +145,11 @@ void    Server::part_cmd(int usr_id, std::vector<std::string> &args)
 
 void    Server::kick_cmd(int usr_id, std::vector<std::string> &args)
 {
-    std::string c_name  = args.front();
-    std::string message = args.back();
-    std::string t_name  = args.at(1);
+    std::string c_name   = args.front();
+    std::string message  = args.back();
+    std::string t_name   = args.at(1);
 
-    Channel    &channel   = _channels.at(c_name);    
+    Channel    &channel  = _channels.at(c_name);
     int        target_id = channel.get_client_id(t_name);
     if (_channels.find(c_name) != _channels.end())
     {
