@@ -1,6 +1,6 @@
 # include "Client.hpp"
 
-Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _channel("")
+Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _active_channel("")
 {
     _addr = ((struct sockaddr_in *)&addr)->sin_addr;
 }
@@ -65,7 +65,7 @@ void    Client::set_username(const std::string &username)
     _username = username;
 }
 
-void    Client::set_channel(Channel &channel)
+void    Client::set_channel(std::string &channel)
 {
     _active_channel = channel;
 }
@@ -85,7 +85,7 @@ std::string Client::get_username() const
     return (_username);
 }
 
-Channel& Client::get_channel() const
+std::string Client::get_channel() const
 {
     return (_active_channel);
 }

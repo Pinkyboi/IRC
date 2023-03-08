@@ -19,7 +19,7 @@ class Channel
         Client&                 get_client(int client_id);
         std::string             get_name() const;
         std::string             get_topic() const;
-        uint16_t                get_modes() const;
+        uint16_t                get_modes() const; // to discuss
     public:
         void                    set_topic(std::string topic);
         void                    set_modes(uint16_t modes); // to discuss

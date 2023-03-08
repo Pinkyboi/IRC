@@ -91,7 +91,7 @@ void    list_cmd(int usr_id, std::string &c_name)
 
 }
 
-void    Server::kick_cmd(int usr_id, int target_id, const std::string &c_name, std::string &message)
+void    Server::kick_cmd(int usr_id, int target_id, std::string &c_name, std::string &message)
 {
     if (_channels.find(c_name) != _channels.end())
     {
@@ -100,14 +100,15 @@ void    Server::kick_cmd(int usr_id, int target_id, const std::string &c_name, s
             _channels.at(c_name).remove_client(target_id);
     }
 }
-void    Server::join_cmd(int usr_id, const std::string &c_name, std::string &message)
+void    Server::join_cmd(int usr_id, std::string &c_name, std::string &message)
 {
     Client& client = _clients.at(usr_id);
+
     if (_channels.find(c_name) == _channels.end())
         _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
     else
         _channels.at(c_name).add_client(client);
-    client.set_channel(_channels.at(c_name));
+    client.set_channel(c_name);
 }
 
 void    Server::print_msg(int fd)
