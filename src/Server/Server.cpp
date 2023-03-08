@@ -85,14 +85,14 @@ void    Server::print_msg(int fd)
 {
     static char msg_buffer[MAX_COMMAND_SIZE];
     size_t      msg_len;
-    char * command;
+    std::string command;
 
     if ( (msg_len = recv(fd, msg_buffer, MAX_COMMAND_SIZE, MSG_DONTWAIT)) > 0)
     {
         msg_buffer[msg_len] = '\0';
         _clients.at(fd).add_command(std::string(msg_buffer));
     }
-    while((command = _clients.at(fd).get_command()) != NULL)
+    while((command = _clients.at(fd).get_command()) != "")
         std::cout << command << std::endl;
 }
 

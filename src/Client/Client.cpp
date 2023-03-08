@@ -45,13 +45,13 @@ void    Client::add_command(std::string cmd)
     }
 }
 
-char *Client::get_command()
+std::string Client::get_command()
 {
-    char* cmd;
+    std::string cmd;
 
     if (_commands.front().first == false)
-        return NULL;
-    cmd = strdup(_commands.front().second->get_buffer());
+        return std::string("");
+    cmd = std::string(_commands.front().second->get_buffer());
     _commands.pop();
     return (cmd);
 }

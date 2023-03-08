@@ -48,7 +48,7 @@ class Server
         void                            accept_connection();
         void                            remove_connection(int user_id);
     private:
-        void                            list_cmd(std::string &c_name);
+        void                            list_cmd(int usr_id, std::string &c_name);
         void                            nick_cmd(int usr_id, std::string &nick);
         void                            user_cmd(int usr_id, std::string &name);
         void                            pass_cmd(int usr_id, std::string &pass);
@@ -56,8 +56,8 @@ class Server
         void                            join_cmd(int usr_id, const std::string &c_name, std::string &message);
         void                            part_cmd(int usr_id, const std::string &c_name, std::string &message);
         void                            msg_cmd(int  usr_id, const std::string &c_name, std::string &message);
-        void                            privmsg_cmd(int send_id, int recv_id, std::string message);
-        void                            notice_cmd(int send_id, int recv_id, std::string message);
+        void                            privmsg_cmd(int usr_id, int recv_id, std::string message);
+        void                            notice_cmd(int usr_id, int recv_id, std::string message);
     private:
         static Server                           *_instance;
     private:
