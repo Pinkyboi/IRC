@@ -16,11 +16,11 @@ void    Channel::set_topic(std::string topic)
     _topic = topic;
 }
 
-void    Channel::set_nick(int client_id, std::string nick)
+void    Channel::update_nick(int client_id, std::string nick)
 {
-    _nicks.erase(_clients.at(client_id).get_nick());
+    _nicks.erase(_clients.at(client_id).get_active_nick());
     _nicks.insert(std::pair<std::string, int>(nick, client_id));
-    _clients.at(client_id).set_nick(nick);
+    _clients.at(client_id).set_active_nick(nick);
 }
 
 std::string Channel::get_topic() const

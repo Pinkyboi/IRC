@@ -25,7 +25,7 @@ class Channel
     public:
         void                    set_topic(std::string topic);
         void                    set_modes(uint16_t modes); // to discuss
-        void                    set_nick(int client_id, std::string nick);
+        void                    update_nick(int client_id, std::string nick);
     private:
         const std::string           _name;
         std::string                 _topic;

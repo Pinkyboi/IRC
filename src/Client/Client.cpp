@@ -60,6 +60,11 @@ void    Client::set_nick(const std::string &nick)
     _nick = nick;
 }
 
+void    Client::set_active_nick(const std::string &new_nick)
+{
+    _active_nick = new_nick;
+}
+
 void    Client::set_username(const std::string &username)
 {
     _username = username;

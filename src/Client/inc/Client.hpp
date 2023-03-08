@@ -15,6 +15,7 @@ class Client
     public:
         void        add_command(std::string cmd);
     public:
+        void        set_active_nick(const std::string &nick);
         void        set_nick(const std::string &nick);
         void        set_username(const std::string &username);
         void        set_channel(const std::string &channel);
@@ -30,6 +31,7 @@ class Client
         int                                                 _id;
         struct in_addr                                      _addr;
         std::string                                         _nick;
+        std::string                                         _active_nick;
         std::string                                         _username;
         std::string                                         _active_channel;
         std::queue< std::pair< bool, CircularBuffer *> >    _commands;

@@ -96,12 +96,19 @@ void    Server::nick_cmd(int usr_id, std::vector<std::string> &args)
     std::string nick  = args.front();
 
     if (_clients.at(usr_id).get_channel() == "")
+    {
+        for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+        {
+            if (it->second.get_nick() == nick)
+                return ; // probably will call an error function
+        }
         _clients.at(usr_id).set_nick(nick);
+    }
     else
     {
         Channel &current_channel = _channels.at(_clients.at(usr_id).get_channel());
         if (!current_channel.is_nick_used(nick))
-            current_channel.set_nick(usr_id, nick);
+            current_channel.update_nick(usr_id, nick);
     }
 }
 
