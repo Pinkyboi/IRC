@@ -37,7 +37,7 @@ std::vector<std::string>    split_command(std::string message)
 
 void    Parser::parse(std::string message)
 {
-    std::vector<std::string>    tokens = split_message(message);
+    std::vector<std::string>    tokens = split_command(message);
     size_t size;
 
     size = tokens.size();

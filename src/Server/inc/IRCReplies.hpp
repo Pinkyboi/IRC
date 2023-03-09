@@ -1,3 +1,31 @@
+#ifndef IRC_REPLIES_HPP
+#define IRC_REPLIES_HPP
+
+#define RPL_WELCOME 001
+#define RPL_YOURHOST 002
+#define RPL_CREATED 003
+#define RPL_MYINFO 004
+#define RPL_ISUPPORT 005
+#define RPL_BOUNCE 010
+#define RPL_USERHOST 302
+#define RPL_ISON 303
+#define RPL_AWAY 301
+#define RPL_UNAWAY 305
+#define RPL_NOWAWAY 306
+#define RPL_WHOISUSER 311
+#define RPL_WHOISSERVER 312
+#define RPL_WHOISOPERATOR 313
+#define RPL_WHOISIDLE 317
+#define RPL_ENDOFWHOIS 318
+#define RPL_WHOISCHANNELS 319
+#define RPL_WHOWASUSER 314
+#define RPL_ENDOFWHOWAS 369
+#define RPL_LISTSTART 321
+#define RPL_LIST 322
+#define RPL_LISTEND 323
+#define RPL_UNIQOPIS 325
+#define RPL_CHANNELMODEIS 324
+#define RPL_NOTOPIC 331
 #define RPL_TOPIC 332 // "332" - Topic message
 #define RPL_TOPICINFO 333 // "333" - Topic information
 #define RPL_INVITING 341 // "341" - Invitation message
@@ -73,3 +101,5 @@
 #define ERR_NOOPERHOST 491 // "491" - No IRC operator host message
 #define ERR_UMODEUNKNOWNFLAG 501 // "501" - Unknown mode flag message
 #define ERR_USERSDONTMATCH 502 // "502" - Users do not match message
+
+#endif

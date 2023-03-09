@@ -4,6 +4,7 @@
 # include "Client.hpp"
 # include "Channel.hpp"
 # include "Parser.hpp"
+# include "IRCReplies.hpp"
 
 # include <sys/types.h>
 # include <sys/socket.h>

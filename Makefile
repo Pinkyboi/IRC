@@ -2,7 +2,6 @@ NAME = irc
 CC = clang++ -std=c++98
 CFLAGS = #-Wall -Werror -Wextra
 
-
 SRC_FOLDER = src
 INC_FOLDER = inc
 
@@ -35,11 +34,11 @@ all : $(NAME)
 $(OBJ_FOLDER)/%.o : %.cpp $(CLASS_INC)
 	@mkdir -p $(OBJ_FOLDER)
 	@echo "Compiling $< ..."
-	@$(CC) -v $(CFLAGS) $(INC) -o $@ -c $<
+	@$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 
 $(NAME) : $(OBJ)
 	@echo "Linking $@ ..."
-	@$(CC) -v $(OBJ) -o $@
+	@$(CC) $(OBJ) -o $@
 	@echo "Done."
 
 clean :

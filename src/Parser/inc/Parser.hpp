@@ -4,7 +4,6 @@
 # include <string>
 # include <vector>
 # include <iostream>
-# include <bits/stdc++.h>
 # include <regex>
 
 class Parser
