@@ -3,6 +3,7 @@
 
 # include "Client.hpp"
 # include "Channel.hpp"
+# include "Parser.hpp"
 
 # include <sys/types.h>
 # include <sys/socket.h>
@@ -69,6 +70,7 @@ class Server
         std::map<int, Client>                   _clients;
         // probably we should add a way to access users with their nickname
         std::map<const std::string, Channel>    _channels;
+        Parser                                  _parser;
 };
 
 #endif

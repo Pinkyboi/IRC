@@ -10,13 +10,15 @@ OBJ_FOLDER = ./obj
 
 CLASS_FOLDERS = Server\
 				Client\
-				Channel
+				Channel\
+				Parser
 
 SRC_FOLDERS = $(addprefix  $(SRC_FOLDER)/, $(CLASS_FOLDERS))
 
 VPATH = $(SRC_FOLDERS)
 
-SRC_FILES = Server.cpp\
+SRC_FILES =	Parser.cpp\
+			Server.cpp\
 			Client.cpp\
 			Channel.cpp\
 			CircularBuffer.cpp\
@@ -33,11 +35,11 @@ all : $(NAME)
 $(OBJ_FOLDER)/%.o : %.cpp $(CLASS_INC)
 	@mkdir -p $(OBJ_FOLDER)
 	@echo "Compiling $< ..."
-	@$(CC) $(CFLAGS) $(INC) -o $@ -c $<
+	@$(CC) -v $(CFLAGS) $(INC) -o $@ -c $<
 
 $(NAME) : $(OBJ)
 	@echo "Linking $@ ..."
-	@$(CC) $(OBJ) -o $@
+	@$(CC) -v $(OBJ) -o $@
 	@echo "Done."
 
 clean :

@@ -93,7 +93,9 @@ void    Server::print_msg(int fd)
         _clients.at(fd).add_command(std::string(msg_buffer));
     }
     while((command = _clients.at(fd).get_command()) != "")
-        std::cout << command << std::endl;
+    {
+        _parser.parse(command);
+    }
 }
 
 void    Server::start()
