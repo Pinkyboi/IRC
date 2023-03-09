@@ -20,12 +20,15 @@
 # include <fcntl.h>
 # include <poll.h>
 # include <map>
+# include <list>
 
 # define CONN_LIMIT 256
 # define MAX_COMMAND_SIZE 512
 
 class Server
 {
+    typedef void (Server::*cmd_func)(int, std::vector<std::string> &);
+
     public:
         class ServerException : public std::exception
         {
@@ -46,19 +49,19 @@ class Server
     private:
                                         Server(const char *port, const char *pass);
         void                            print_msg(int fd);
+        void                            send_msg(int fd, const std::string &msg);
         void                            accept_connection();
         void                            remove_connection(int user_id);
+        void                            init_commands();
     private:
-        void                            list_cmd(int usr_id, std::string &c_name);
-        void                            nick_cmd(int usr_id, std::string &nick);
-        void                            user_cmd(int usr_id, std::string &name);
-        void                            pass_cmd(int usr_id, std::string &pass);
-        void                            kick_cmd(int usr_id, const std::string &c_name, std::string &message);
-        void                            join_cmd(int usr_id, const std::string &c_name, std::string &message);
-        void                            part_cmd(int usr_id, const std::string &c_name, std::string &message);
-        void                            msg_cmd(int  usr_id, const std::string &c_name, std::string &message);
-        void                            privmsg_cmd(int usr_id, int recv_id, std::string message);
-        void                            notice_cmd(int usr_id, int recv_id, std::string message);
+        void                            list_cmd(int usr_id, std::vector<std::string> &args);
+        void                            nick_cmd(int usr_id, std::vector<std::string> &args); // basic version done
+        void                            user_cmd(int usr_id, std::vector<std::string> &args); // basic version done
+        void                            pass_cmd(int usr_id, std::vector<std::string> &args);
+        void                            kick_cmd(int usr_id, std::vector<std::string> &args); // basic version done
+        void                            join_cmd(int usr_id, std::vector<std::string> &args); // basic version done
+        void                            part_cmd(int usr_id, std::vector<std::string> &args); // basic version done
+        void                            msg_cmd(int  usr_id, std::vector<std::string> &args);
     private:
         static Server                           *_instance;
     private:
@@ -68,9 +71,9 @@ class Server
         struct pollfd                           _pfds[CONN_LIMIT];
         int                                     _nfds;
         std::map<int, Client>                   _clients;
-        // probably we should add a way to access users with their nickname
         std::map<const std::string, Channel>    _channels;
         Parser                                  _parser;
+        std::map<std::string, cmd_func>         _commands;
 };
 
 #endif

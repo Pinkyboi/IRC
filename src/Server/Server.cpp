@@ -12,6 +12,7 @@ Server::Server(const char *port, const char *pass): _port(port), _nfds(0)
 {
     bool on = true;
 
+    init_commands();
     if ((_sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
         throw Server::ServerException("Couldn't create socket.");
     setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
@@ -21,6 +22,15 @@ Server::Server(const char *port, const char *pass): _port(port), _nfds(0)
     _pfds[_nfds]= (struct pollfd){  .fd = _sockfd,
                                     .events = POLLIN };
     _nfds++;
+}
+
+void    Server::init_commands()
+{
+    _commands.insert(std::pair<std::string, cmd_func>("NICK", &Server::nick_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("USER", &Server::user_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("KICK", &Server::kick_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("JOIN", &Server::join_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("PART", &Server::part_cmd));
 }
 
 void    Server::setup()
@@ -79,6 +89,86 @@ void    Server::remove_connection(int user_id)
     memmove(userfd, userfd + 1, sizeof(struct pollfd) * (_nfds - user_id - 1));
     _clients.erase(userfd->fd);
     _nfds--;
+}
+
+void    Server::send_msg(int fd, const std::string &msg)
+{
+    send(fd, msg.c_str(), msg.length(), 0);
+}
+
+void    list_cmd(int usr_id, std::string &c_name)
+{
+
+}
+
+void    Server::user_cmd(int usr_id, std::vector<std::string> &args)
+{
+    std::string username = args.front();
+
+    _clients.at(usr_id).set_username(username);
+}
+
+void    Server::nick_cmd(int usr_id, std::vector<std::string> &args)
+{
+    std::string nick  = args.front();
+
+    if (_clients.at(usr_id).get_channel() == "")
+    {
+        for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+        {
+            if (it->second.get_nick() == nick)
+                return ; // probably will call an error function
+        }
+        _clients.at(usr_id).set_nick(nick);
+    }
+    else
+    {
+        Channel &current_channel = _channels.at(_clients.at(usr_id).get_channel());
+        if (!current_channel.is_nick_used(nick))
+            current_channel.update_nick(usr_id, nick);
+    }
+}
+
+void    Server::part_cmd(int usr_id, std::vector<std::string> &args)
+{
+    std::string c_name  = args.front();
+    std::string message = args.back();
+    Client      &client = _clients.at(usr_id);
+
+    if (_channels.find(c_name) != _channels.end())
+    {
+        if (_channels.at(c_name).is_client(usr_id))
+            _channels.at(c_name).remove_client(usr_id);
+    }
+    client.unset_channel();
+}
+
+void    Server::kick_cmd(int usr_id, std::vector<std::string> &args)
+{
+    std::string c_name   = args.front();
+    std::string message  = args.back();
+    std::string t_name   = args.at(1);
+
+    Channel    &channel  = _channels.at(c_name);
+    int        target_id = channel.get_client_id(t_name);
+    if (_channels.find(c_name) != _channels.end())
+    {
+        if (_channels.at(c_name).is_operator(usr_id) && _channels.at(c_name).is_client(target_id))
+            _channels.at(c_name).remove_client(target_id);
+    }
+}
+
+void    Server::join_cmd(int usr_id, std::vector<std::string> &args)
+{
+    std::string c_name  = args.front();
+    std::string message = args.back();
+    Client      &client = _clients.at(usr_id);
+
+    if (_channels.find(c_name) == _channels.end())
+        _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
+    else
+        _channels.at(c_name).add_client(client);
+    client.set_channel(c_name);
 }
 
 void    Server::print_msg(int fd)
