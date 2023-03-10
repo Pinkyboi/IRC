@@ -11,7 +11,9 @@ class Parser
     public:
         Parser();
         ~Parser();
+        
         void                     parse(std::string message);
+        std::vector<std::string> split_command(std::string message);
         std::vector<std::string> &getResult(void);
 
     private:

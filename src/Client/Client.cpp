@@ -70,6 +70,11 @@ void    Client::set_username(const std::string &username)
     _username = username;
 }
 
+void    Client::set_real_name(const std::string &real_name)
+{
+    _real_name = real_name;
+}
+
 void    Client::set_channel(const std::string &channel)
 {
     _active_channel = channel;
@@ -98,6 +103,11 @@ std::string Client::get_active_nick() const
 std::string Client::get_username() const
 {
     return (_username);
+}
+
+std::string Client::get_real_name() const
+{
+    return (_real_name);
 }
 
 std::string Client::get_channel() const

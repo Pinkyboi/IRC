@@ -18,7 +18,7 @@ Parser::~Parser() {}
 <crlf>     ::= CR LF
 */
 
-std::vector<std::string>    split_command(std::string message)
+std::vector<std::string>    Parser::split_command(std::string message)
 {
     size_t                      sep;    
     size_t                      i;
@@ -29,7 +29,7 @@ std::vector<std::string>    split_command(std::string message)
     for (i = 0; sep != std::string::npos; i = sep + 1)
     {
         sep = message.find_first_of(" \0", i);
-        if ((token = message.substr(i, sep - i)).size() == 0)
+        if ((token = message.substr(i, sep - i)).size() != 0)
             tokens.push_back(token);
     }
     return tokens;
