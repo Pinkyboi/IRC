@@ -31,7 +31,10 @@ void    Server::init_commands()
     _commands.insert(std::pair<std::string, cmd_func>("KICK", &Server::kick_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("JOIN", &Server::join_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("PART", &Server::part_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("OPER", &Server::oper_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("PRIVMSG", &Server::privmsg_cmd));
 }
+
 
 void    Server::setup()
 {
@@ -57,6 +60,22 @@ void    Server::setup()
     freeaddrinfo(res);
 }
 
+
+bool    Server::is_operator(int client_id)
+{
+    return (_operators.find(client_id) != _operators.end());
+}
+
+void    Server::add_operator(Client& client)
+{
+    _operators.insert(std::pair<int, Client&>(client.get_id(), client));
+}
+
+void    Server::add_client(int id, struct sockaddr addr)
+{
+    _clients.insert(std::pair<int, Client>(id, Client(id, addr)));
+}
+
 void    Server::accept_connection()
 {
     struct sockaddr addr;
@@ -68,7 +87,7 @@ void    Server::accept_connection()
     if ((new_fd = accept(_sockfd, &addr, &addrlen)) > 0)
     {
         std::cout << "new connection: " << new_fd << std::endl;
-        _clients.insert(std::pair<int, Client>(new_fd, Client(new_fd, addr)));
+        add_client(new_fd, addr);
 #if defined(__linux__)
         _pfds[_nfds] = (struct pollfd){ .fd = new_fd,
                                         .events = POLLIN | POLLRDHUP };
@@ -96,16 +115,30 @@ void    Server::send_msg(int fd, const std::string &msg)
     send(fd, msg.c_str(), msg.length(), 0);
 }
 
-void    list_cmd(int usr_id, std::string &c_name)
+void    Server::privmsg_cmd(int usr_id, std::vector<std::string> &args)
 {
 
+}
+
+void    Server::list_cmd(int usr_id, std::vector<std::string> &args)
+{
+    // send list start reply to client
+    // for each server present list it with the number of users
+    // if not argument specified send list of all channels with number of users
+    // end end of list reply
 }
 
 void    Server::user_cmd(int usr_id, std::vector<std::string> &args)
 {
     std::string username = args.front();
+    if (args.size() >= 2)
+    {
+        std::string username = args.front();
+        std::string real_name = args.back();
 
-    _clients.at(usr_id).set_username(username);
+        _clients.at(usr_id).set_username(username);
+        _clients.at(usr_id).set_real_name(real_name);
+    }
 }
 
 void    Server::nick_cmd(int usr_id, std::vector<std::string> &args)
@@ -117,7 +150,7 @@ void    Server::nick_cmd(int usr_id, std::vector<std::string> &args)
         for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
         {
             if (it->second.get_nick() == nick)
-                return ; // probably will call an error function
+                return ; // send ERR reply of nick already used
         }
         _clients.at(usr_id).set_nick(nick);
     }
@@ -126,49 +159,87 @@ void    Server::nick_cmd(int usr_id, std::vector<std::string> &args)
         Channel &current_channel = _channels.at(_clients.at(usr_id).get_channel());
         if (!current_channel.is_nick_used(nick))
             current_channel.update_nick(usr_id, nick);
+        else
+            return ; // send ERR reply of nick already used
+    }
+}
+
+void    Server::oper_cmd(int usr_id, std::vector<std::string> &args)
+{
+    // std::se
+    if (args.size() != 2)
+    {
+        std::string pass = args.back();
+        // check on a certain name should be added as well
+
+        if (pass == _pass)
+        {
+            if (_operators.find(usr_id) == _operators.end())
+                _operators.insert(std::pair<int, Client&>(usr_id, _clients.at(usr_id)));
+        }
     }
 }
 
 void    Server::part_cmd(int usr_id, std::vector<std::string> &args)
 {
-    std::string c_name  = args.front();
-    std::string message = args.back();
-    Client      &client = _clients.at(usr_id);
+    if (args.size() == 2)
+    {  
+        std::string c_name  = args.front();
+        std::string message = args.back();
+        Client      &client = _clients.at(usr_id);
 
-    if (_channels.find(c_name) != _channels.end())
-    {
-        if (_channels.at(c_name).is_client(usr_id))
-            _channels.at(c_name).remove_client(usr_id);
+        if (_channels.find(c_name) != _channels.end())
+        {
+            if (_channels.at(c_name).is_client(usr_id))
+            {
+                _channels.at(c_name).remove_client(usr_id);
+                client.unset_channel();
+            }
+            else
+                return ; // send ERR reply of ERR_NOTONCHANNEL
+        }
     }
-    client.unset_channel();
 }
 
 void    Server::kick_cmd(int usr_id, std::vector<std::string> &args)
 {
-    std::string c_name   = args.front();
-    std::string message  = args.back();
-    std::string t_name   = args.at(1);
-
-    Channel    &channel  = _channels.at(c_name);
-    int        target_id = channel.get_client_id(t_name);
-    if (_channels.find(c_name) != _channels.end())
+    if (args.size() >= 2)
     {
-        if (_channels.at(c_name).is_operator(usr_id) && _channels.at(c_name).is_client(target_id))
-            _channels.at(c_name).remove_client(target_id);
+        std::string c_name   = args.front();
+        std::string t_name   = args.at(1);
+        std::string message  = "";
+
+        if (args.size() > 2)
+            message  = args.back();
+        Channel    &channel  = _channels.at(c_name);
+        int        target_id = channel.get_client_id(t_name);
+        if (_channels.find(c_name) != _channels.end())
+        {
+            if (is_operator(usr_id) && _channels.at(c_name).is_client(target_id))
+            {
+                _channels.at(c_name).remove_client(target_id);
+                if (message != "")
+                    return; // send message to client that got kicked
+            }
+        }
+        else
+            return; // send ERR reply of ERR_USERNOTINCHANNEL
     }
 }
 
 void    Server::join_cmd(int usr_id, std::vector<std::string> &args)
 {
-    std::string c_name  = args.front();
-    std::string message = args.back();
-    Client      &client = _clients.at(usr_id);
+    if (args.size() == 1)
+    {
+        std::string c_name  = args.front();
+        Client      &client = _clients.at(usr_id);
 
-    if (_channels.find(c_name) == _channels.end())
-        _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
-    else
-        _channels.at(c_name).add_client(client);
-    client.set_channel(c_name);
+        if (_channels.find(c_name) == _channels.end())
+            _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
+        else
+            _channels.at(c_name).add_client(client);
+        client.set_channel(c_name);
+    }
 }
 
 void    Server::print_msg(int fd)
@@ -184,7 +255,17 @@ void    Server::print_msg(int fd)
     }
     while((command = _clients.at(fd).get_command()) != "")
     {
-        _parser.parse(command);
+        // std::vector<std::string> command_list = split_command(command);
+        // if (command_list.size() > 0)
+        // {
+        //     std::string command_name = command_list.front();
+        //     if ( _commands.find(command_name) != _commands.end())
+        //     {
+        //         command_list.erase(command_list.begin());
+        //         (this->*_commands[command_name])(fd, command_list); <--- call to function map
+        //     }
+        //     // commandList.pop();
+        // }
     }
 }
 

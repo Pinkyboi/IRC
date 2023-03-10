@@ -18,6 +18,7 @@ class Client
         void        set_active_nick(const std::string &nick);
         void        set_nick(const std::string &nick);
         void        set_username(const std::string &username);
+        void        set_real_name(const std::string &real_name);
         void        set_channel(const std::string &channel);
         void        unset_channel();
     public:
@@ -26,6 +27,7 @@ class Client
         std::string get_nick() const;
         std::string get_active_nick() const;
         std::string get_username() const;
+        std::string get_real_name() const;
         std::string get_command();
         std::string get_channel() const;
     private:
@@ -34,6 +36,7 @@ class Client
         std::string                                         _nick;
         std::string                                         _active_nick;
         std::string                                         _username;
+        std::string                                         _real_name;
         std::string                                         _active_channel;
         std::queue< std::pair< bool, CircularBuffer *> >    _commands;
 

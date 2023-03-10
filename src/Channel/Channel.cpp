@@ -3,7 +3,6 @@
 Channel::Channel(Client &creator , const std::string name): _name(name), _topic(NULL), _modes(0)
 {
     this->add_client(creator);
-    this->add_operator(creator);
 }
 
 Channel::~Channel()
@@ -59,17 +58,8 @@ bool    Channel::is_client(int client_id)
     return (_clients.find(client_id) != _clients.end());
 }
 
-bool    Channel::is_operator(int client_id)
-{
-    return (_operators.find(client_id) != _operators.end());
-}
-
 bool    Channel::is_nick_used(std::string& nick)
 {
     return (_nicks.find(nick) != _nicks.end());
 }
 
-void    Channel::add_operator(Client& client)
-{
-    _operators.insert(std::pair<int, Client&>(client.get_id(), client));
-}

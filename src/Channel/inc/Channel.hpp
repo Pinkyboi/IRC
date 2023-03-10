@@ -10,10 +10,8 @@ class Channel
                                 Channel(Client& creator, const std::string name);
                                 ~Channel();
         void                    add_client(Client& client);
-        void                    add_operator(Client& client);
         void                    remove_client(int client_id);
     public:
-        bool                    is_operator(int client_id);
         bool                    is_client(int client_id);
         bool                    is_nick_used(std::string& nick);
     public:
@@ -32,7 +30,6 @@ class Channel
         uint16_t                    _modes;  // in discussion
         std::map<std::string, int>  _nicks;
         std::map<int, Client&>      _clients;
-        std::map<int, Client&>      _operators;
 };
 
 #endif
