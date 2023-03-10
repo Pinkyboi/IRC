@@ -3,22 +3,15 @@
 Parser::Parser() {}
 Parser::~Parser() {}
 
-/*
-<message>  ::= [':' <prefix> <SPACE> ] <command> <params> <crlf>
-<prefix>   ::= <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
-<command>  ::= <letter> { <letter> } | <number> <number> <number>
-<SPACE>    ::= ' ' { ' ' }
-<params>   ::= <SPACE> [ ':' <trailing> | <middle> <params> ]
+static std::string strip(std::string str)
+{
+    size_t  f, l;
+    f = str.find_first_not_of(" \0");
+    l = str.find_last_not_of(" \0");
+    return str.substr(f, l-f+1);
+}
 
-<middle>   ::= <Any *non-empty* sequence of octets not including SPACE
-               or NUL or CR or LF, the first of which may not be ':'>
-<trailing> ::= <Any, possibly *empty*, sequence of octets not including
-                 NUL or CR or LF>
-
-<crlf>     ::= CR LF
-*/
-
-std::vector<std::string>    split_command(std::string message)
+std::vector<std::string>    split_command(std::string message, std::string sep, size_t times)
 {
     size_t                      sep;    
     size_t                      i;
