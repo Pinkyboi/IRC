@@ -132,35 +132,25 @@ void    Server::privmsg_cmd(int usr_id)
     std::string message = _parser.getMessage();
 
     if (message.size() == 0)
-        add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NOTEXTTOSEND, MSG_NOTEXTTOSEND);
     if (args.size() == 1)
     {
-        std::string target = args[0];
-        if (target[0] == '#')
+        std::string name = args[0];
+        if (_channels.find(name) != _channels.end())
         {
-            // Check if the channel exists.
-            Channel *channel = NULL;
-            if (channel)
-            {
-                // Loop through the users of the channels and send the same message.
-                for (size_t i = 0; i < channel.getNicks().size(); i++)
-                    add_reply(target.get_id(), target.get_nick(), RPL_PRIVMSG, message);
-            }
+            std::map<int, Client&> &clients = _channels.at(name).get_clients();
+            for (std::map<int, Client&>::iterator it = clients.begin(); it != clients.end(); it++)
+                add_reply(it->first, it->second.get_nick(), RPL_PRIVMSG, message);
         }
+        else if (_nicks.find(name) != _nicks.end())
+            add_reply(_nicks.at(name), _clients.at(usr_id).get_nick(), RPL_PRIVMSG, message);
         else
-        {
-            // Send message to individual user.
-            Client &target = _clients.at(args[0]);
-            add_reply(target.get_id(), target.get_nick(), RPL_PRIVMSG, message);
-        }
+            add_reply(usr_id, "PRIVMSG", ERR_NOSUCHNICK, MSG_NOSUCHNICK);
     }
+    else if (args.size() > 1)
+        add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_TOOMANYTARGETS, MSG_TOOMANYTARGETS);
     else
-    {
-        if (args.size() == 0)
-            add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
-        else
-            add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_TOOMANYTARGETS, MSG_TOOMANYTARGETS);
-    }
+        add_reply(usr_id, "PRIVMSG", ERR_NORECIPIENT, MSG_NORECIPIENT);
 }
 
 void    Server::notice_cmd(int usr_id, std::vector<std::string> &args)
