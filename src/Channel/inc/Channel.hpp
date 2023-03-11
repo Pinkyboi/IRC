@@ -14,6 +14,7 @@ class Channel
     public:
         bool                    is_client(int client_id);
     public:
+        std::map<int, Client&>  &get_clients(void);
         Client&                 get_client(int client_id);
         std::string             get_name() const;
         std::string             get_topic() const;
