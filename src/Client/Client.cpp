@@ -60,11 +60,6 @@ void    Client::set_nick(const std::string &nick)
     _nick = nick;
 }
 
-void    Client::set_active_nick(const std::string &new_nick)
-{
-    _active_nick = new_nick;
-}
-
 void    Client::set_username(const std::string &username)
 {
     _username = username;
@@ -98,11 +93,6 @@ int    Client::get_id() const
 std::string Client::get_nick() const
 {
     return (_nick);
-}
-
-std::string Client::get_active_nick() const
-{
-    return (_active_nick);
 }
 
 std::string Client::get_username() const
