@@ -39,7 +39,6 @@ void    Server::init_commands()
     _commands.insert(std::pair<std::string, cmd_func>("PART", &Server::part_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("PASS", &Server::pass_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("OPER", &Server::oper_cmd));
-    _commands.insert(std::pair<std::string, cmd_func>("MSG", &Server::msg_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("PRIVMSG", &Server::privmsg_cmd));
 }
 
@@ -402,23 +401,6 @@ void    Server::join_cmd(int usr_id, std::vector<std::string> &args)
     else if (args.size() < 1)
         add_reply(usr_id, "JOIN", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
-
-// std::vector<std::string>    split_command(std::string message)
-// {
-//     size_t                      sep;
-//     size_t                      i;
-//     std::vector<std::string>    tokens;
-//     std::string                 token;
-
-//     sep = 0;
-//     for (i = 0; sep != std::string::npos; i = sep + 1)
-//     {
-//         sep = message.find_first_of(" \0", i);
-//         if ((token = message.substr(i, sep - i)).size() != 0)
-//             tokens.push_back(token);
-//     }
-//     return tokens;
-// }
 
 void    Server::print_msg(int fd)
 {
