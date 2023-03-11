@@ -393,7 +393,6 @@ void    Server::topic_cmd(int usr_id)
         if (_channels.find(c_name) != _channels.end())
         {
             Channel &channel = _channels.at(c_name);
-            std::cout << "this is topic:[" << topic << "]\n";
             if (!channel.is_client(usr_id))
                 add_reply(usr_id, c_name, ERR_NOTONCHANNEL, MSG_NOTONCHANNEL);
             else if (topic.empty())
