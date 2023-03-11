@@ -119,14 +119,41 @@ void    Server::remove_connection(int user_id)
     _nfds--;
 }
 
-void    Server::privmsg_cmd(int usr_id, std::vector<std::string> &args)
+void    Server::privmsg_cmd(int usr_id)
 {
+    std::vector<std::string> args = _parser.getArguments();
+    std::string message = _parser.getMessage();
 
-}
-
-void    Server::msg_cmd(int usr_id, std::vector<std::string> &args)
-{
-    
+    if (message.size() == 0)
+        add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+    if (args.size() == 1)
+    {
+        std::string target = args[0];
+        if (target[0] == '#')
+        {
+            // Check if the channel exists.
+            Channel *channel = NULL;
+            if (channel)
+            {
+                // Loop through the users of the channels and send the same message.
+                for (size_t i = 0; i < channel.getNicks().size(); i++)
+                    add_reply(target.get_id(), target.get_nick(), RPL_PRIVMSG, message);
+            }
+        }
+        else
+        {
+            // Send message to individual user.
+            Client &target = _clients.at(args[0]);
+            add_reply(target.get_id(), target.get_nick(), RPL_PRIVMSG, message);
+        }
+    }
+    else
+    {
+        if (args.size() == 0)
+            add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        else
+            add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_TOOMANYTARGETS, MSG_TOOMANYTARGETS);
+    }
 }
 
 void    Server::notice_cmd(int usr_id, std::vector<std::string> &args)
@@ -351,22 +378,22 @@ void    Server::join_cmd(int usr_id, std::vector<std::string> &args)
         add_reply(usr_id, "JOIN", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
-std::vector<std::string>    split_command(std::string message)
-{
-    size_t                      sep;
-    size_t                      i;
-    std::vector<std::string>    tokens;
-    std::string                 token;
+// std::vector<std::string>    split_command(std::string message)
+// {
+//     size_t                      sep;
+//     size_t                      i;
+//     std::vector<std::string>    tokens;
+//     std::string                 token;
 
-    sep = 0;
-    for (i = 0; sep != std::string::npos; i = sep + 1)
-    {
-        sep = message.find_first_of(" \0", i);
-        if ((token = message.substr(i, sep - i)).size() != 0)
-            tokens.push_back(token);
-    }
-    return tokens;
-}
+//     sep = 0;
+//     for (i = 0; sep != std::string::npos; i = sep + 1)
+//     {
+//         sep = message.find_first_of(" \0", i);
+//         if ((token = message.substr(i, sep - i)).size() != 0)
+//             tokens.push_back(token);
+//     }
+//     return tokens;
+// }
 
 void    Server::print_msg(int fd)
 {
