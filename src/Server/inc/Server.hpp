@@ -21,7 +21,8 @@
 # include <fcntl.h>
 # include <poll.h>
 # include <map>
-# include <list>
+# include <string>
+# include <sstream>
 
 # define CONN_LIMIT 256
 # define MAX_COMMAND_SIZE 512
@@ -31,7 +32,7 @@
 #define MESSAGE_OF_THE_DAY "Welcome to SuperDuperIRCServer"
 class Server
 {
-    typedef void (Server::*cmd_func)(int, std::vector<std::string> &);
+    typedef void (Server::*cmd_func)(int);
 
     public:
         class ServerException : public std::exception
@@ -71,18 +72,17 @@ class Server
         void                            init_commands();
         void                            add_reply(int usr_id, const std::string &target, const std::string &code, const std::string &msg);
     private:
-        void                                        list_cmd    (int usr_id, std::vector<std::string> &args);
-        void                                        nick_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
-        void                                        user_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
-        void                                        pass_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
-        void                                        kick_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
-        void                                        join_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
-        void                                        part_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
-        void                                        oper_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
-        void                                        msg_cmd     (int usr_id, std::vector<std::string> &args);
-        void                                        privmsg_cmd (int usr_id, std::vector<std::string> &args);
-        void                                        notice_cmd  (int usr_id, std::vector<std::string> &args);
-        void                                        topic_cmd   (int usr_id, std::vector<std::string> &args);
+        void                                        list_cmd    (int usr_id);
+        void                                        nick_cmd    (int usr_id); // basic version done
+        void                                        user_cmd    (int usr_id); // basic version done
+        void                                        pass_cmd    (int usr_id); // basic version done
+        void                                        kick_cmd    (int usr_id); // basic version done
+        void                                        join_cmd    (int usr_id); // basic version done
+        void                                        part_cmd    (int usr_id); // basic version done
+        void                                        oper_cmd    (int usr_id); // basic version done
+        void                                        privmsg_cmd (int usr_id);
+        void                                        notice_cmd  (int usr_id);
+        void                                        topic_cmd   (int usr_id);
     private:
         static Server                               *_instance;
     private:
