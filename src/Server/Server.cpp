@@ -155,7 +155,21 @@ void    Server::privmsg_cmd(int usr_id)
 
 void    Server::notice_cmd(int usr_id, std::vector<std::string> &args)
 {
-    
+    std::vector<std::string> args = _parser.getArguments();
+    std::string message = _parser.getMessage();
+
+    if (args.size() == 1)
+    {
+        std::string name = args[0];
+        if (_channels.find(name) != _channels.end())
+        {
+            std::map<int, Client&> &clients = _channels.at(name).get_clients();
+            for (std::map<int, Client&>::iterator it = clients.begin(); it != clients.end(); it++)
+                add_reply(it->first, it->second.get_nick(), RPL_PRIVMSG, message);
+        }
+        else if (_nicks.find(name) != _nicks.end())
+            add_reply(_nicks.at(name), _clients.at(usr_id).get_nick(), RPL_PRIVMSG, message);
+    }
 }
 
 void    Server::list_cmd(int usr_id, std::vector<std::string> &args)
