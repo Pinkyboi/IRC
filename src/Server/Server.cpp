@@ -172,9 +172,11 @@ void    Server::notice_cmd(int usr_id, std::vector<std::string> &args)
     }
 }
 
-void    Server::list_cmd(int usr_id, std::vector<std::string> &args)
+void    Server::list_cmd(int usr_id)
 {
-    if (args.size() >= 0 && args.size() <= 2)
+    std::vector<std::string> args = _parser.getArguments();
+
+    if (args.size() == 0 || args.size() == 1)
     {
         std::string nick = _clients.at(usr_id).get_nick();
         if (args.size() == 0)
@@ -190,7 +192,8 @@ void    Server::list_cmd(int usr_id, std::vector<std::string> &args)
             std::string c_name = args.at(1);
             if (_channels.find(c_name) != _channels.end())
             {
-                std::string msg = c_name + " " + std::to_string(_channels.at(c_name).get_clients_count());
+                Channel &channel = _channels.at(c_name);
+                std::string msg = c_name + " " + std::to_string(channel.get_clients_count()) + " " + channel.get_topic();
                 add_reply(usr_id, nick, RPL_LIST, msg);
             }
             else
