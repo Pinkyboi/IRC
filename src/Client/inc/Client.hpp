@@ -16,7 +16,6 @@ class Client
         void        add_command(std::string cmd);
         bool        is_registered() const;
     public:
-        void        set_active_nick(const std::string &nick);
         void        set_nick(const std::string &nick);
         void        set_username(const std::string &username);
         void        set_real_name(const std::string &real_name);
@@ -27,7 +26,6 @@ class Client
         void        get_addr() const;
         int         get_id() const;
         std::string get_nick() const;
-        std::string get_active_nick() const;
         std::string get_username() const;
         std::string get_real_name() const;
         std::string get_command();
@@ -37,7 +35,6 @@ class Client
         struct in_addr                                      _addr;
         bool                                                _pass_validity;
         std::string                                         _nick;
-        std::string                                         _active_nick;
         std::string                                         _username;
         std::string                                         _real_name;
         std::string                                         _active_channel;
