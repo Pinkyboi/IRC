@@ -1,6 +1,10 @@
 #include "Server.hpp"
 
 Server *Server::_instance = NULL;
+std::string Server::_severname = "superDuperServer";
+std::string Server::_opname = "MybesOPT";
+std::string Server::_motd = "this is the message of the day";
+std::string Server::_oppass = "123456789";
 
 Server::~Server()
 {
@@ -31,7 +35,9 @@ void    Server::init_commands()
     _commands.insert(std::pair<std::string, cmd_func>("KICK", &Server::kick_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("JOIN", &Server::join_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("PART", &Server::part_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("PASS", &Server::pass_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("OPER", &Server::oper_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("MSG", &Server::msg_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("PRIVMSG", &Server::privmsg_cmd));
 }
 
@@ -107,17 +113,23 @@ void    Server::remove_connection(int user_id)
     close(userfd->fd);
     memmove(userfd, userfd + 1, sizeof(struct pollfd) * (_nfds - user_id - 1));
     _clients.erase(userfd->fd);
+    _operators.erase(userfd->fd);
     _nfds--;
-}
-
-void    Server::send_msg(int fd, const std::string &msg)
-{
-    send(fd, msg.c_str(), msg.length(), 0);
 }
 
 void    Server::privmsg_cmd(int usr_id, std::vector<std::string> &args)
 {
 
+}
+
+void    Server::msg_cmd(int usr_id, std::vector<std::string> &args)
+{
+    
+}
+
+void    Server::notice_cmd(int usr_id, std::vector<std::string> &args)
+{
+    
 }
 
 void    Server::list_cmd(int usr_id, std::vector<std::string> &args)
@@ -128,56 +140,75 @@ void    Server::list_cmd(int usr_id, std::vector<std::string> &args)
     // end end of list reply
 }
 
+void    Server::add_reply(int usr_id, const std::string &code, const std::string &msg)
+{
+    std::string replymsg = ":" + _severname + " " + code + " " + _clients.at(usr_id).get_nick() + " :" + msg + CRLN;
+    _replies.push(std::pair<int, std::string>(usr_id, replymsg));
+}
+
 void    Server::user_cmd(int usr_id, std::vector<std::string> &args)
 {
+    if (args.size() != 4)
+        add_reply(usr_id, ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+    if (_clients.at(usr_id).get_username() != "")
+        add_reply(usr_id, ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
     std::string username = args.front();
-    if (args.size() >= 2)
-    {
-        std::string username = args.front();
-        std::string real_name = args.back();
-
-        _clients.at(usr_id).set_username(username);
-        _clients.at(usr_id).set_real_name(real_name);
-    }
+    std::string real_name = args.back();
+    _clients.at(usr_id).set_username(username);
+    _clients.at(usr_id).set_real_name(real_name);
 }
 
 void    Server::nick_cmd(int usr_id, std::vector<std::string> &args)
 {
-    std::string nick  = args.front();
-
-    if (_clients.at(usr_id).get_channel() == "")
+    if ( args.size() == 1 )
     {
-        for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+        std::string nick  = args.front();
+        if (_clients.at(usr_id).get_channel() == "")
         {
-            if (it->second.get_nick() == nick)
-                return ; // send ERR reply of nick already used
+            for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+            {
+                if (it->second.get_nick() == nick)
+                    add_reply(usr_id, ERR_NICKNAMEINUSE,  MSG_NICKNAMEINUSE); 
+            }
+            _clients.at(usr_id).set_nick(nick);
         }
-        _clients.at(usr_id).set_nick(nick);
+        else
+        {
+            std::cout << _clients.at(usr_id).get_channel() << std::endl;
+            Channel &current_channel = _channels.at(_clients.at(usr_id).get_channel());
+            if (!current_channel.is_nick_used(nick))
+                current_channel.update_nick(usr_id, nick);
+            else
+                add_reply(usr_id, ERR_NICKNAMEINUSE,  MSG_NICKNAMEINUSE);
+        }
     }
     else
-    {
-        Channel &current_channel = _channels.at(_clients.at(usr_id).get_channel());
-        if (!current_channel.is_nick_used(nick))
-            current_channel.update_nick(usr_id, nick);
-        else
-            return ; // send ERR reply of nick already used
-    }
+        add_reply(usr_id, ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+}
+
+void    Server::pass_cmd(int usr_id, std::vector<std::string> &args)
+{
+
 }
 
 void    Server::oper_cmd(int usr_id, std::vector<std::string> &args)
 {
-    // std::se
-    if (args.size() != 2)
+    if (args.size() == 2)
     {
+        Client &client = _clients.at(usr_id);
         std::string pass = args.back();
-        // check on a certain name should be added as well
-
-        if (pass == _pass)
+        std::string name = args.front();
+        if (name == _opname && pass == _oppass) 
         {
             if (_operators.find(usr_id) == _operators.end())
-                _operators.insert(std::pair<int, Client&>(usr_id, _clients.at(usr_id)));
+            {
+                _operators.insert(std::pair<int, Client&>(usr_id, client));
+                add_reply(usr_id, RPL_YOUREOPER, MSG_YOUREOPER);
+            }
         }
     }
+    else if (args.size() < 2)
+        add_reply(usr_id, ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
 void    Server::part_cmd(int usr_id, std::vector<std::string> &args)
@@ -196,50 +227,84 @@ void    Server::part_cmd(int usr_id, std::vector<std::string> &args)
                 client.unset_channel();
             }
             else
-                return ; // send ERR reply of ERR_NOTONCHANNEL
+                add_reply(usr_id, ERR_NOTONCHANNEL, MSG_NOTONCHANNEL); 
         }
+        else
+            add_reply(usr_id, ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
     }
+    else if (args.size() < 2)
+        add_reply(usr_id, ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
 void    Server::kick_cmd(int usr_id, std::vector<std::string> &args)
 {
-    if (args.size() >= 2)
+    if ( args.size() == 2 || args.size() == 3 )
     {
         std::string c_name   = args.front();
         std::string t_name   = args.at(1);
         std::string message  = "";
 
-        if (args.size() > 2)
+        if (args.size() == 3)
             message  = args.back();
-        Channel    &channel  = _channels.at(c_name);
-        int        target_id = channel.get_client_id(t_name);
         if (_channels.find(c_name) != _channels.end())
         {
-            if (is_operator(usr_id) && _channels.at(c_name).is_client(target_id))
+            Channel &target_channel =  _channels.at(c_name);
+            if (target_channel.is_nick_used(t_name))
             {
-                _channels.at(c_name).remove_client(target_id);
-                if (message != "")
-                    return; // send message to client that got kicked
+                if (is_operator(usr_id))
+                {
+                    int target_id = target_channel.get_client_id(t_name);
+                    target_channel.remove_client(target_id);
+                    _clients.at(target_id).unset_channel();
+                    if (message != "")
+                        add_reply(target_id, RPL_PRIVMSG, message);
+                }
             }
+            else
+                add_reply(usr_id, ERR_USERNOTINCHANNEL, MSG_USERNOTINCHANNEL);
         }
         else
-            return; // send ERR reply of ERR_USERNOTINCHANNEL
+            add_reply(usr_id, ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
     }
+    else if (args.size() < 2)
+        add_reply(usr_id, ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
 void    Server::join_cmd(int usr_id, std::vector<std::string> &args)
 {
-    if (args.size() == 1)
+    if ( args.size() == 1 )
     {
         std::string c_name  = args.front();
         Client      &client = _clients.at(usr_id);
 
         if (_channels.find(c_name) == _channels.end())
-            _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
+        {
+            _channels.insert(std::pair<std::string, Channel>(c_name, Channel(c_name)));
+            _channels.at(c_name).add_client(client);
+        }
         else
             _channels.at(c_name).add_client(client);
         client.set_channel(c_name);
     }
+    else if (args.size() < 1)
+        add_reply(usr_id, ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+}
+
+std::vector<std::string>    split_command(std::string message)
+{
+    size_t                      sep;
+    size_t                      i;
+    std::vector<std::string>    tokens;
+    std::string                 token;
+
+    sep = 0;
+    for (i = 0; sep != std::string::npos; i = sep + 1)
+    {
+        sep = message.find_first_of(" \0", i);
+        if ((token = message.substr(i, sep - i)).size() != 0)
+            tokens.push_back(token);
+    }
+    return tokens;
 }
 
 void    Server::print_msg(int fd)
@@ -255,17 +320,28 @@ void    Server::print_msg(int fd)
     }
     while((command = _clients.at(fd).get_command()) != "")
     {
-        // std::vector<std::string> command_list = split_command(command);
-        // if (command_list.size() > 0)
-        // {
-        //     std::string command_name = command_list.front();
-        //     if ( _commands.find(command_name) != _commands.end())
-        //     {
-        //         command_list.erase(command_list.begin());
-        //         (this->*_commands[command_name])(fd, command_list); <--- call to function map
-        //     }
-        //     // commandList.pop();
-        // }
+        std::vector<std::string> command_list = split_command(command);
+        if (command_list.size() > 0)
+        {
+            std::string command_name = command_list.front();
+            if ( _commands.find(command_name) != _commands.end())
+            {
+                command_list.erase(command_list.begin());
+                (this->*_commands[command_name])(fd, command_list);
+            }
+        }
+    }
+}
+
+void    Server::send_replies()
+{
+    while (!_replies.empty())
+    {
+        int fd = _replies.front().first;
+        std::string reply = _replies.front().second;
+        if(send(fd, reply.c_str(), reply.length(), 0) > 0)
+            _replies.pop();
+        // send_msg(reply.first, reply.second);
     }
 }
 
@@ -291,6 +367,7 @@ void    Server::start()
                     accept_connection();
             }
         }
+        send_replies();
     }
 }
 

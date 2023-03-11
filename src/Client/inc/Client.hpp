@@ -14,6 +14,7 @@ class Client
         ~Client();
     public:
         void        add_command(std::string cmd);
+        bool        is_registered() const;
     public:
         void        set_active_nick(const std::string &nick);
         void        set_nick(const std::string &nick);
@@ -33,6 +34,7 @@ class Client
     private:
         int                                                 _id;
         struct in_addr                                      _addr;
+        bool                                                _valid_pass;
         std::string                                         _nick;
         std::string                                         _active_nick;
         std::string                                         _username;

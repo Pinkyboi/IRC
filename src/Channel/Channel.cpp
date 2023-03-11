@@ -1,8 +1,7 @@
 #include "Channel.hpp"
 
-Channel::Channel(Client &creator , const std::string name): _name(name), _topic(NULL), _modes(0)
+Channel::Channel(const std::string name): _name(name), _topic("")
 {
-    this->add_client(creator);
 }
 
 Channel::~Channel()

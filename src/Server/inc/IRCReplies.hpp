@@ -102,4 +102,13 @@
 #define ERR_UMODEUNKNOWNFLAG "501" // "501" - Unknown mode flag message
 #define ERR_USERSDONTMATCH "502" // "502" - Users do not match message
 
+#define RPL_PRIVMSG "PRIVMSG" // "PRIVMSG" - Private message
+
+#define MSG_NEEDMOREPARAMS "Need more parameters"
+#define MSG_ALREADYREGISTRED "You are already registered"
+#define MSG_NICKNAMEINUSE "Nickname already in use"
+#define MSG_YOUREOPER "You are now an IRC operator"
+#define MSG_NOSUCHCHANNEL "No such channel"
+#define MSG_NOTONCHANNEL "You are not on that channel"
+#define MSG_USERNOTINCHANNEL "User is not in channel"
 #endif

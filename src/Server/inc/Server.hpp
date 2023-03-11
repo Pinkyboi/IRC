@@ -27,7 +27,8 @@
 # define MAX_COMMAND_SIZE 512
 
 #define CRLN "\r\n"
-
+#define SEVER_NAME "SuperDuperIRCServer"
+#define MESSAGE_OF_THE_DAY "Welcome to SuperDuperIRCServer"
 class Server
 {
     typedef void (Server::*cmd_func)(int, std::vector<std::string> &);
@@ -41,6 +42,11 @@ class Server
             private:
                 const char  *_msg;
         };
+    public:
+        static std::string _severname;
+        static std::string _motd;
+        static std::string _opname;
+        static std::string _oppass;
     public:
         static Server*                  getInstance();
         static void                     initServer(const char *port, const char *pass);
@@ -56,35 +62,37 @@ class Server
     private:
                                         Server(const char *port, const char *pass);
         void                            print_msg(int fd);
-        void                            send_msg(int fd, const std::string &msg);
+        void                            send_replies();
         void                            accept_connection();
         void                            remove_connection(int user_id);
         void                            init_commands();
+        void                            add_reply(int usr_id, const std::string &code, const std::string &msg);                                                    
     private:
-        void                            list_cmd    (int usr_id, std::vector<std::string> &args);
-        void                            nick_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
-        void                            user_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
-        void                            pass_cmd    (int usr_id, std::vector<std::string> &args);
-        void                            kick_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
-        void                            join_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
-        void                            part_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
-        void                            oper_cmd    (int usr_id, std::vector<std::string> &args);
-        void                            msg_cmd     (int usr_id, std::vector<std::string> &args);
-        void                            privmsg_cmd (int usr_id, std::vector<std::string> &args);
-        void                            notice_cmd  (int usr_id, std::vector<std::string> &args);
+        void                                        list_cmd    (int usr_id, std::vector<std::string> &args);
+        void                                        nick_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
+        void                                        user_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
+        void                                        pass_cmd    (int usr_id, std::vector<std::string> &args);
+        void                                        kick_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
+        void                                        join_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
+        void                                        part_cmd    (int usr_id, std::vector<std::string> &args); // basic version done
+        void                                        oper_cmd    (int usr_id, std::vector<std::string> &args);
+        void                                        msg_cmd     (int usr_id, std::vector<std::string> &args);
+        void                                        privmsg_cmd (int usr_id, std::vector<std::string> &args);
+        void                                        notice_cmd  (int usr_id, std::vector<std::string> &args);
     private:
-        static Server                           *_instance;
+        static Server                               *_instance;
     private:
-        const char                              *_port;
-        const char                              *_pass;
-        int                                     _sockfd;
-        struct pollfd                           _pfds[CONN_LIMIT];
-        int                                     _nfds;
-        std::map<int, Client&>                  _operators;
-        std::map<int, Client>                   _clients;
-        std::map<const std::string, Channel>    _channels;
-        Parser                                  _parser;
-        std::map<std::string, cmd_func>         _commands;
+        const char                                  *_port;
+        const char                                  *_pass;
+        int                                         _sockfd;
+        struct pollfd                               _pfds[CONN_LIMIT];
+        int                                         _nfds;
+        std::map<int, Client&>                      _operators;
+        std::map<int, Client>                       _clients;
+        std::map<const std::string, Channel>        _channels;
+        std::map<std::string, cmd_func>             _commands;
+        std::queue< std::pair<int, std::string> >   _replies;
+        Parser                                      _parser;
 };
 
 

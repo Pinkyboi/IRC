@@ -1,6 +1,6 @@
 # include "Client.hpp"
 
-Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _active_channel("")
+Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _active_channel(""), _real_name(""), _valid_pass(false)
 {
     _addr = ((struct sockaddr_in *)&addr)->sin_addr;
 }
@@ -115,3 +115,7 @@ std::string Client::get_channel() const
     return (_active_channel);
 }
 
+bool Client::is_registered() const
+{
+    return (_valid_pass && _nick.size() && _username.size() && _real_name.size());
+}
