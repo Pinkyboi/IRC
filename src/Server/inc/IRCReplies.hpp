@@ -112,4 +112,5 @@
 #define MSG_NOTONCHANNEL "You are not on that channel"
 #define MSG_USERNOTINCHANNEL "User is not in channel"
 #define MSG_NOTOPIC "No topic is set"
+#define MSG_LISTEND "End of LIST"
 #endif

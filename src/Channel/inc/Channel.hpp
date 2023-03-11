@@ -19,6 +19,7 @@ class Channel
         Client&                 get_client(int client_id);
         std::string             get_name() const;
         std::string             get_topic() const;
+        int                     get_clients_count() const;
     public:
         void                    set_topic(std::string topic);
         void                    update_nick(int client_id, std::string nick);

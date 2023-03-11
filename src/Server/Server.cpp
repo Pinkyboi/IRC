@@ -35,6 +35,7 @@ void    Server::init_commands()
     _commands.insert(std::pair<std::string, cmd_func>("KICK", &Server::kick_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("JOIN", &Server::join_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("TOPIC", &Server::topic_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("LIST", &Server::list_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("PART", &Server::part_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("PASS", &Server::pass_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("OPER", &Server::oper_cmd));
@@ -135,10 +136,30 @@ void    Server::notice_cmd(int usr_id, std::vector<std::string> &args)
 
 void    Server::list_cmd(int usr_id, std::vector<std::string> &args)
 {
-    // send list start reply to client
-    // for each server present list it with the number of users
-    // if not argument specified send list of all channels with number of users
-    // end end of list reply
+    if (args.size() >= 0 && args.size() <= 2)
+    {
+        std::string nick = _clients.at(usr_id).get_nick();
+        if (args.size() == 0)
+        {
+            for (std::map<const std::string, Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
+            {
+                std::string msg = it->first + " " + std::to_string(it->second.get_clients_count()) + " " + it->second.get_topic();
+                add_reply(usr_id, nick, RPL_LIST, msg);
+            }
+        }
+        else if (args.size() == 1)
+        {
+            std::string c_name = args.at(1);
+            if (_channels.find(c_name) != _channels.end())
+            {
+                std::string msg = c_name + " " + std::to_string(_channels.at(c_name).get_clients_count());
+                add_reply(usr_id, nick, RPL_LIST, msg);
+            }
+            else
+                add_reply(usr_id, nick, ERR_NOSUCHCHANNEL, args[0] + " " + MSG_NOSUCHCHANNEL);
+        }
+        add_reply(usr_id, nick, RPL_LISTEND, MSG_LISTEND);
+    }
 }
 
 void    Server::add_reply(int usr_id, const std::string &target, const std::string &code, const std::string &msg)
@@ -227,7 +248,7 @@ void    Server::oper_cmd(int usr_id, std::vector<std::string> &args)
 
 void    Server::part_cmd(int usr_id, std::vector<std::string> &args)
 {
-    if (args.size() == 2)
+    if (args.size() == 1 || args.size() == 2)
     {  
         std::string c_name  = args.front();
         std::string message = args.back();
@@ -246,7 +267,7 @@ void    Server::part_cmd(int usr_id, std::vector<std::string> &args)
         else
             add_reply(usr_id, c_name, ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
     }
-    else if (args.size() < 2)
+    else if (args.size() < 1)
         add_reply(usr_id, "PART", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 

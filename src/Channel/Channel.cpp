@@ -31,6 +31,11 @@ std::string Channel::get_name() const
     return (_name);
 }
 
+int    Channel::get_clients_count() const
+{
+    return (_clients.size());
+}
+
 void    Channel::add_client(Client& client)
 {
     _clients.insert(std::pair<int, Client&>(client.get_id(), client));
