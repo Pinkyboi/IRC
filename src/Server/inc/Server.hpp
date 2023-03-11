@@ -57,8 +57,11 @@ class Server
         void                            start();
     public:
         bool                            is_operator(int client_id);
+        bool                            is_nick_used(std::string& nick);
         void                            add_operator(Client& client);
         void                            add_client(int id, struct sockaddr addr);
+        void                            add_nick(int usr_id, std::string nick);
+        void                            update_nick(int client_id, std::string nick);
     private:
                                         Server(const char *port, const char *pass);
         void                            print_msg(int fd);
@@ -91,6 +94,7 @@ class Server
         std::map<int, Client&>                      _operators;
         std::map<int, Client>                       _clients;
         std::map<const std::string, Channel>        _channels;
+        std::map<std::string, int>                  _nicks;
         std::map<std::string, cmd_func>             _commands;
         std::queue< std::pair<int, std::string> >   _replies;
         Parser                                      _parser;

@@ -43,6 +43,13 @@ void    Server::init_commands()
     _commands.insert(std::pair<std::string, cmd_func>("PRIVMSG", &Server::privmsg_cmd));
 }
 
+// void    Sever::a
+bool    Server::is_nick_used(std::string& nick)
+{
+    return (_nicks.find(nick) != _nicks.end());
+
+}
+
 
 void    Server::setup()
 {
@@ -210,29 +217,40 @@ void    Server::user_cmd(int usr_id, std::vector<std::string> &args)
     }
 }
 
+void    Server::update_nick(int usr_id, std::string newnick)
+{
+    std::string oldnick = _clients.at(usr_id).get_nick();
+    _clients.at(usr_id).set_nick(newnick);
+    _nicks.erase(oldnick);
+    _nicks.insert(std::pair<std::string, int>(newnick, usr_id));
+}
+
+void    Server::add_nick(int usr_id, std::string nick)
+{
+    _clients.at(usr_id).set_nick(nick);
+    _nicks.insert(std::pair<std::string, int>(nick, usr_id));
+}
+
 void    Server::nick_cmd(int usr_id, std::vector<std::string> &args)
 {
     if ( args.size() == 1 )
     {
         std::string nick  = args.front();
-        if (_clients.at(usr_id).get_channel() == "")
+        if (_nicks.find(_clients.at(usr_id).get_nick()) == _nicks.end())
         {
-            for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
-            {
-                if (it->second.get_nick() == nick)
-                    add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NICKNAMEINUSE,  MSG_NICKNAMEINUSE); 
-            }
-            _clients.at(usr_id).set_nick(nick);
-        }
-        else
-        {
-            std::cout << _clients.at(usr_id).get_channel() << std::endl;
-            Channel &current_channel = _channels.at(_clients.at(usr_id).get_channel());
-            if (!current_channel.is_nick_used(nick))
-                current_channel.update_nick(usr_id, nick);
+            if (!is_nick_used(nick))
+                update_nick(usr_id, nick);
             else
                 add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NICKNAMEINUSE,  MSG_NICKNAMEINUSE);
         }
+        else
+        {
+            if (!is_nick_used(nick))
+                update_nick(usr_id, nick);
+            else
+                add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NICKNAMEINUSE,  MSG_NICKNAMEINUSE);
+        }
+        
     }
     else
         add_reply(usr_id, "NICK", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
@@ -311,11 +329,11 @@ void    Server::kick_cmd(int usr_id, std::vector<std::string> &args)
         if (_channels.find(c_name) != _channels.end())
         {
             Channel &target_channel =  _channels.at(c_name);
-            if (target_channel.is_nick_used(t_name))
+            if (is_nick_used(t_name))
             {
                 if (is_operator(usr_id))
                 {
-                    int target_id = target_channel.get_client_id(t_name);
+                    int target_id = _nicks.at(t_name);
                     target_channel.remove_client(target_id);
                     _clients.at(target_id).unset_channel();
                     if (message != "")
