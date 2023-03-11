@@ -49,3 +49,7 @@ bool    Channel::is_client(int client_id)
     return (_clients.find(client_id) != _clients.end());
 }
 
+std::map<int, Client&>  &Channel::get_clients(void)
+{
+    return _clients;
+}
