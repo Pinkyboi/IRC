@@ -408,14 +408,17 @@ void    Server::print_msg(int fd)
     }
     while((command = _clients.at(fd).get_command()) != "")
     {
-        std::vector<std::string> command_list = split_command(command);
+        _parser.parse(command);
+        // std::vector<std::string> command_list = split_command(command);
         if (command_list.size() > 0)
         {
-            std::string command_name = command_list.front();
+            // std::string command_name = command_list.front();
+            command_name = _parser.getCommand();
             if ( _commands.find(command_name) != _commands.end())
             {
                 command_list.erase(command_list.begin());
-                (this->*_commands[command_name])(fd, command_list);
+                // (this->*_commands[command_name])(fd, command_list);
+                (this->*_command[command_name])(fd);
             }
         }
     }
