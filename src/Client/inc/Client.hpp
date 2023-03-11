@@ -21,6 +21,7 @@ class Client
         void        set_username(const std::string &username);
         void        set_real_name(const std::string &real_name);
         void        set_channel(const std::string &channel);
+        void        set_pass_validity(const bool validity);
         void        unset_channel();
     public:
         void        get_addr() const;
@@ -34,7 +35,7 @@ class Client
     private:
         int                                                 _id;
         struct in_addr                                      _addr;
-        bool                                                _valid_pass;
+        bool                                                _pass_validity;
         std::string                                         _nick;
         std::string                                         _active_nick;
         std::string                                         _username;

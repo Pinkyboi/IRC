@@ -12,7 +12,7 @@ Server::~Server()
         close(_pfds[i].fd);
 }
 
-Server::Server(const char *port, const char *pass): _port(port), _nfds(0)
+Server::Server(const char *port, const char *pass): _port(port), _nfds(0), _pass(pass)
 {
     bool on = true;
 
@@ -34,6 +34,7 @@ void    Server::init_commands()
     _commands.insert(std::pair<std::string, cmd_func>("USER", &Server::user_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("KICK", &Server::kick_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("JOIN", &Server::join_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("TOPIC", &Server::topic_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("PART", &Server::part_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("PASS", &Server::pass_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("OPER", &Server::oper_cmd));
@@ -140,22 +141,25 @@ void    Server::list_cmd(int usr_id, std::vector<std::string> &args)
     // end end of list reply
 }
 
-void    Server::add_reply(int usr_id, const std::string &code, const std::string &msg)
+void    Server::add_reply(int usr_id, const std::string &target, const std::string &code, const std::string &msg)
 {
-    std::string replymsg = ":" + _severname + " " + code + " " + _clients.at(usr_id).get_nick() + " :" + msg + CRLN;
+    std::string replymsg = ":" + _severname + " " + code + " " + target + " :" + msg + CRLN;
     _replies.push(std::pair<int, std::string>(usr_id, replymsg));
 }
 
 void    Server::user_cmd(int usr_id, std::vector<std::string> &args)
 {
     if (args.size() != 4)
-        add_reply(usr_id, ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
-    if (_clients.at(usr_id).get_username() != "")
-        add_reply(usr_id, ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
-    std::string username = args.front();
-    std::string real_name = args.back();
-    _clients.at(usr_id).set_username(username);
-    _clients.at(usr_id).set_real_name(real_name);
+        add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+    if (_clients.at(usr_id).is_registered())
+        add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
+    else
+    {
+        std::string username = args.front();
+        std::string real_name = args.back();
+        _clients.at(usr_id).set_username(username);
+        _clients.at(usr_id).set_real_name(real_name);
+    }
 }
 
 void    Server::nick_cmd(int usr_id, std::vector<std::string> &args)
@@ -168,7 +172,7 @@ void    Server::nick_cmd(int usr_id, std::vector<std::string> &args)
             for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
             {
                 if (it->second.get_nick() == nick)
-                    add_reply(usr_id, ERR_NICKNAMEINUSE,  MSG_NICKNAMEINUSE); 
+                    add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NICKNAMEINUSE,  MSG_NICKNAMEINUSE); 
             }
             _clients.at(usr_id).set_nick(nick);
         }
@@ -179,16 +183,26 @@ void    Server::nick_cmd(int usr_id, std::vector<std::string> &args)
             if (!current_channel.is_nick_used(nick))
                 current_channel.update_nick(usr_id, nick);
             else
-                add_reply(usr_id, ERR_NICKNAMEINUSE,  MSG_NICKNAMEINUSE);
+                add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NICKNAMEINUSE,  MSG_NICKNAMEINUSE);
         }
     }
     else
-        add_reply(usr_id, ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, "NICK", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
 void    Server::pass_cmd(int usr_id, std::vector<std::string> &args)
 {
-
+    if (_clients.at(usr_id).is_registered())
+        add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
+    if (args.size() == 1)
+    {
+        std::string pass = args.front();
+        if (pass == _pass)
+            _clients.at(usr_id).set_pass_validity(true);
+        //compare the passed password to the servers passowrd
+    }
+    else
+        add_reply(usr_id, "PASS", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
 void    Server::oper_cmd(int usr_id, std::vector<std::string> &args)
@@ -203,12 +217,12 @@ void    Server::oper_cmd(int usr_id, std::vector<std::string> &args)
             if (_operators.find(usr_id) == _operators.end())
             {
                 _operators.insert(std::pair<int, Client&>(usr_id, client));
-                add_reply(usr_id, RPL_YOUREOPER, MSG_YOUREOPER);
+                add_reply(usr_id, _clients.at(usr_id).get_nick(), RPL_YOUREOPER, MSG_YOUREOPER);
             }
         }
     }
     else if (args.size() < 2)
-        add_reply(usr_id, ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, "OPER", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
 void    Server::part_cmd(int usr_id, std::vector<std::string> &args)
@@ -227,13 +241,13 @@ void    Server::part_cmd(int usr_id, std::vector<std::string> &args)
                 client.unset_channel();
             }
             else
-                add_reply(usr_id, ERR_NOTONCHANNEL, MSG_NOTONCHANNEL); 
+                add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NOTONCHANNEL, MSG_NOTONCHANNEL); 
         }
         else
-            add_reply(usr_id, ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
+            add_reply(usr_id, c_name, ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
     }
     else if (args.size() < 2)
-        add_reply(usr_id, ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, "PART", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
 void    Server::kick_cmd(int usr_id, std::vector<std::string> &args)
@@ -257,17 +271,43 @@ void    Server::kick_cmd(int usr_id, std::vector<std::string> &args)
                     target_channel.remove_client(target_id);
                     _clients.at(target_id).unset_channel();
                     if (message != "")
-                        add_reply(target_id, RPL_PRIVMSG, message);
+                        add_reply(target_id, _clients.at(target_id).get_nick(), RPL_PRIVMSG, message);
                 }
             }
             else
-                add_reply(usr_id, ERR_USERNOTINCHANNEL, MSG_USERNOTINCHANNEL);
+                add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_USERNOTINCHANNEL, MSG_USERNOTINCHANNEL);
         }
         else
-            add_reply(usr_id, ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
+            add_reply(usr_id, c_name, ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
     }
     else if (args.size() < 2)
-        add_reply(usr_id, ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, "KICK", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+}
+
+void    Server::topic_cmd(int usr_id, std::vector<std::string> &args)
+{
+    if ( args.size() == 1 || args.size() == 2)
+    {
+        std::string c_name   = args.front();
+        std::string topic    = args.back();
+        if (_channels.find(c_name) != _channels.end())
+        {
+            if (args.size() == 1)
+            {
+                if (_channels.at(c_name).get_topic() != "")
+                    add_reply(usr_id, c_name, RPL_TOPIC, _channels.at(c_name).get_topic());
+                else
+                    add_reply(usr_id, c_name, RPL_NOTOPIC, MSG_NOTOPIC);
+            }
+            else
+                _channels.at(c_name).set_topic(topic);
+        }
+        else 
+            add_reply(usr_id, c_name, ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
+
+    }
+    else if (args.size() < 2)
+        add_reply(usr_id, "TOPIC", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
 void    Server::join_cmd(int usr_id, std::vector<std::string> &args)
@@ -287,7 +327,7 @@ void    Server::join_cmd(int usr_id, std::vector<std::string> &args)
         client.set_channel(c_name);
     }
     else if (args.size() < 1)
-        add_reply(usr_id, ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, "JOIN", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
 std::vector<std::string>    split_command(std::string message)
