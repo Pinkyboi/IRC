@@ -114,4 +114,10 @@
 #define MSG_NOTOPIC "No topic is set"
 #define MSG_LISTEND "End of LIST"
 #define MSG_TOOMANYTARGETS "Too many targets"
+#define MSG_NORECIPIENT "No recipient found"
+#define MSG_NOSUCHNICK "No such nickname"
+#define MSG_NOTEXTTOSEND "No text to send"
+#define MSG_PASSWDMISMATCH "Password mismatch"
+#define MSG_NOOPERHOST "No host operator"
+
 #endif
