@@ -40,13 +40,12 @@ void    Server::init_commands()
     _commands.insert(std::pair<std::string, cmd_func>("PASS", &Server::pass_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("OPER", &Server::oper_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("PRIVMSG", &Server::privmsg_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("QUIT", &Server::quit_cmd));
 }
 
-// void    Sever::a
 bool    Server::is_nick_used(std::string& nick)
 {
     return (_nicks.find(nick) != _nicks.end());
-
 }
 
 
@@ -123,6 +122,15 @@ void    Server::remove_connection(int user_id)
     _clients.erase(userfd->fd);
     _operators.erase(userfd->fd);
     _nfds--;
+}
+
+void    Server::quit_cmd(int usr_id)
+{
+    std::string message = _parser.getMessage();
+
+    std::cout << usr_id << " quitting" << std::endl;
+    add_reply(usr_id, "QUIT", "", message);
+    _clients.at(usr_id).set_status(0);
 }
 
 void    Server::privmsg_cmd(int usr_id)
