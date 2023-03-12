@@ -114,13 +114,15 @@ void    Server::accept_connection()
 
 void    Server::remove_connection(int user_id)
 {
-    struct pollfd *userfd = &_pfds[user_id];
-
-    std::cout << "client disconnected: " << userfd->fd << std::endl;
+    size_t i = 0;
+    while (i < _nfds && _pfds[i].fd != user_id)
+        i++;
+    struct pollfd *userfd = &_pfds[i];
+    std::cout << user_id << " client disconnected: " << userfd->fd << std::endl;
     close(userfd->fd);
-    memmove(userfd, userfd + 1, sizeof(struct pollfd) * (_nfds - user_id - 1));
     _clients.erase(userfd->fd);
     _operators.erase(userfd->fd);
+    memmove(userfd, userfd + 1, sizeof(struct pollfd) * (_nfds - i - 1));
     _nfds--;
 }
 
@@ -468,9 +470,10 @@ void    Server::send_replies()
     {
         int fd = _replies.front().first;
         std::string reply = _replies.front().second;
-        if(send(fd, reply.c_str(), reply.length(), 0) > 0)
+        if (send(fd, reply.c_str(), reply.length(), 0) > 0)
             _replies.pop();
-        // send_msg(reply.first, reply.second);
+        if (_clients.at(fd).get_status() == 0)
+            remove_connection(fd);
     }
 }
 
