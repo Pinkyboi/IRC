@@ -23,6 +23,7 @@ void    CircularBuffer::push_back(const char *str)
         _buffer[_size] = str[i];
         _size = (_size + 1) % _capacity;
     }
+    _buffer[_size] = '\0';
 }
 
 void    CircularBuffer::clear()
