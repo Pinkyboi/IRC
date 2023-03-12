@@ -83,6 +83,7 @@ class Server
         void                                        privmsg_cmd (int usr_id);
         void                                        notice_cmd  (int usr_id);
         void                                        topic_cmd   (int usr_id);
+        void                                        quit_cmd    (int usr_id);
     private:
         static Server                               *_instance;
     private:
