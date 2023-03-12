@@ -21,6 +21,7 @@ class Client
         void        set_real_name(const std::string &real_name);
         void        set_channel(const std::string &channel);
         void        set_pass_validity(const bool validity);
+        void        set_status(int status);
         void        unset_channel();
     public:
         void        get_addr() const;
@@ -30,6 +31,7 @@ class Client
         std::string get_real_name() const;
         std::string get_command();
         std::string get_channel() const;
+        int         get_status() const;
     private:
         int                                                 _id;
         struct in_addr                                      _addr;
@@ -39,6 +41,7 @@ class Client
         std::string                                         _real_name;
         std::string                                         _active_channel;
         std::queue< std::pair< bool, CircularBuffer *> >    _commands;
+        int                                                 _status;
 
 };
 

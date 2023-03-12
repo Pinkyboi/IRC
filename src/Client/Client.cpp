@@ -3,6 +3,7 @@
 Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _active_channel(""), _real_name(""), _pass_validity(false)
 {
     _addr = ((struct sockaddr_in *)&addr)->sin_addr;
+    _status = 1;
 }
 
 Client::~Client()
@@ -113,4 +114,14 @@ std::string Client::get_channel() const
 bool Client::is_registered() const
 {
     return (_pass_validity && _nick.size() && _username.size() && _real_name.size());
+}
+
+int Client::get_status() const
+{
+    return _status;
+}
+
+void Client::set_status(int status)
+{
+    _status = status;
 }
