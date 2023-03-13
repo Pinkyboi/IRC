@@ -118,7 +118,7 @@ void    Server::remove_connection(int user_id)
     while (i < _nfds && _pfds[i].fd != user_id)
         i++;
     struct pollfd *userfd = &_pfds[i];
-    std::cout << user_id << " client disconnected: " << userfd->fd << std::endl;
+    std::cout << "closing connection: " << userfd->fd << std::endl;
     close(userfd->fd);
     _clients.erase(userfd->fd);
     _operators.erase(userfd->fd);
@@ -130,7 +130,6 @@ void    Server::quit_cmd(int usr_id)
 {
     std::string message = _parser.getMessage();
 
-    std::cout << usr_id << " quitting" << std::endl;
     add_reply(usr_id, "QUIT", "", message);
     _clients.at(usr_id).set_status(0);
 }
@@ -342,7 +341,8 @@ void    Server::part_cmd(int usr_id)
             if (_channels.at(c_name).is_client(usr_id))
             {
                 _channels.at(c_name).remove_client(usr_id);
-                privmsg_cmd(usr_id);
+                if (message != "")
+                    privmsg_cmd(usr_id);
                 client.unset_channel();
             }
             else
@@ -490,7 +490,7 @@ void    Server::start()
 #elif defined(__APPLE__)
             if (_pfds[i].revents & POLLHUP)
 #endif
-                remove_connection(i);
+                remove_connection(_pfds[i].fd);
             else if (_pfds[i].revents & POLLIN)
             {
                 if (_pfds[i].fd != _sockfd)
