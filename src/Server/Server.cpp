@@ -268,6 +268,7 @@ void    Server::user_cmd(int usr_id)
         std::string username = args.front();
         _clients.at(usr_id).set_username(username);
         _clients.at(usr_id).set_real_name(real_name);
+        _clients.at(usr_id).update_registration();
     }
 }
 
@@ -292,20 +293,20 @@ void    Server::nick_cmd(int usr_id)
     if ( args.size() == 1 )
     {
         std::string nick  = args.front();
-        if (_nicks.find(_clients.at(usr_id).get_nick()) == _nicks.end())
+        Client &client = _clients.at(usr_id);
+        if ( is_nick_used(nick) ==  false )
         {
-            if (!is_nick_used(nick))
+            if (client.is_registered())
                 update_nick(usr_id, nick);
             else
-                add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NICKNAMEINUSE,  MSG_NICKNAMEINUSE);
+            {
+                client.set_nick(nick);
+                client.update_registration();
+                add_nick(usr_id, nick);
+            }
         }
         else
-        {
-            if (!is_nick_used(nick))
-                update_nick(usr_id, nick);
-            else
-                add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NICKNAMEINUSE,  MSG_NICKNAMEINUSE);
-        }
+            add_reply(usr_id, client.get_nick(), ERR_NICKNAMEINUSE,  MSG_NICKNAMEINUSE);
         
     }
     else
@@ -316,13 +317,12 @@ void    Server::pass_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.getArguments();
 
-    if (_clients.at(usr_id).is_registered())
+    if ( _clients.at(usr_id).is_registered() )
         add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
-    if (args.size() == 1)
+    if ( args.size() == 1 )
     {
-        std::string pass = args.front();
-        if (pass == _pass)
-            _clients.at(usr_id).set_pass_validity(true);
+         _clients.at(usr_id).set_pass_validity(args.front() == _pass);
+         _clients.at(usr_id).update_registration();
     }
     else
         add_reply(usr_id, "PASS", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
@@ -463,11 +463,7 @@ void    Server::join_cmd(int usr_id)
         if (args.size() == 2)
             key = args.at(1);
         if (_channels.find(c_name) == _channels.end())
-        {
-            std::cout << "Creating channel " << c_name << std::endl;
             _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
-            _channels.at(c_name).add_client(client);
-        }
         else
         {
             if (_channels.at(c_name).get_key() == key)
@@ -479,6 +475,31 @@ void    Server::join_cmd(int usr_id)
     }
     else if (args.size() < 1)
         add_reply(usr_id, "JOIN", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+}
+
+void    Server::handle_commands(int fd, std::string &command)
+{
+    _parser.parse(command);
+    std::string command_name = _parser.getCommand();
+    if ( _commands.find(command_name) != _commands.end())
+    {
+        Client &client = _clients.at(fd);
+        if ( client.get_status() == Client::UNREGISTERED )
+        {
+            if ( command_name == "PASS" || command_name == "USER"
+                    || command_name == "NICK" || command_name == "QUIT" )
+                        (this->*_commands[command_name])(fd);
+            else
+                add_reply(fd, client.get_nick(), ERR_NOTREGISTERED, MSG_NOTREGISTERED);
+        }
+        else if ( client.get_status() == Client::REGISTERED )
+        {
+            if ( command_name == "PASS" ||  command_name == "USER" )
+                add_reply(fd, client.get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
+            else
+                (this->*_commands[command_name])(fd);
+        }
+    }
 }
 
 void    Server::print_msg(int fd)
@@ -493,12 +514,7 @@ void    Server::print_msg(int fd)
         _clients.at(fd).add_command(std::string(msg_buffer));
     }
     while((command = _clients.at(fd).get_command()) != "")
-    {
-        _parser.parse(command);
-        std::string command_name = _parser.getCommand();
-        if ( _commands.find(command_name) != _commands.end())
-            (this->*_commands[command_name])(fd);
-    }
+        handle_commands(fd, command);
 }
 
 void    Server::send_replies()
@@ -509,7 +525,7 @@ void    Server::send_replies()
         std::string reply = _replies.front().second;
         if (send(fd, reply.c_str(), reply.length(), 0) > 0)
             _replies.pop();
-        if (_clients.at(fd).get_status() == 0)
+        if (_clients.at(fd).get_status() == Client::DOWN)
             remove_connection(fd);
     }
 }

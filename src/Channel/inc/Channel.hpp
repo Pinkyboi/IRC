@@ -60,6 +60,12 @@ class Channel
         void                    set_mode_m    (std::string &mode_argument);
         void                    set_mode_k    (std::string &mode_argument);
         void                    set_mode_i    (std::string &mode_argument);
+        void                    unset_mode_t  (std::string &mode_argument);
+        void                    unset_mode_n  (std::string &mode_argument);
+        void                    unset_mode_s  (std::string &mode_argument);
+        void                    unset_mode_m  (std::string &mode_argument);
+        void                    unset_mode_k  (std::string &mode_argument);
+        void                    unset_mode_i  (std::string &mode_argument);
     private:
         void                    set_mode_v    (std::string &mode_argument);
         void                    set_mode_b    (std::string &mode_argument);
@@ -68,12 +74,6 @@ class Channel
         void                    unset_mode_b  (std::string &mode_argument);
         void                    unset_mode_o  (std::string &mode_argument);
     private:
-        void                    unset_mode_t  (std::string &mode_argument);
-        void                    unset_mode_n  (std::string &mode_argument);
-        void                    unset_mode_s  (std::string &mode_argument);
-        void                    unset_mode_m  (std::string &mode_argument);
-        void                    unset_mode_k  (std::string &mode_argument);
-        void                    unset_mode_i  (std::string &mode_argument);
     public:
         bool                    handle_modes(std::string mode, std::string mode_arg);
         bool                    handle_modes(std::string mode, Client& client);

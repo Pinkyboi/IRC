@@ -121,4 +121,5 @@
 #define MSG_NOOPERHOST "No host operator"
 #define MSG_CHANOPRIVSNEEDED "You're not channel operator"
 #define MSG_BADCHANNELKEY "Bad channel key"
+#define MSG_NOTREGISTERED "You have not registered"
 #endif

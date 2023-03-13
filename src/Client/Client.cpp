@@ -111,11 +111,14 @@ std::string Client::get_channel() const
     return (_active_channel);
 }
 
+bool Client::get_pass_validity() const
+{
+    return (_pass_validity);
+}
+
 bool Client::is_registered() const
 {
-    if (_status == REGISTERED)
-        return (true);
-    return (false);
+    return (_status == REGISTERED);
 }
 
 int Client::get_status() const
@@ -126,6 +129,12 @@ int Client::get_status() const
 void Client::set_status(int status)
 {
     _status = status;
+}
+
+void Client::update_registration()
+{
+    if (_pass_validity && _real_name.size() && _username.size() && _nick.size())
+        _status = REGISTERED;
 }
 
 std::string Client::get_serv_id() const

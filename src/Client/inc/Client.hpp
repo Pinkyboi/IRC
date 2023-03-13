@@ -11,6 +11,12 @@
 class Client
 {
     public:
+        typedef enum e_status
+        {
+            DOWN = 0,
+            UNREGISTERED = 1,
+            REGISTERED = 2,
+        } t_status;
         Client(int id, struct sockaddr addr);
         ~Client();
     public:
@@ -23,11 +29,13 @@ class Client
         void        set_channel(const std::string &channel);
         void        set_pass_validity(const bool validity);
         void        set_status(int status);
+        void        update_registration();
         void        unset_channel();
     public:
         void        get_addr() const;
         int         get_id() const;
         int         get_status() const;
+        bool        get_pass_validity() const;
         std::string get_nick() const;
         std::string get_username() const;
         std::string get_real_name() const;
@@ -36,12 +44,6 @@ class Client
         std::string get_serv_id() const;
 
     private:
-        typedef enum e_status
-        {
-            DOWN = 0,
-            UNREGISTERED = 1,
-            REGISTERED = 2,
-        } t_status;
         int                                                 _id;
         bool                                                _pass_validity;
         char                                                _addr[NI_MAXHOST];
