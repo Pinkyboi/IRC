@@ -119,5 +119,5 @@
 #define MSG_NOTEXTTOSEND "No text to send"
 #define MSG_PASSWDMISMATCH "Password mismatch"
 #define MSG_NOOPERHOST "No host operator"
-
+#define MSG_CHANOPRIVSNEEDED "You're not channel operator"
 #endif

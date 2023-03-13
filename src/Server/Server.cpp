@@ -41,6 +41,7 @@ void    Server::init_commands()
     _commands.insert(std::pair<std::string, cmd_func>("OPER", &Server::oper_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("PRIVMSG", &Server::privmsg_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("QUIT", &Server::quit_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("MODE", &Server::mode_cmd));
 }
 
 bool    Server::is_nick_used(std::string& nick)
@@ -159,6 +160,35 @@ void    Server::privmsg_cmd(int usr_id)
         add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_TOOMANYTARGETS, MSG_TOOMANYTARGETS);
     else
         add_reply(usr_id, "PRIVMSG", ERR_NORECIPIENT, MSG_NORECIPIENT);
+}
+
+
+void    Server::mode_cmd(int usr_id)
+{
+    std::vector<std::string> args = _parser.getArguments();
+    std::string message = _parser.getMessage();
+
+    if (args.size() == 2 || args.size() == 2)
+    {
+        std::string c_name = args.front();
+        std::string argument = "";
+        std::string modes = args.at(1);
+        Client &client  = _clients.at(usr_id);
+        if (args.size() == 3)
+            argument = args.back();
+        if (_channels.find(c_name) != _channels.end())
+        {
+            if (_channels.at(c_name).is_client_operator(client))
+            {
+                _channels.at(c_name).handle_modes(modes, argument);
+                std::cout << _channels.at(c_name)._modes << std::endl;
+            }
+            else
+                add_reply(usr_id, "MODE", ERR_CHANOPRIVSNEEDED, MSG_CHANOPRIVSNEEDED);
+        }
+    }
+    else
+        add_reply(usr_id, "MODE", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
 void    Server::notice_cmd(int usr_id)
@@ -294,7 +324,6 @@ void    Server::pass_cmd(int usr_id)
         std::string pass = args.front();
         if (pass == _pass)
             _clients.at(usr_id).set_pass_validity(true);
-        //compare the passed password to the servers passowrd
     }
     else
         add_reply(usr_id, "PASS", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
@@ -433,7 +462,7 @@ void    Server::join_cmd(int usr_id)
 
         if (_channels.find(c_name) == _channels.end())
         {
-            _channels.insert(std::pair<std::string, Channel>(c_name, Channel(c_name)));
+            _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
             _channels.at(c_name).add_client(client);
         }
         else
