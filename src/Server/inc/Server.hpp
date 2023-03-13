@@ -28,8 +28,6 @@
 # define MAX_COMMAND_SIZE 512
 
 #define CRLN "\r\n"
-#define SEVER_NAME "SuperDuperIRCServer"
-#define MESSAGE_OF_THE_DAY "Welcome to SuperDuperIRCServer"
 class Server
 {
     typedef void (Server::*cmd_func)(int);

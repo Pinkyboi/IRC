@@ -4,6 +4,7 @@
 # include <queue>
 # include <string>
 # include <netinet/in.h>
+# include <netdb.h>
 # include "CommandBuffer.hpp"
 
 # define MAX_COMMAND_SIZE 512
@@ -26,16 +27,24 @@ class Client
     public:
         void        get_addr() const;
         int         get_id() const;
+        int         get_status() const;
         std::string get_nick() const;
         std::string get_username() const;
         std::string get_real_name() const;
         std::string get_command();
         std::string get_channel() const;
-        int         get_status() const;
+        std::string get_serv_id() const;
+
     private:
+        typedef enum e_status
+        {
+            DOWN = 0,
+            UNREGISTERED = 1,
+            REGISTERED = 2,
+        } t_status;
         int                                                 _id;
-        struct in_addr                                      _addr;
         bool                                                _pass_validity;
+        char                                                _addr[NI_MAXHOST];
         std::string                                         _nick;
         std::string                                         _username;
         std::string                                         _real_name;
