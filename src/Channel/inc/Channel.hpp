@@ -32,6 +32,7 @@ class Channel
         Client&                 get_client(int client_id);
         std::string             get_name() const;
         std::string             get_topic() const;
+        std::string             get_key() const;
         int                     get_clients_count() const;
         bool                    parse_mode(std::string mode, uint32_t target = 0);
     public:
@@ -51,38 +52,40 @@ class Channel
         bool                    is_client_banned(Client &client) const;
         bool                    is_client_operator(Client &client) const;
     private:
-        void                    set_mode_t    (std::string mode_argument);
-        void                    set_mode_n    (std::string mode_argument);
-        void                    set_mode_s    (std::string mode_argument);
-        void                    set_mode_m    (std::string mode_argument);
-        void                    set_mode_k    (std::string mode_argument);
-        void                    set_mode_i    (std::string mode_argument);
+        void                    add_operator(Client& client);
     private:
-        void                    set_mode_v    (Client &client);
-        void                    set_mode_b    (Client &client);
-        void                    set_mode_o    (Client &client);
-        void                    unset_mode_v  (Client &client);
-        void                    unset_mode_b  (Client &client);
-        void                    unset_mode_o  (Client &client);
+        void                    set_mode_t    (std::string &mode_argument);
+        void                    set_mode_n    (std::string &mode_argument);
+        void                    set_mode_s    (std::string &mode_argument);
+        void                    set_mode_m    (std::string &mode_argument);
+        void                    set_mode_k    (std::string &mode_argument);
+        void                    set_mode_i    (std::string &mode_argument);
     private:
-        void                    unset_mode_t  (std::string mode_argument = "");
-        void                    unset_mode_n  (std::string mode_argument = "");
-        void                    unset_mode_s  (std::string mode_argument = "");
-        void                    unset_mode_m  (std::string mode_argument = "");
-        void                    unset_mode_k  (std::string mode_argument = "");
-        void                    unset_mode_i  (std::string mode_argument = "");
-        void                    unset_mode_v  (std::string mode_argument = "");
-        void                    unset_mode_b  (std::string mode_argument = "");
+        void                    set_mode_v    (std::string &mode_argument);
+        void                    set_mode_b    (std::string &mode_argument);
+        void                    set_mode_o    (std::string &mode_argument);
+        void                    unset_mode_v  (std::string &mode_argument);
+        void                    unset_mode_b  (std::string &mode_argument);
+        void                    unset_mode_o  (std::string &mode_argument);
+    private:
+        void                    unset_mode_t  (std::string &mode_argument);
+        void                    unset_mode_n  (std::string &mode_argument);
+        void                    unset_mode_s  (std::string &mode_argument);
+        void                    unset_mode_m  (std::string &mode_argument);
+        void                    unset_mode_k  (std::string &mode_argument);
+        void                    unset_mode_i  (std::string &mode_argument);
     public:
         bool                    handle_modes(std::string mode, std::string mode_arg);
+        bool                    handle_modes(std::string mode, Client& client);
     public:
         uint16_t                    _modes;
     private:
-        typedef void (Channel::*SetMode)(std::string);
-        typedef void (Channel::*UnsetMode)(std::string);
+        typedef void (Channel::*SetMode)(std::string&);
+        typedef void (Channel::*UnsetMode)(std::string&);
         const std::string           _name;
         std::string                 _key;
         std::string                 _topic;
+        Client&                     _creator;
         std::map<int, Client&>      _clients;
         std::map<int, Client&>      _operators;
         std::map<char, SetMode>     _set_modes;

@@ -168,7 +168,7 @@ void    Server::mode_cmd(int usr_id)
     std::vector<std::string> args = _parser.getArguments();
     std::string message = _parser.getMessage();
 
-    if (args.size() == 2 || args.size() == 2)
+    if (args.size() == 2 || args.size() == 3)
     {
         std::string c_name = args.front();
         std::string argument = "";
@@ -179,15 +179,14 @@ void    Server::mode_cmd(int usr_id)
         if (_channels.find(c_name) != _channels.end())
         {
             if (_channels.at(c_name).is_client_operator(client))
-            {
                 _channels.at(c_name).handle_modes(modes, argument);
-                std::cout << _channels.at(c_name)._modes << std::endl;
-            }
             else
                 add_reply(usr_id, "MODE", ERR_CHANOPRIVSNEEDED, MSG_CHANOPRIVSNEEDED);
         }
+        else
+            add_reply(usr_id, "MODE", ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
     }
-    else
+    else if (args.size() < 2)
         add_reply(usr_id, "MODE", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
@@ -258,15 +257,15 @@ void    Server::add_reply(int usr_id, const std::string &target, const std::stri
 void    Server::user_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.getArguments();
+    std::string real_name = _parser.getMessage();
 
-    if (args.size() != 4)
+    if (args.size() != 3 || real_name.empty())
         add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
     if (_clients.at(usr_id).is_registered())
         add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
     else
     {
         std::string username = args.front();
-        std::string real_name = _parser.getMessage();
         _clients.at(usr_id).set_username(username);
         _clients.at(usr_id).set_real_name(real_name);
     }
@@ -455,18 +454,27 @@ void    Server::join_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.getArguments();
 
-    if ( args.size() == 1 )
+    if ( args.size() == 1 || args.size() == 2 )
     {
         std::string c_name  = args.front();
+        std::string key     = "";
         Client      &client = _clients.at(usr_id);
 
+        if (args.size() == 2)
+            key = args.at(1);
         if (_channels.find(c_name) == _channels.end())
         {
+            std::cout << "Creating channel " << c_name << std::endl;
             _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
             _channels.at(c_name).add_client(client);
         }
         else
-            _channels.at(c_name).add_client(client);
+        {
+            if (_channels.at(c_name).get_key() == key)
+                _channels.at(c_name).add_client(client);
+            else
+                add_reply(usr_id, c_name, ERR_BADCHANNELKEY, MSG_BADCHANNELKEY);
+        }
         client.set_channel(c_name);
     }
     else if (args.size() < 1)
