@@ -2,19 +2,21 @@
 #define CHANNEL_H
 
 #include <map>
+#include <list>
+#include <string>
+#include <algorithm>
 #include "Client.hpp"
 
-#define T_MODE 0x1 //Topic lock, which means that only channel operators can change the channel topic.
-#define N_MODE 0x1 << 1 //The channel does not allow messages from users who are not in the channel.
-#define S_MODE 0x1 << 2 //The channel is secret, which means it will not be listed on channel lists.
-#define I_MODE 0x1 << 3 //The channel is invite-only, which means that only users who have been invited by the channel operators can join the channel.
-#define M_MODE 0x1 << 4 //The channel is moderated, which means that only users who have been granted voice or operator status can send messages.
-#define P_MODE 0x1 << 5 //The channel is private, which means that it will not be listed on channel lists.
-#define K_MODE 0x1 << 6 //The channel has a password, which must be entered to join the channel.
-#define L_MODE 0x1 << 7 //The channel has a limit on the number of users who can join the channel.
-#define B_MODE 0x1 << 8 //Bans a user from the channel.
-#define O_MODE 0x1 << 9 //Grants operator status to a user.
-#define V_MODE 0x1 << 10 //Grants voice status to a user.
+#define MODE_T 0x1 //Topic lock, which means that only channel operators can change the channel topic.
+#define MODE_N 0x1 << 1 //The channel does not allow messages from users who are not in the channel.
+#define MODE_S 0x1 << 2 //The channel is secret, which means it will not be listed on channel lists.
+#define MODE_I 0x1 << 3 //The channel is invite-only, which means that only users who have been invited by the channel operators can join the channel.
+#define MODE_M 0x1 << 4 //The channel is moderated, which means that only users who have been granted voice or operator status can send messages.
+#define MODE_L 0x1 << 7 //The channel has a limit on the number of users who can join the channel.
+#define MODE_B 0x1 << 8 //Bans a user from the channel.
+#define MODE_K 0x1 << 6 //The channel has a password, which must be entered to join the channel.
+#define MODE_O 0x1 << 9 //Grants operator status to a user.
+#define MODE_V 0x1 << 10 //Grants voice status to a user.
 
 class Channel
 {
@@ -31,13 +33,62 @@ class Channel
         std::string             get_name() const;
         std::string             get_topic() const;
         int                     get_clients_count() const;
+        bool                    parse_mode(std::string mode, uint32_t target = 0);
     public:
         void                    set_topic(std::string topic);
+    public:
+        void                    set_mode(std::string mode, void *mode_argument = NULL);
+        void                    unset_mode(std::string mode, void *mode_argument = NULL);
+    public:
+        bool                    is_topic_lock() const;
+        bool                    is_channel_only() const;
+        bool                    is_channel_secret() const;
+        bool                    is_channel_moderated() const;
+        bool                    is_channel_invite_only() const;
+        bool                    is_channel_protected() const;
+    public:
+        bool                    is_client_unmute(Client &client) const;
+        bool                    is_client_banned(Client &client) const;
+        bool                    is_client_operator(Client &client) const;
     private:
+        void                    set_mode_t    (std::string mode_argument);
+        void                    set_mode_n    (std::string mode_argument);
+        void                    set_mode_s    (std::string mode_argument);
+        void                    set_mode_m    (std::string mode_argument);
+        void                    set_mode_k    (std::string mode_argument);
+        void                    set_mode_i    (std::string mode_argument);
+        void                    set_mode_k    (std::string mode_argument);
+    private:
+        void                    set_mode_v    (Client &client);
+        void                    set_mode_b    (Client &client);
+        void                    set_mode_o    (Client &client);
+        void                    unset_mode_v  (Client &client);
+        void                    unset_mode_b  (Client &client);
+        void                    unset_mode_o  (Client &client);
+    private:
+        void                    unset_mode_t  (std::string mode_argument = "");
+        void                    unset_mode_n  (std::string mode_argument = "");
+        void                    unset_mode_s  (std::string mode_argument = "");
+        void                    unset_mode_m  (std::string mode_argument = "");
+        void                    unset_mode_k  (std::string mode_argument = "");
+        void                    unset_mode_i  (std::string mode_argument = "");
+        void                    unset_mode_v  (std::string mode_argument = "");
+        void                    unset_mode_k  (std::string mode_argument = "");
+        void                    unset_mode_b  (std::string mode_argument = "");
+    private:
+        void                    unset_mode_o  (std::string mode_argument);
+
+    private:
+        typedef void (Channel::*SetMode)(std::string);
+        typedef void (Channel::*UnsetMode)(std::string);
         const std::string           _name;
+        std::string                 _key;
         std::string                 _topic;
         std::map<int, Client&>      _clients;
+        std::map<int, Client&>      _operators;
         uint16_t                    _modes;
+        std::list<std::string>      _bans;
+        std::list<std::string>      _voices;
 };
 
 #endif
