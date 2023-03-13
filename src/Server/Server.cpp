@@ -120,10 +120,14 @@ void    Server::remove_connection(int user_id)
         i++;
     struct pollfd *userfd = &_pfds[i];
     std::cout << "closing connection: " << userfd->fd << std::endl;
-    close(userfd->fd);
+    Client& client = _clients.at(user_id);
+    std::list<std::string> &name = client.get_channels();
+    for (std::list<std::string>::iterator it = name.begin(); it != name.end(); it++)
+        _channels.at(*it).remove_client(user_id);
     _clients.erase(userfd->fd);
     _operators.erase(userfd->fd);
     memmove(userfd, userfd + 1, sizeof(struct pollfd) * (_nfds - i - 1));
+    close(userfd->fd);
     _nfds--;
 }
 
@@ -371,7 +375,7 @@ void    Server::part_cmd(int usr_id)
                 _channels.at(c_name).remove_client(usr_id);
                 if (message != "")
                     privmsg_cmd(usr_id);
-                client.unset_channel();
+                client.remove_channel(c_name);
             }
             else
                 add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NOTONCHANNEL, MSG_NOTONCHANNEL);
@@ -399,13 +403,13 @@ void    Server::kick_cmd(int usr_id)
             {
                 if (is_operator(usr_id))
                 {
-                    if (_clients.at(usr_id).get_channel() != c_name)
+                    if (_clients.at(usr_id).is_in_channel(c_name))
                         add_reply(usr_id, _clients.at(usr_id).get_nick(), ERR_NOTONCHANNEL, MSG_NOTONCHANNEL);
                     else
                     {
                         int target_id = _nicks.at(t_name);
                         target_channel.remove_client(target_id);
-                        _clients.at(target_id).unset_channel();
+                        _clients.at(target_id).remove_channel(c_name);
                         add_reply(target_id, _clients.at(usr_id).get_nick(), RPL_PRIVMSG, message);
                     }
                 }
@@ -471,7 +475,7 @@ void    Server::join_cmd(int usr_id)
             else
                 add_reply(usr_id, c_name, ERR_BADCHANNELKEY, MSG_BADCHANNELKEY);
         }
-        client.set_channel(c_name);
+        client.add_channel(c_name);
     }
     else if (args.size() < 1)
         add_reply(usr_id, "JOIN", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
@@ -488,7 +492,7 @@ void    Server::handle_commands(int fd, std::string &command)
         {
             if ( command_name == "PASS" || command_name == "USER"
                     || command_name == "NICK" || command_name == "QUIT" )
-                        (this->*_commands[command_name])(fd);
+                (this->*_commands[command_name])(fd);
             else
                 add_reply(fd, client.get_nick(), ERR_NOTREGISTERED, MSG_NOTREGISTERED);
         }

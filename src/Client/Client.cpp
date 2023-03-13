@@ -1,6 +1,6 @@
 # include "Client.hpp"
 
-Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _active_channel(""), _real_name(""), _pass_validity(false)
+Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _real_name(""), _pass_validity(false)
 {
     getnameinfo(&addr, sizeof(addr), _addr, sizeof(_addr), NULL, 0, NI_NUMERICHOST);
     _status = UNREGISTERED;
@@ -71,9 +71,9 @@ void    Client::set_real_name(const std::string &real_name)
     _real_name = real_name;
 }
 
-void    Client::set_channel(const std::string &channel)
+void    Client::add_channel(const std::string &channel_name)
 {
-    _active_channel = channel;
+    _channels.push_back(channel_name);
 }
 
 void    Client::set_pass_validity(const bool validity)
@@ -81,9 +81,9 @@ void    Client::set_pass_validity(const bool validity)
     _pass_validity = validity;
 }
 
-void    Client::unset_channel()
+void    Client::remove_channel(const std::string &channel_name)
 {
-    _active_channel = "";
+    std::remove(_channels.begin(), _channels.end(), channel_name);
 }
 
 int    Client::get_id() const
@@ -106,9 +106,14 @@ std::string Client::get_real_name() const
     return (_real_name);
 }
 
-std::string Client::get_channel() const
+std::list <std::string>& Client::get_channels()
 {
-    return (_active_channel);
+    return (_channels);
+}
+
+bool Client::is_in_channel(std::string &c_name) const
+{
+    return (std::find(_channels.begin(), _channels.end(), c_name) != _channels.end());
 }
 
 bool Client::get_pass_validity() const

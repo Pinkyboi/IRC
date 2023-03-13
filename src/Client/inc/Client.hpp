@@ -5,6 +5,7 @@
 # include <string>
 # include <netinet/in.h>
 # include <netdb.h>
+#include <list>
 # include "CommandBuffer.hpp"
 
 # define MAX_COMMAND_SIZE 512
@@ -26,22 +27,23 @@ class Client
         void        set_nick(const std::string &nick);
         void        set_username(const std::string &username);
         void        set_real_name(const std::string &real_name);
-        void        set_channel(const std::string &channel);
         void        set_pass_validity(const bool validity);
         void        set_status(int status);
         void        update_registration();
-        void        unset_channel();
+        void        add_channel(const std::string &channel_name);
+        void        remove_channel(const std::string &channel_name);
     public:
-        void        get_addr() const;
-        int         get_id() const;
-        int         get_status() const;
-        bool        get_pass_validity() const;
-        std::string get_nick() const;
-        std::string get_username() const;
-        std::string get_real_name() const;
-        std::string get_command();
-        std::string get_channel() const;
-        std::string get_serv_id() const;
+        void                        get_addr() const;
+        int                         get_id() const;
+        int                         get_status() const;
+        bool                        get_pass_validity() const;
+        bool                        is_in_channel(std::string &c_name) const;
+        std::list <std::string>&    get_channels();
+        std::string                 get_nick() const;
+        std::string                 get_username() const;
+        std::string                 get_real_name() const;
+        std::string                 get_command();
+        std::string                 get_serv_id() const;
 
     private:
         int                                                 _id;
@@ -50,7 +52,7 @@ class Client
         std::string                                         _nick;
         std::string                                         _username;
         std::string                                         _real_name;
-        std::string                                         _active_channel;
+        std::list<std::string>                              _channels;
         std::queue< std::pair< bool, CircularBuffer *> >    _commands;
         int                                                 _status;
 
