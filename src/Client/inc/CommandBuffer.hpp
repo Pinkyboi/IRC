@@ -15,11 +15,11 @@ class CircularBuffer
         void            clear();
     public:
         char            *get_buffer();
-        size_t    get_size();
+        size_t          get_size();
     private:
         char            *_buffer;
-        size_t    _size;
-        size_t    _capacity;
+        size_t          _size;
+        size_t          _capacity;
 };
 
 # endif
