@@ -49,7 +49,6 @@ bool    Server::is_nick_used(std::string& nick)
     return (_nicks.find(nick) != _nicks.end());
 }
 
-
 void    Server::setup()
 {
     struct addrinfo hints;
@@ -151,9 +150,14 @@ void    Server::privmsg_cmd(int usr_id)
         std::string t_name = args.front();
         if (_channels.find(t_name) != _channels.end())
         {
-            std::map<int, Client&> &clients = _channels.at(t_name).get_clients();
-            for (std::map<int, Client&>::iterator it = clients.begin(); it != clients.end(); it++)
-                add_reply(it->first, s_name, it->second.get_nick(), RPL_PRIVMSG, message);
+            if (!_channels.at(t_name).is_client_banned(_clients.at(usr_id)))
+            {
+                std::map<int, Client&> &clients = _channels.at(t_name).get_clients();
+                for (std::map<int, Client&>::iterator it = clients.begin(); it != clients.end(); it++)
+                    add_reply(it->first, s_name, it->second.get_nick(), RPL_PRIVMSG, message);
+            }
+            else
+                add_reply(usr_id, _severname, t_name, ERR_BANNEDFROMCHAN, MSG_BANNEDFROMCHAN);
         }
         else if (_nicks.find(t_name) != _nicks.end())
             add_reply(_nicks.at(t_name), s_name, t_name, RPL_PRIVMSG, message);
@@ -232,8 +236,11 @@ void    Server::list_cmd(int usr_id)
         {
             for (std::map<const std::string, Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
             {
-                std::string msg = it->first + " " + convert_to_string(it->second.get_clients_count()) + " " + it->second.get_topic();
-                add_reply(usr_id, _severname, nick, RPL_LIST, msg);
+                if (it->second.is_channel_secret() == false)
+                {
+                    std::string msg = it->first + " " + convert_to_string(it->second.get_clients_count()) + " " + it->second.get_topic();
+                    add_reply(usr_id, _severname, nick, RPL_LIST, msg);
+                }
             }
         }
         else if (args.size() == 1)
@@ -472,7 +479,12 @@ void    Server::join_cmd(int usr_id)
         else
         {
             if (_channels.at(c_name).get_key() == key)
-                _channels.at(c_name).add_client(client);
+            {
+                if (!_channels.at(c_name).is_client_banned(client))
+                    _channels.at(c_name).add_client(client);
+                else
+                    add_reply(usr_id, _severname, c_name, ERR_BANNEDFROMCHAN, MSG_BANNEDFROMCHAN);
+            }
             else
                 add_reply(usr_id, _severname, c_name, ERR_BADCHANNELKEY, MSG_BADCHANNELKEY);
         }

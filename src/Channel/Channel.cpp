@@ -129,7 +129,17 @@ void    Channel::set_mode_v(std::string &mode_argument)
 void    Channel::set_mode_b(std::string &mode_argument)
 {
     if (std::find(_bans.begin(), _bans.end(), mode_argument) == _bans.end())
+    {
+        for (std::map<int, Client&>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+        {
+            if (it->second.get_nick() == mode_argument)
+            {
+                remove_client(it->first);
+                break;
+            }
+        }
         _bans.push_back(mode_argument);
+    }
 }
 
 void    Channel::set_mode_o(std::string &mode_argument)
