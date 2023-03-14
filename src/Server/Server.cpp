@@ -118,15 +118,15 @@ void    Server::remove_connection(int user_id)
     while (i < _nfds && _pfds[i].fd != user_id)
         i++;
     struct pollfd *userfd = &_pfds[i];
-    std::cout << "closing connection: " << userfd->fd << std::endl;
+    std::cout << "closing connection: " << userfd->fd << std::endl << _nfds - i << "|" << _nfds << std::endl;
     Client& client = _clients.at(user_id);
     std::list<std::string> &name = client.get_channels();
     for (std::list<std::string>::iterator it = name.begin(); it != name.end(); it++)
         _channels.at(*it).remove_client(user_id);
-    _clients.erase(userfd->fd);
-    _operators.erase(userfd->fd);
+    _clients.erase(user_id);
+    _operators.erase(user_id);
     memmove(userfd, userfd + 1, sizeof(struct pollfd) * (_nfds - i - 1));
-    close(userfd->fd);
+    close(user_id);
     _nfds--;
 }
 
@@ -135,7 +135,7 @@ void    Server::quit_cmd(int usr_id)
     std::string message = _parser.getMessage();
 
     add_reply(usr_id, _severname, "QUIT", "", message);
-    _clients.at(usr_id).set_status(0);
+    _clients.at(usr_id).set_status(Client::DOWN);
 }
 
 void    Server::privmsg_cmd(int usr_id)
