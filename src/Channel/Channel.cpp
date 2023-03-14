@@ -134,6 +134,7 @@ void    Channel::set_mode_b(std::string &mode_argument)
         {
             if (it->second.get_nick() == mode_argument)
             {
+                it->second.remove_channel(_name);
                 remove_client(it->first);
                 break;
             }

@@ -53,6 +53,8 @@ void    Parser::parse(std::string message)
 
     // Find the command and parameters part.
     tokens = split_command(message, " ");
+    if (tokens.empty())
+        return ;
     _command = std::string(tokens[0]);
     for (size_t i = 1; i < tokens.size(); i++)
         _arguments.push_back(std::string(tokens[i]));
