@@ -203,6 +203,8 @@ void    Channel::unset_mode_b(std::string &mode_argument)
 
 void    Channel::unset_mode_o(std::string &mode_argument)
 {
+    if (mode_argument == _creator.get_nick())
+        return ;
     for (std::map<int, Client&>::iterator it = _operators.begin(); it != _operators.end(); ++it)
     {
         if (it->second.get_nick() == mode_argument)
@@ -258,7 +260,12 @@ bool    Channel::is_client_operator(Client &client) const
     return (_operators.find(client.get_id()) != _operators.end());
 }
 
-
+bool    Channel::is_client_invited(Client &client) const
+{
+    if (is_channel_invite_only())
+        return (std::find(_invites.begin(), _invites.end(), client.get_nick()) != _invites.end());
+    return true;
+}
 
 bool Channel::handle_modes(std::string mode, std::string mode_arg)
 {

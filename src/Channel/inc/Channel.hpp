@@ -51,6 +51,7 @@ class Channel
         bool                    is_client_unmute(Client &client) const;
         bool                    is_client_banned(Client &client) const;
         bool                    is_client_operator(Client &client) const;
+        bool                    is_client_invited(Client &client) const;
     private:
         void                    add_operator(Client& client);
     private:
@@ -60,12 +61,14 @@ class Channel
         void                    set_mode_m    (std::string &mode_argument);
         void                    set_mode_k    (std::string &mode_argument);
         void                    set_mode_i    (std::string &mode_argument);
+        void                    set_mode_l    (std::string &mode_argument);
         void                    unset_mode_t  (std::string &mode_argument);
         void                    unset_mode_n  (std::string &mode_argument);
         void                    unset_mode_s  (std::string &mode_argument);
         void                    unset_mode_m  (std::string &mode_argument);
         void                    unset_mode_k  (std::string &mode_argument);
         void                    unset_mode_i  (std::string &mode_argument);
+        void                    unset_mode_l  (std::string &mode_argument);
     private:
         void                    set_mode_v    (std::string &mode_argument);
         void                    set_mode_b    (std::string &mode_argument);
@@ -92,6 +95,7 @@ class Channel
         std::map<char, UnsetMode>   _unset_modes;
         std::list<std::string>      _bans;
         std::list<std::string>      _voices;
+        std::list<std::string>      _invites;
 };
 
 #endif

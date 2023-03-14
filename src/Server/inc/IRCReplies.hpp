@@ -123,4 +123,6 @@
 #define MSG_BADCHANNELKEY "Bad channel key"
 #define MSG_NOTREGISTERED "You have not registered"
 #define MSG_BANNEDFROMCHAN "You are banned from this channel"
+#define MSG_INVITEONLYCHAN "This channel is invite only"
+#define MSG_ENDOFNAMES "End of NAMES list"
 #endif

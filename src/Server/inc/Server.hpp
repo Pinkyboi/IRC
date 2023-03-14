@@ -72,17 +72,18 @@ class Server
                                                         const std::string &code, const std::string &msg);
         void                            handle_commands(int fd, std::string &command);
     private:
-        void                                        list_cmd    (int usr_id);
-        void                                        nick_cmd    (int usr_id); // basic version done
-        void                                        user_cmd    (int usr_id); // basic version done
         void                                        pass_cmd    (int usr_id); // basic version done
-        void                                        kick_cmd    (int usr_id); // basic version done
+        void                                        user_cmd    (int usr_id); // basic version done
+        void                                        nick_cmd    (int usr_id); // basic version done
         void                                        join_cmd    (int usr_id); // basic version done
         void                                        part_cmd    (int usr_id); // basic version done
+        void                                        topic_cmd   (int usr_id);
+        void                                        names_cmd   (int usr_id); // basic version done
+        void                                        list_cmd    (int usr_id);
+        void                                        kick_cmd    (int usr_id); // basic version done
         void                                        oper_cmd    (int usr_id); // basic version done
         void                                        privmsg_cmd (int usr_id);
         void                                        notice_cmd  (int usr_id);
-        void                                        topic_cmd   (int usr_id);
         void                                        quit_cmd    (int usr_id);
         void                                        mode_cmd    (int usr_id);
     private:
