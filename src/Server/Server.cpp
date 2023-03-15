@@ -613,7 +613,6 @@ void    Server::join_cmd(int usr_id)
             else
                 add_reply(usr_id, _servername, c_name, ERR_BADCHANNELKEY, MSG_BADCHANNELKEY);
         }
-        client.add_channel(c_name);
     }
     else if (args.size() < 1)
         add_reply(usr_id, _servername, "JOIN", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
