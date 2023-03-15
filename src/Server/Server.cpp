@@ -596,11 +596,15 @@ void    Server::join_cmd(int usr_id)
             Channel &channel = _channels.at(c_name);
             if (channel.get_key() == key)
             {
-                if (channel.is_client_invited(client) == false)
+                bool is_invited = channel.is_client_invited(client);
+                if (is_invited == false)
                     add_reply(usr_id, _servername, c_name, ERR_INVITEONLYCHAN, MSG_INVITEONLYCHAN);
-                else if (!channel.is_client_banned(client))
+                else if (channel.is_client_banned(client) == false)
                 {
+                    if (is_invited == true)
+                        channel.remove_from_invites(client.get_nick());
                     channel.add_client(client);
+                    client.add_channel(c_name);
                     add_reply(usr_id, _servername, c_name, RPL_TOPIC, channel.get_topic());
                 }
                 else
