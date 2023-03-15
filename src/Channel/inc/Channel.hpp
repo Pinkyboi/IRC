@@ -33,6 +33,7 @@ class Channel
         std::string             get_name() const;
         std::string             get_topic() const;
         std::string             get_key() const;
+        std::string             get_owner_nick() const;
         int                     get_clients_count() const;
         bool                    parse_mode(std::string mode, uint32_t target = 0);
     public:
@@ -88,7 +89,7 @@ class Channel
         const std::string           _name;
         std::string                 _key;
         std::string                 _topic;
-        Client&                     _creator;
+        Client&                     _owner;
         std::map<int, Client&>      _clients;
         std::map<int, Client&>      _operators;
         std::map<char, SetMode>     _set_modes;
