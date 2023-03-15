@@ -1,6 +1,6 @@
 #include "Channel.hpp"
 
-Channel::Channel(Client &client ,const std::string name): _name(name), _topic(""), _modes(0), _creator(client)
+Channel::Channel(Client &client ,const std::string name): _name(name), _topic(""), _modes(0), _owner(client)
 {
     _set_modes.insert(std::pair<char, SetMode>('t', &Channel::set_mode_t));
     _set_modes.insert(std::pair<char, SetMode>('n', &Channel::set_mode_n));
@@ -49,6 +49,11 @@ std::string Channel::get_key() const
     return (_key);
 }
 
+std::string Channel::get_owner_nick() const
+{
+    return (_owner.get_nick());
+}
+
 int    Channel::get_clients_count() const
 {
     return (_clients.size());
@@ -72,6 +77,7 @@ Client& Channel::get_client(int client_id)
 void    Channel::remove_client(int client_id)
 {
     _clients.erase(client_id);
+    _operators.erase(client_id);
 }
 
 bool    Channel::is_client(int client_id)
@@ -212,7 +218,7 @@ void    Channel::unset_mode_b(std::string &mode_argument)
 
 void    Channel::unset_mode_o(std::string &mode_argument)
 {
-    if (mode_argument == _creator.get_nick())
+    if (mode_argument == _owner.get_nick())
         return ;
     for (std::map<int, Client&>::iterator it = _operators.begin(); it != _operators.end(); ++it)
     {

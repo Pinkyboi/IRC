@@ -120,12 +120,11 @@ void    Server::remove_connection(int user_id)
     while (i < _nfds && _pfds[i].fd != user_id)
         i++;
     struct pollfd *userfd = &_pfds[i];
-    std::cout << userfd->fd << user_id << std::endl;
-    std::cout << userfd->fd << user_id << std::endl;
     Client& client = _clients.at(user_id);
     std::list<std::string> &channels = client.get_channels();
     for (std::list<std::string>::iterator it = channels.begin(); it != channels.end(); it++)
         _channels.at(*it).remove_client(user_id);
+    _nicks.erase(client.get_nick());
     _clients.erase(user_id);
     _operators.erase(user_id);
     memmove(userfd, userfd + 1, sizeof(struct pollfd) * (_nfds - i));
@@ -163,7 +162,7 @@ void    Server::privmsg_cmd(int usr_id)
             else
                 add_reply(usr_id, _servername, t_name, ERR_BANNEDFROMCHAN, MSG_BANNEDFROMCHAN);
         }
-        else if (_nicks.find(t_name) != _nicks.end())
+        else if (is_nick_used(t_name))
             add_reply(_nicks.at(t_name), s_name, t_name, RPL_PRIVMSG, message);
         else
             add_reply(usr_id, _servername, "PRIVMSG", ERR_NOSUCHNICK, MSG_NOSUCHNICK);
@@ -212,15 +211,15 @@ void    Server::notice_cmd(int usr_id)
 
     if (nargs == 1)
     {
-        std::string name = args.front();
-        if (_channels.find(name) != _channels.end())
+        std::string t_name = args.front();
+        if (_channels.find(t_name) != _channels.end())
         {
-            std::map<int, Client&> &clients = _channels.at(name).get_clients();
+            std::map<int, Client&> &clients = _channels.at(t_name).get_clients();
             for (std::map<int, Client&>::iterator it = clients.begin(); it != clients.end(); it++)
                 add_reply(it->first, s_name, it->second.get_nick(), RPL_PRIVMSG, message);
         }
-        else if (_nicks.find(name) != _nicks.end())
-            add_reply(_nicks.at(name), _servername, s_name, RPL_PRIVMSG, message);
+        else if (is_nick_used(t_name))
+            add_reply(_nicks.at(t_name), _servername, s_name, RPL_PRIVMSG, message);
     }
 }
 
@@ -287,7 +286,6 @@ void    Server::user_cmd(int usr_id)
         std::string username = args.front();
         _clients.at(usr_id).set_username(username);
         _clients.at(usr_id).set_real_name(real_name);
-        _clients.at(usr_id).update_registration();
     }
 }
 
@@ -320,8 +318,10 @@ void    Server::nick_cmd(int usr_id)
             else
             {
                 client.set_nick(nick);
-                client.update_registration();
-                add_nick(usr_id, nick);
+                if (client.get_nick().empty())
+                    add_reply(usr_id, _servername, "NICK", ERR_ERRONEUSNICKNAME, MSG_ERRONEUSNICKNAME);
+                else
+                    add_nick(usr_id, nick);
             }
         }
         else
@@ -329,7 +329,7 @@ void    Server::nick_cmd(int usr_id)
         
     }
     else
-        add_reply(usr_id, _servername, "NICK", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, _servername, "NICK", ERR_NONICKNAMEGIVEN, MSG_NEEDMOREPARAMS);
 }
 
 void    Server::pass_cmd(int usr_id)
@@ -339,10 +339,7 @@ void    Server::pass_cmd(int usr_id)
     if ( _clients.at(usr_id).is_registered() )
         add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
     if ( args.size() == 1 )
-    {
          _clients.at(usr_id).set_pass_validity(args.front() == _pass);
-         _clients.at(usr_id).update_registration();
-    }
     else
         add_reply(usr_id, _servername, "PASS", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
@@ -453,18 +450,17 @@ void    Server::kick_cmd(int usr_id)
             Client  &sender         =   _clients.at(usr_id);
             if (is_nick_used(t_name) && target_channel.is_client(_nicks.at(t_name)))
             {
-                if (is_operator(usr_id))
-                {
-                    if (sender.is_in_channel(c_name))
+                if (target_channel.is_client(usr_id) == false)
                         add_reply(usr_id, _servername, sender.get_nick(), ERR_NOTONCHANNEL, MSG_NOTONCHANNEL);
-                    else
-                    {
-                        int target_id = _nicks.at(t_name);
-                        target_channel.remove_client(target_id);
-                        _clients.at(target_id).remove_channel(c_name);
-                        add_reply(target_id, sender.get_serv_id(), t_name, RPL_PRIVMSG, message);
-                    }
+                else if (target_channel.is_client_operator(sender) and t_name != target_channel.get_owner_nick())
+                {
+                    int target_id = _nicks.at(t_name);
+                    target_channel.remove_client(target_id);
+                    _clients.at(target_id).remove_channel(c_name);
+                    add_reply(target_id, sender.get_serv_id(), t_name, RPL_PRIVMSG, message);
                 }
+                else
+                    add_reply(usr_id, _servername, sender.get_nick(), ERR_CHANOPRIVSNEEDED, MSG_CHANOPRIVSNEEDED);
             }
             else
                 add_reply(usr_id, _servername, sender.get_nick(), ERR_USERNOTINCHANNEL, MSG_USERNOTINCHANNEL);
@@ -618,27 +614,40 @@ void    Server::join_cmd(int usr_id)
         add_reply(usr_id, _servername, "JOIN", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
-void    Server::handle_commands(int fd, std::string &command)
+void    Server::handle_commands(int usr_id, std::string &command)
 {
     _parser.parse(command);
     std::string command_name = _parser.get_command();
     if ( _commands.find(command_name) != _commands.end())
     {
-        Client &client = _clients.at(fd);
+        Client &client = _clients.at(usr_id);
         if ( client.get_status() == Client::UNREGISTERED )
         {
-            if ( command_name == "PASS" || command_name == "USER"
-                    || command_name == "NICK" || command_name == "QUIT" )
-                (this->*_commands[command_name])(fd);
+            if (command_name == "QUIT")
+                (this->*_commands[command_name])(usr_id);
+            else if (command_name == "PASS")
+            {
+                if (client.get_pass_validity() == false )
+                    (this->*_commands[command_name])(usr_id);
+                _clients.at(usr_id).update_registration();
+            }
+            else if ((command_name == "USER" || command_name == "NICK"))
+            {
+                if (client.get_pass_validity() == true)
+                    (this->*_commands[command_name])(usr_id);
+                _clients.at(usr_id).update_registration();
+            }
             else
-                add_reply(fd, _servername, client.get_nick(), ERR_NOTREGISTERED, MSG_NOTREGISTERED);
+                add_reply(usr_id, _servername, client.get_nick(), ERR_NOTREGISTERED, MSG_NOTREGISTERED);
+            if (client.get_status() == Client::REGISTERED)
+                add_reply(usr_id, _servername, client.get_nick(), RPL_WELCOME, _motd);
         }
         else if ( client.get_status() == Client::REGISTERED )
         {
             if ( command_name == "PASS" ||  command_name == "USER" )
-                add_reply(fd, _servername, client.get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
+                add_reply(usr_id, _servername, client.get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
             else
-                (this->*_commands[command_name])(fd);
+                (this->*_commands[command_name])(usr_id);
         }
     }
 }
