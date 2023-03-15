@@ -3,7 +3,7 @@
 Server *Server::_instance = NULL;
 std::string Server::_servername = "superDuperServer";
 std::string Server::_opname = "MybesOPT";
-std::string Server::_motd = "this is the message of the day";
+std::string Server::_motd = ":this is the message of the day";
 std::string Server::_oppass = "123456789";
 
 Server::~Server()
@@ -608,6 +608,8 @@ void    Server::handle_commands(int fd, std::string &command)
             }
             else
                 add_reply(fd, _servername, client.get_nick(), ERR_NOTREGISTERED, MSG_NOTREGISTERED);
+            if (client.get_status() == Client::REGISTERED)
+                add_reply(fd, _servername, client.get_nick(), RPL_WELCOME, _motd);
         }
         else if ( client.get_status() == Client::REGISTERED )
         {

@@ -125,4 +125,5 @@
 #define MSG_BANNEDFROMCHAN "You are banned from this channel"
 #define MSG_INVITEONLYCHAN "This channel is invite only"
 #define MSG_ENDOFNAMES "End of NAMES list"
+#define MSG_WELCOME "Welcome to our super duper IRC server"
 #endif
