@@ -5,7 +5,8 @@
 # include <string>
 # include <netinet/in.h>
 # include <netdb.h>
-#include <list>
+# include <list>
+# include <algorithm>
 # include "CommandBuffer.hpp"
 
 # define MAX_COMMAND_SIZE 512

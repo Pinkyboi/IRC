@@ -83,7 +83,11 @@ void    Client::set_pass_validity(const bool validity)
 
 void    Client::remove_channel(const std::string &channel_name)
 {
-    std::remove(_channels.begin(), _channels.end(), channel_name);
+    std::list<std::string>::iterator it;
+
+    it = std::find(_channels.begin(), _channels.end(), channel_name);
+    if (it != _channels.end())
+        _channels.erase(it);
 }
 
 int    Client::get_id() const
