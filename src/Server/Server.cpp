@@ -405,11 +405,37 @@ void    Server::part_cmd(int usr_id)
 void    Server::invite_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.get_arguments();
+    size_t nargs = _parser.get_nargs();
+    Client &invitor = _clients.at(usr_id);
 
-    if ( _parser.get_nargs() == 2 )
+    if ( nargs == 2 )
     {
-        
+        if (_nicks.find(args.at(0)) == _nicks.end())
+            add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), ERR_NOSUCHNICK, MSG_NOSUCHNICK);
+        else if (_channels.find(args.at(1)) == _channels.end())
+            add_reply(usr_id, _servername, args.at(1), ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
+        else
+        {
+            Channel &channel = _channels.at(args.at(1));
+            Client &client = _clients.at(_nicks.at(args.at(0)));
+            if (channel.is_client(client.get_id()) == true)
+                add_reply(usr_id, _servername, client.get_nick(), ERR_USERONCHANNEL, MSG_USERONCHANNEL);
+            else
+            {
+                // Here we check the previliges of the invitor
+                if (channel.is_client_operator(invitor) == false && channel.is_channel_invite_only())
+                    add_reply(usr_id, _servername, invitor.get_nick(), ERR_CHANOPRIVSNEEDED, MSG_CHANOPRIVSNEEDED);
+                else
+                {
+                    channel.add_to_invites(client.get_nick());
+                    add_reply(invitor.get_id(), _servername, invitor.get_nick(), RPL_INVITING, "");
+                    add_reply(client.get_id(), _servername, client.get_nick(), "INVITE", channel.get_name());
+                }
+            }
+        }
     }
+    else if ( nargs < 2 )
+        add_reply(usr_id, _servername, "INVITE", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
 void    Server::kick_cmd(int usr_id)
