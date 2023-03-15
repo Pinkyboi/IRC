@@ -111,6 +111,7 @@
 #define MSG_NOSUCHCHANNEL "No such channel"
 #define MSG_NOTONCHANNEL "You are not on that channel"
 #define MSG_USERNOTINCHANNEL "User is not in channel"
+#define MSG_USERONCHANNEL "User already in channel"
 #define MSG_NOTOPIC "No topic is set"
 #define MSG_LISTEND "End of LIST"
 #define MSG_TOOMANYTARGETS "Too many targets"
