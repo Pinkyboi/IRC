@@ -179,14 +179,15 @@ void    Server::mode_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.get_arguments();
     std::string message = _parser.get_message();
+    size_t nargs = _parser.get_nargs();
 
-    if (args.size() == 2 || args.size() == 3)
+    if ( nargs == 2 || nargs == 3 )
     {
         std::string c_name = args.front();
         std::string argument = "";
         std::string modes = args.at(1);
         Client &client  = _clients.at(usr_id);
-        if (args.size() == 3)
+        if (nargs == 3)
             argument = args.back();
         if (_channels.find(c_name) != _channels.end())
         {
@@ -198,7 +199,7 @@ void    Server::mode_cmd(int usr_id)
         else
             add_reply(usr_id, _servername, "MODE", ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
     }
-    else if (args.size() < 2)
+    else if (nargs < 2)
         add_reply(usr_id, _servername, "MODE", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
@@ -207,7 +208,9 @@ void    Server::notice_cmd(int usr_id)
     std::vector<std::string> args = _parser.get_arguments();
     std::string message = _parser.get_message();
     std::string s_name = _clients.at(usr_id).get_serv_id();
-    if (args.size() == 1)
+    size_t nargs = _parser.get_nargs();
+
+    if (nargs == 1)
     {
         std::string name = args.front();
         if (_channels.find(name) != _channels.end())
@@ -248,7 +251,6 @@ void    Server::list_cmd(int usr_id)
     }
     else if (args.size() >= 1)
     {
-        
         std::string c_name = args.at(0);
         if (_channels.find(c_name) != _channels.end())
         {
