@@ -21,19 +21,29 @@ std::vector<std::string>    split_command(std::string message, std::string sep)
     return tokens;
 }
 
-std::string &Parser::getCommand()
+std::string &Parser::get_command()
 {
     return _command;
 }
 
-std::vector<std::string> &Parser::getArguments()
+std::vector<std::string> &Parser::get_arguments()
 {
     return _arguments;
 }
 
-std::string &Parser::getMessage()
+std::string &Parser::get_message()
 {
     return _message;
+}
+
+bool    &Parser::get_has_message()
+{
+    return _has_message;
+}
+
+size_t  &Parser::get_nargs()
+{
+    return _nargs;
 }
 
 void    Parser::parse(std::string message)
@@ -42,11 +52,14 @@ void    Parser::parse(std::string message)
     _command.clear();
     _arguments.clear();
     _message.clear();
+    _has_message = false;
+    _nargs = 0;
 
     // Find the message part.
     size_t pos = message.find_first_of(":");
     if (pos != std::string::npos)
     {
+        _has_message = true;
         _message = message.substr(pos+1, message.size() - pos);
         message = message.substr(0, pos);
     }
@@ -58,4 +71,5 @@ void    Parser::parse(std::string message)
     _command = std::string(tokens[0]);
     for (size_t i = 1; i < tokens.size(); i++)
         _arguments.push_back(std::string(tokens[i]));
+    _nargs = _arguments.size();
 }
