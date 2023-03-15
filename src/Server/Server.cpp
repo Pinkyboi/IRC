@@ -120,8 +120,6 @@ void    Server::remove_connection(int user_id)
     while (i < _nfds && _pfds[i].fd != user_id)
         i++;
     struct pollfd *userfd = &_pfds[i];
-    std::cout << userfd->fd << user_id << std::endl;
-    std::cout << userfd->fd << user_id << std::endl;
     Client& client = _clients.at(user_id);
     std::list<std::string> &channels = client.get_channels();
     for (std::list<std::string>::iterator it = channels.begin(); it != channels.end(); it++)
@@ -596,9 +594,18 @@ void    Server::handle_commands(int fd, std::string &command)
         Client &client = _clients.at(fd);
         if ( client.get_status() == Client::UNREGISTERED )
         {
-            if ( command_name == "PASS" || command_name == "USER"
-                    || command_name == "NICK" || command_name == "QUIT" )
+            if (command_name == "QUIT")
                 (this->*_commands[command_name])(fd);
+            else if (command_name == "PASS")
+            {
+                if (client.get_pass_validity() == false )
+                    (this->*_commands[command_name])(fd);
+            }
+            else if ((command_name == "USER" || command_name == "NICK"))
+            {
+                if (client.get_pass_validity() == true)
+                    (this->*_commands[command_name])(fd);
+            }
             else
                 add_reply(fd, _servername, client.get_nick(), ERR_NOTREGISTERED, MSG_NOTREGISTERED);
         }
