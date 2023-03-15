@@ -52,6 +52,8 @@ class Channel
         bool                    is_client_banned(Client &client) const;
         bool                    is_client_operator(Client &client) const;
         bool                    is_client_invited(Client &client) const;
+        void                    add_to_invites(std::string nick);
+        void                    remove_from_invites(std::string nick);
     private:
         void                    add_operator(Client& client);
     private:
@@ -76,7 +78,6 @@ class Channel
         void                    unset_mode_v  (std::string &mode_argument);
         void                    unset_mode_b  (std::string &mode_argument);
         void                    unset_mode_o  (std::string &mode_argument);
-    private:
     public:
         bool                    handle_modes(std::string mode, std::string mode_arg);
         bool                    handle_modes(std::string mode, Client& client);

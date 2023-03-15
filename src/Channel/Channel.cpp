@@ -54,7 +54,6 @@ int    Channel::get_clients_count() const
     return (_clients.size());
 }
 
-
 void    Channel::add_client(Client& client)
 {
     _clients.insert(std::pair<int, Client&>(client.get_id(), client));
@@ -78,6 +77,16 @@ void    Channel::remove_client(int client_id)
 bool    Channel::is_client(int client_id)
 {
     return (_clients.find(client_id) != _clients.end());
+}
+
+void    Channel::add_to_invites(std::string nick)
+{
+    _invites.push_back(nick);
+}
+
+void    Channel::remove_from_invites(std::string nick)
+{
+    _invites.remove(nick);
 }
 
 std::map<int, Client&>  &Channel::get_clients(void)
