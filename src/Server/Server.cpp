@@ -43,6 +43,7 @@ void    Server::init_commands()
     _commands.insert(std::pair<std::string, cmd_func>("PRIVMSG", &Server::privmsg_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("QUIT", &Server::quit_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("MODE", &Server::mode_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("INVITE", &Server::invite_cmd));
 }
 
 bool    Server::is_nick_used(std::string& nick)
@@ -396,7 +397,17 @@ void    Server::part_cmd(int usr_id)
             add_reply(usr_id, _servername, c_name, ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
     }
     else if (args.size() == 0)
-        add_reply(usr_id, _severname, "PART", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, _servername, "PART", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+}
+
+void    Server::invite_cmd(int usr_id)
+{
+    std::vector<std::string> args = _parser.get_arguments();
+
+    if ( _parser.get_nargs() == 2 )
+    {
+        
+    }
 }
 
 void    Server::kick_cmd(int usr_id)
