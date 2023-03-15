@@ -42,7 +42,7 @@ class Server
                 const char  *_msg;
         };
     public:
-        static std::string _severname;
+        static std::string _servername;
         static std::string _motd;
         static std::string _opname;
         static std::string _oppass;
@@ -86,6 +86,7 @@ class Server
         void                                        notice_cmd  (int usr_id);
         void                                        quit_cmd    (int usr_id);
         void                                        mode_cmd    (int usr_id);
+        void                                        invite_cmd  (int usr_id);
     private:
         static Server                               *_instance;
     private:
