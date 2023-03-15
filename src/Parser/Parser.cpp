@@ -21,27 +21,27 @@ std::vector<std::string>    split_command(std::string message, std::string sep)
     return tokens;
 }
 
-std::string &Parser::get_command()
+std::string Parser::get_command() const
 {
     return _command;
 }
 
-std::vector<std::string> &Parser::get_arguments()
+std::vector<std::string> Parser::get_arguments() const
 {
     return _arguments;
 }
 
-std::string &Parser::get_message()
+std::string Parser::get_message() const
 {
     return _message;
 }
 
-bool    &Parser::get_has_message()
+bool    Parser::get_has_message() const
 {
     return _has_message;
 }
 
-size_t  &Parser::get_nargs()
+size_t  Parser::get_nargs() const
 {
     return _nargs;
 }

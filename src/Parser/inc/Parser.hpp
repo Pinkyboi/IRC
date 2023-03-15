@@ -11,12 +11,12 @@ class Parser
         Parser();
         ~Parser();
         void                        parse(std::string message);
-        std::vector<std::string>    &get_result(void);
-        std::string                 &get_command();
-        std::vector<std::string>    &get_arguments();
-        std::string                 &get_message();
-        bool                        &get_has_message();
-        size_t                      &get_nargs();
+        std::vector<std::string>    get_result(void) const;
+        std::string                 get_command() const;
+        std::vector<std::string>    get_arguments() const;
+        std::string                 get_message() const;
+        bool                        get_has_message() const;
+        size_t                      get_nargs() const;
 
     private:
         std::string                 _command;
