@@ -3,7 +3,7 @@
 Server *Server::_instance = NULL;
 std::string Server::_servername = "superDuperServer";
 std::string Server::_opname = "MybesOPT";
-std::string Server::_motd = ":this is the message of the day";
+std::string Server::_motd = "this is the message of the day";
 std::string Server::_oppass = "123456789";
 
 Server::~Server()
@@ -283,7 +283,6 @@ void    Server::user_cmd(int usr_id)
         std::string username = args.front();
         _clients.at(usr_id).set_username(username);
         _clients.at(usr_id).set_real_name(real_name);
-        _clients.at(usr_id).update_registration();
     }
 }
 
@@ -316,8 +315,10 @@ void    Server::nick_cmd(int usr_id)
             else
             {
                 client.set_nick(nick);
-                client.update_registration();
-                add_nick(usr_id, nick);
+                if (client.get_nick().empty())
+                    add_reply(usr_id, _servername, "NICK", ERR_ERRONEUSNICKNAME, MSG_ERRONEUSNICKNAME);
+                else
+                    add_nick(usr_id, nick);
             }
         }
         else
@@ -325,7 +326,7 @@ void    Server::nick_cmd(int usr_id)
         
     }
     else
-        add_reply(usr_id, _servername, "NICK", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, _servername, "NICK", ERR_NONICKNAMEGIVEN, MSG_NEEDMOREPARAMS);
 }
 
 void    Server::pass_cmd(int usr_id)
@@ -335,10 +336,7 @@ void    Server::pass_cmd(int usr_id)
     if ( _clients.at(usr_id).is_registered() )
         add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
     if ( args.size() == 1 )
-    {
          _clients.at(usr_id).set_pass_validity(args.front() == _pass);
-         _clients.at(usr_id).update_registration();
-    }
     else
         add_reply(usr_id, _servername, "PASS", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
@@ -585,38 +583,40 @@ void    Server::join_cmd(int usr_id)
         add_reply(usr_id, _servername, "JOIN", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
-void    Server::handle_commands(int fd, std::string &command)
+void    Server::handle_commands(int usr_id, std::string &command)
 {
     _parser.parse(command);
     std::string command_name = _parser.get_command();
     if ( _commands.find(command_name) != _commands.end())
     {
-        Client &client = _clients.at(fd);
+        Client &client = _clients.at(usr_id);
         if ( client.get_status() == Client::UNREGISTERED )
         {
             if (command_name == "QUIT")
-                (this->*_commands[command_name])(fd);
+                (this->*_commands[command_name])(usr_id);
             else if (command_name == "PASS")
             {
                 if (client.get_pass_validity() == false )
-                    (this->*_commands[command_name])(fd);
+                    (this->*_commands[command_name])(usr_id);
+                _clients.at(usr_id).update_registration();
             }
             else if ((command_name == "USER" || command_name == "NICK"))
             {
                 if (client.get_pass_validity() == true)
-                    (this->*_commands[command_name])(fd);
+                    (this->*_commands[command_name])(usr_id);
+                _clients.at(usr_id).update_registration();
             }
             else
-                add_reply(fd, _servername, client.get_nick(), ERR_NOTREGISTERED, MSG_NOTREGISTERED);
+                add_reply(usr_id, _servername, client.get_nick(), ERR_NOTREGISTERED, MSG_NOTREGISTERED);
             if (client.get_status() == Client::REGISTERED)
-                add_reply(fd, _servername, client.get_nick(), RPL_WELCOME, _motd);
+                add_reply(usr_id, _servername, client.get_nick(), RPL_WELCOME, _motd);
         }
         else if ( client.get_status() == Client::REGISTERED )
         {
             if ( command_name == "PASS" ||  command_name == "USER" )
-                add_reply(fd, _servername, client.get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
+                add_reply(usr_id, _servername, client.get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
             else
-                (this->*_commands[command_name])(fd);
+                (this->*_commands[command_name])(usr_id);
         }
     }
 }

@@ -58,6 +58,10 @@ std::string Client::get_command()
 
 void    Client::set_nick(const std::string &nick)
 {
+    if (nick.empty() || nick.size() > 9)
+        return;
+    if (nick.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_") != std::string::npos)
+        return;
     _nick = nick;
 }
 
