@@ -80,6 +80,8 @@ void    Channel::remove_client(int client_id)
 {
     _clients.erase(client_id);
     _operators.erase(client_id);
+    _invites.erase(client_id);
+    _voices.erase(client_id);
 }
 
 bool    Channel::is_client(int client_id)
