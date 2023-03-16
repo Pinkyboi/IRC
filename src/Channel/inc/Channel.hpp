@@ -43,7 +43,8 @@ class Channel
         void                    unset_mode(std::string mode, void *mode_argument = NULL);
     public:
         bool                    is_topic_lock() const;
-        bool                    is_channel_only() const;
+        bool                    is_there_space() const;
+        bool                    is_channel_client_only() const;
         bool                    is_channel_secret() const;
         bool                    is_channel_moderated() const;
         bool                    is_channel_invite_only() const;
@@ -93,11 +94,12 @@ class Channel
         Client&                     _owner;
         std::map<int, Client&>      _clients;
         std::map<int, Client&>      _operators;
+        std::map<int, Client&>      _voices;
         std::map<char, SetMode>     _set_modes;
         std::map<char, UnsetMode>   _unset_modes;
         std::list<std::string>      _bans;
-        std::list<std::string>      _voices;
         std::list<std::string>      _invites;
+        unsigned int                _limit;
 };
 
 #endif

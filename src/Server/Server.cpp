@@ -145,6 +145,7 @@ void    Server::privmsg_cmd(int usr_id)
     std::vector<std::string> args = _parser.get_arguments();
     std::string message = _parser.get_message();
     std::string s_name = _clients.at(usr_id).get_serv_id();
+    Client& client = _clients.at(usr_id);
     if (message.size() == 0)
         add_reply(usr_id, _servername, s_name, ERR_NOTEXTTOSEND, MSG_NOTEXTTOSEND);
     if (args.size() == 1)
@@ -152,10 +153,15 @@ void    Server::privmsg_cmd(int usr_id)
         std::string t_name = args.front();
         if (_channels.find(t_name) != _channels.end())
         {
+            Channel &t_channel = _channels.at(t_name);
 
-            if (!_channels.at(t_name).is_client_banned(_clients.at(usr_id)))
+            if (t_channel.is_channel_client_only() && t_channel.is_client(usr_id) == false)
+                add_reply(usr_id, _servername, t_name, ERR_CANNOTSENDTOCHAN, MSG_CANNOTSENDTOCHAN);
+            else if (t_channel.is_client_unmute(client) == false)
+                add_reply(usr_id, _servername, t_name, ERR_CANNOTSENDTOCHAN, MSG_CANNOTSENDTOCHAN);
+            else if (!t_channel.is_client_banned(_clients.at(usr_id)))
             {
-                std::map<int, Client&> &clients = _channels.at(t_name).get_clients();
+                std::map<int, Client&> &clients = t_channel.get_clients();
                 for (std::map<int, Client&>::iterator it = clients.begin(); it != clients.end(); it++)
                     add_reply(it->first, s_name, it->second.get_nick(), RPL_PRIVMSG, message);
             }
@@ -317,11 +323,13 @@ void    Server::nick_cmd(int usr_id)
                 update_nick(usr_id, nick);
             else
             {
-                client.set_nick(nick);
-                if (client.get_nick().empty())
+                if (Client::is_nick_valid(nick) == false)
                     add_reply(usr_id, _servername, "NICK", ERR_ERRONEUSNICKNAME, MSG_ERRONEUSNICKNAME);
                 else
+                {
+                    client.set_nick(nick);
                     add_nick(usr_id, nick);
+                }
             }
         }
         else
@@ -595,6 +603,8 @@ void    Server::join_cmd(int usr_id)
                 bool is_invited = channel.is_client_invited(client);
                 if (is_invited == false)
                     add_reply(usr_id, _servername, c_name, ERR_INVITEONLYCHAN, MSG_INVITEONLYCHAN);
+                else if (channel.is_there_space() == false)
+                    add_reply(usr_id, _servername, c_name, ERR_CHANNELISFULL, MSG_CHANNELISFULL);
                 else if (channel.is_client_banned(client) == false)
                 {
                     if (is_invited == true)

@@ -22,6 +22,8 @@ class Client
         Client(int id, struct sockaddr addr);
         ~Client();
     public:
+        static bool    is_nick_valid(const std::string &nick);
+    public:
         void        add_command(std::string cmd);
         bool        is_registered() const;
     public:
