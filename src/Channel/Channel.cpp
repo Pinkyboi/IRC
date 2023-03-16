@@ -139,6 +139,8 @@ void    Channel::set_mode_v(std::string &mode_argument)
 
 void    Channel::set_mode_b(std::string &mode_argument)
 {
+    if (mode_argument == "")
+        return ;
     if (std::find(_bans.begin(), _bans.end(), mode_argument) == _bans.end())
     {
         for (std::map<int, Client&>::iterator it = _clients.begin(); it != _clients.end(); ++it)
@@ -156,6 +158,8 @@ void    Channel::set_mode_b(std::string &mode_argument)
 
 void    Channel::set_mode_o(std::string &mode_argument)
 {
+    if (mode_argument == "")
+        return ;
     for (std::map<int, Client&>::iterator it = _clients.begin(); it != _clients.end(); ++it)
     {
         if (it->second.get_nick() == mode_argument)
@@ -168,7 +172,11 @@ void    Channel::set_mode_o(std::string &mode_argument)
 
 void    Channel::set_mode_l(std::string &mode_argument)
 {
-    long input_limit = strtol(mode_argument.c_str(), NULL, 10);
+    long input_limit;
+
+    if (mode_argument == "")
+        return ;
+    input_limit = strtol(mode_argument.c_str(), NULL, 10);
     if (_clients.size() > input_limit)
         _limit = input_limit;
 }
@@ -211,6 +219,8 @@ void    Channel::unset_mode_k(std::string &mode_argument)
 
 void    Channel::unset_mode_v(std::string &mode_argument)
 {
+    if (mode_argument == "")
+        return ;
     if (mode_argument == _owner.get_nick())
         return ;
     for (std::map<int, Client&>::iterator it = _voices.begin(); it != _voices.end(); ++it)
@@ -231,6 +241,8 @@ void    Channel::unset_mode_b(std::string &mode_argument)
 
 void    Channel::unset_mode_o(std::string &mode_argument)
 {
+    if (mode_argument == "")
+        return ;
     if (mode_argument == _owner.get_nick())
         return ;
     for (std::map<int, Client&>::iterator it = _operators.begin(); it != _operators.end(); ++it)
@@ -281,6 +293,8 @@ bool    Channel::is_channel_protected() const
 
 bool    Channel::is_client_unmute(Client &client) const
 {
+    if (is_channel_moderated() == false || is_client_operator(client))
+        return true;
     return (_voices.find(client.get_id()) != _voices.end());
 }
 
