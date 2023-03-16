@@ -54,8 +54,8 @@ class Channel
         bool                    is_client_banned(Client &client) const;
         bool                    is_client_operator(Client &client) const;
         bool                    is_client_invited(Client &client) const;
-        void                    add_to_invites(std::string nick);
-        void                    remove_from_invites(std::string nick);
+        void                    add_to_invites(Client &client);
+        void                    remove_from_invites(int client_id);
     private:
         void                    add_operator(Client& client);
     private:
@@ -98,7 +98,7 @@ class Channel
         std::map<char, SetMode>     _set_modes;
         std::map<char, UnsetMode>   _unset_modes;
         std::list<std::string>      _bans;
-        std::list<std::string>      _invites;
+        std::map<int, Client&>      _invites;
         unsigned int                _limit;
 };
 
