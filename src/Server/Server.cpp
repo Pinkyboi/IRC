@@ -129,6 +129,7 @@ void    Server::remove_connection(int user_id)
     _operators.erase(user_id);
     memmove(userfd, userfd + 1, sizeof(struct pollfd) * (_nfds - i));
     close(user_id);
+    std::cout << "Client " << user_id << " has disconnected" << std::endl;
     _nfds--;
 }
 
@@ -685,8 +686,11 @@ void    Server::send_replies()
     {
         int fd = _replies.front().first;
         std::string reply = _replies.front().second;
-        if (send(fd, reply.c_str(), reply.length(), 0) > 0)
-            _replies.pop();
+        size_t bytes = 0;
+        const char * c_reply = reply.c_str();
+        while (reply.size() > bytes)
+            bytes += send(fd, c_reply + bytes, reply.size() - bytes, 0);
+        _replies.pop();
         if (_clients.at(fd).get_status() == Client::DOWN)
             remove_connection(fd);
     }
