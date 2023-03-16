@@ -432,7 +432,7 @@ void    Server::invite_cmd(int usr_id)
                     add_reply(usr_id, _servername, invitor.get_nick(), ERR_CHANOPRIVSNEEDED, MSG_CHANOPRIVSNEEDED);
                 else
                 {
-                    channel.add_to_invites(client.get_nick());
+                    channel.add_to_invites(client);
                     add_reply(invitor.get_id(), _servername, invitor.get_nick(), RPL_INVITING, "");
                     add_reply(client.get_id(), _servername, client.get_nick(), "INVITE", channel.get_name());
                 }
@@ -608,7 +608,7 @@ void    Server::join_cmd(int usr_id)
                 else if (channel.is_client_banned(client) == false)
                 {
                     if (is_invited == true)
-                        channel.remove_from_invites(client.get_nick());
+                        channel.remove_from_invites(client.get_id());
                     channel.add_client(client);
                     client.add_channel(c_name);
                     add_reply(usr_id, _servername, c_name, RPL_TOPIC, channel.get_topic());
