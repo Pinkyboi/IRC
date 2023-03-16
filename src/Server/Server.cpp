@@ -315,11 +315,13 @@ void    Server::nick_cmd(int usr_id)
                 update_nick(usr_id, nick);
             else
             {
-                client.set_nick(nick);
-                if (client.get_nick().empty())
+                if (Client::is_nick_valid(nick) == false)
                     add_reply(usr_id, _servername, "NICK", ERR_ERRONEUSNICKNAME, MSG_ERRONEUSNICKNAME);
                 else
+                {
+                    client.set_nick(nick);
                     add_nick(usr_id, nick);
+                }
             }
         }
         else

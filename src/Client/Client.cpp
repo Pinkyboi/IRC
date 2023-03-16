@@ -56,13 +56,19 @@ std::string Client::get_command()
     return (cmd);
 }
 
-void    Client::set_nick(const std::string &nick)
+bool    Client::is_nick_valid(const std::string &nick)
 {
     if (nick.empty() || nick.size() > 9)
-        return;
+        return false;
     if (nick.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_") != std::string::npos)
-        return;
-    _nick = nick;
+        return false;
+    return true;
+}
+
+void    Client::set_nick(const std::string &nick)
+{
+    if (Client::is_nick_valid(nick))
+        _nick = nick;
 }
 
 void    Client::set_username(const std::string &username)
