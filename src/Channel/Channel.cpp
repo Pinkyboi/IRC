@@ -2,26 +2,26 @@
 
 Channel::Channel(Client &client ,const std::string name): _name(name), _topic(""), _modes(0), _owner(client), _limit(0), _key("")
 {
-    _set_modes.insert(std::pair<char, SetMode>('t', &Channel::set_mode_t));
-    _set_modes.insert(std::pair<char, SetMode>('n', &Channel::set_mode_n));
-    _set_modes.insert(std::pair<char, SetMode>('s', &Channel::set_mode_s));
-    _set_modes.insert(std::pair<char, SetMode>('m', &Channel::set_mode_m));
-    _set_modes.insert(std::pair<char, SetMode>('k', &Channel::set_mode_k));
-    _set_modes.insert(std::pair<char, SetMode>('i', &Channel::set_mode_i));
-    _set_modes.insert(std::pair<char, SetMode>('v', &Channel::set_mode_v));
-    _set_modes.insert(std::pair<char, SetMode>('b', &Channel::set_mode_b));
-    _set_modes.insert(std::pair<char, SetMode>('o', &Channel::set_mode_o));
-    _set_modes.insert(std::pair<char, SetMode>('l', &Channel::set_mode_l));
-    _unset_modes.insert(std::pair<char, UnsetMode>('t', &Channel::unset_mode_t));
-    _unset_modes.insert(std::pair<char, UnsetMode>('n', &Channel::unset_mode_n));
-    _unset_modes.insert(std::pair<char, UnsetMode>('s', &Channel::unset_mode_s));
-    _unset_modes.insert(std::pair<char, UnsetMode>('m', &Channel::unset_mode_m));
-    _unset_modes.insert(std::pair<char, UnsetMode>('k', &Channel::unset_mode_k));
-    _unset_modes.insert(std::pair<char, UnsetMode>('i', &Channel::unset_mode_i));
-    _unset_modes.insert(std::pair<char, UnsetMode>('v', &Channel::unset_mode_v));
-    _unset_modes.insert(std::pair<char, UnsetMode>('b', &Channel::unset_mode_b));
-    _unset_modes.insert(std::pair<char, UnsetMode>('o', &Channel::unset_mode_o));
-    _unset_modes.insert(std::pair<char, UnsetMode>('l', &Channel::unset_mode_l));
+    _set_modes.insert(std::pair<char, ModeFunc>('t', &Channel::set_mode_t));
+    _set_modes.insert(std::pair<char, ModeFunc>('n', &Channel::set_mode_n));
+    _set_modes.insert(std::pair<char, ModeFunc>('s', &Channel::set_mode_s));
+    _set_modes.insert(std::pair<char, ModeFunc>('m', &Channel::set_mode_m));
+    _set_modes.insert(std::pair<char, ModeFunc>('k', &Channel::set_mode_k));
+    _set_modes.insert(std::pair<char, ModeFunc>('i', &Channel::set_mode_i));
+    _set_modes.insert(std::pair<char, ModeFunc>('v', &Channel::set_mode_v));
+    _set_modes.insert(std::pair<char, ModeFunc>('b', &Channel::set_mode_b));
+    _set_modes.insert(std::pair<char, ModeFunc>('o', &Channel::set_mode_o));
+    _set_modes.insert(std::pair<char, ModeFunc>('l', &Channel::set_mode_l));
+    _unset_modes.insert(std::pair<char, ModeFunc>('t', &Channel::unset_mode_t));
+    _unset_modes.insert(std::pair<char, ModeFunc>('n', &Channel::unset_mode_n));
+    _unset_modes.insert(std::pair<char, ModeFunc>('s', &Channel::unset_mode_s));
+    _unset_modes.insert(std::pair<char, ModeFunc>('m', &Channel::unset_mode_m));
+    _unset_modes.insert(std::pair<char, ModeFunc>('k', &Channel::unset_mode_k));
+    _unset_modes.insert(std::pair<char, ModeFunc>('i', &Channel::unset_mode_i));
+    _unset_modes.insert(std::pair<char, ModeFunc>('v', &Channel::unset_mode_v));
+    _unset_modes.insert(std::pair<char, ModeFunc>('b', &Channel::unset_mode_b));
+    _unset_modes.insert(std::pair<char, ModeFunc>('o', &Channel::unset_mode_o));
+    _unset_modes.insert(std::pair<char, ModeFunc>('l', &Channel::unset_mode_l));
     add_client(client);
     add_operator(client);
 }
@@ -333,23 +333,16 @@ bool    Channel::is_there_space() const
     return true;
 }
 
-bool Channel::handle_modes(std::string mode, std::string mode_arg)
+void Channel::handle_modes(std::string mode, std::string mode_arg)
 {
-    if (mode[0] == '+')
+    if (mode.empty() || (mode[0] != '+' && mode[0] != '-'))
+        return;
+    std::map<char, ModeFunc> mode_func = _set_modes;
+    if (mode[0] == '-')
+        mode_func = _unset_modes;
+    for (size_t i = 1; i < mode.size(); i++)
     {
-        for (size_t i = 1; i < mode.size(); i++)
-        {
-            if (_set_modes.find(mode[i]) != _set_modes.end())
-                (this->*_set_modes[mode[i]])(mode_arg);
-        }
+        if (mode_func.find(mode[i]) != mode_func.end())
+            (this->*mode_func[mode[i]])(mode_arg);
     }
-    else if (mode[0] == '-')
-    {
-        for (size_t i = 1; i < mode.size(); i++)
-        {
-            if (_unset_modes.find(mode[i]) != _unset_modes.end())
-                (this->*_unset_modes[mode[i]])(mode_arg);
-        }
-    }
-    return true;
 }

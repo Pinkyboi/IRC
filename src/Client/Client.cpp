@@ -4,6 +4,8 @@ Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""),
 {
     getnameinfo(&addr, sizeof(addr), _addr, sizeof(_addr), NULL, 0, NI_NUMERICHOST);
     _status = UNREGISTERED;
+    _set_modes.insert(std::make_pair('i', &Client::set_invisible));
+    _unset_modes.insert(std::make_pair('i', &Client::set_visible));
 }
 
 Client::~Client()
@@ -81,13 +83,25 @@ void    Client::set_real_name(const std::string &real_name)
     _real_name = real_name;
 }
 
-#include <iostream>
 void    Client::set_mode(const std::string &mode)
 {
     long number = strtol(mode.c_str(), NULL, 10);
     if (number == MODE_I)
         _visible = false;
+    else if (mode.size() > 1)
+        handle_modes(mode);
 }
+
+void    Client::set_invisible(void)
+{
+    _visible = false;
+}
+
+void    Client::set_visible(void)
+{
+    _visible = true;
+}
+
 void    Client::add_channel(const std::string &channel_name)
 {
     _channels.push_back(channel_name);
@@ -171,4 +185,18 @@ void Client::update_registration()
 std::string Client::get_serv_id() const
 {
     return _nick + "!" + _username + "@" + std::string(_addr);
+}
+
+void    Client::handle_modes(std::string mode)
+{
+    if (mode.empty() || (mode[0] != '+' && mode[0] != '-'))
+        return;
+    std::map<char, ModeFunc> mode_func = _set_modes;
+    if (mode[0] == '-')
+        mode_func = _unset_modes;
+    for (size_t i = 1; i < mode.size(); i++)
+    {
+        if (mode_func.find(mode[i]) != mode_func.end())
+            (this->*mode_func[mode[i]])();
+    }
 }

@@ -81,13 +81,11 @@ class Channel
         void                    unset_mode_b  (std::string &mode_argument);
         void                    unset_mode_o  (std::string &mode_argument);
     public:
-        bool                    handle_modes(std::string mode, std::string mode_arg);
-        bool                    handle_modes(std::string mode, Client& client);
+        void                    handle_modes(std::string mode, std::string mode_arg);
     public:
         uint16_t                    _modes;
     private:
-        typedef void (Channel::*SetMode)(std::string&);
-        typedef void (Channel::*UnsetMode)(std::string&);
+        typedef void (Channel::*ModeFunc)(std::string&);
         const std::string           _name;
         std::string                 _key;
         std::string                 _topic;
@@ -95,8 +93,8 @@ class Channel
         std::map<int, Client&>      _clients;
         std::map<int, Client&>      _operators;
         std::map<int, Client&>      _voices;
-        std::map<char, SetMode>     _set_modes;
-        std::map<char, UnsetMode>   _unset_modes;
+        std::map<char, ModeFunc>    _set_modes;
+        std::map<char, ModeFunc>    _unset_modes;
         std::list<std::string>      _bans;
         std::map<int, Client&>      _invites;
         unsigned int                _limit;

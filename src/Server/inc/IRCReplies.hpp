@@ -131,4 +131,5 @@
 #define MSG_ERRONEUSNICKNAME "Erroneous nickname"
 #define MSG_CHANNELISFULL "The channel is full"
 #define MSG_CANNOTSENDTOCHAN "Cannot send to channel"
+#define MSG_USERSDONTMATCH "Users don't match"
 #endif

@@ -6,6 +6,7 @@
 # include <netinet/in.h>
 # include <netdb.h>
 # include <list>
+# include <map>
 # include <algorithm>
 # include "CommandBuffer.hpp"
 
@@ -35,6 +36,8 @@ class Client
         void        set_pass_validity(const bool validity);
         void        set_status(int status);
         void        set_mode(const std::string &mode);
+        void        set_invisible(void);
+        void        set_visible(void);
         void        update_registration();
         void        add_channel(const std::string &channel_name);
         void        remove_channel(const std::string &channel_name);
@@ -52,9 +55,10 @@ class Client
         bool                        is_in_channel(std::string &c_name) const;
         bool                        is_visible() const;
     public:
-        void                        handle_modes(const std::string &modes);
+        void                        handle_modes(std::string mode);
 
     private:
+        typedef void (Client::*ModeFunc)(void);
         int                                                 _id;
         bool                                                _pass_validity;
         char                                                _addr[NI_MAXHOST];
@@ -63,6 +67,8 @@ class Client
         std::string                                         _real_name;
         std::list<std::string>                              _channels;
         std::queue< std::pair< bool, CircularBuffer *> >    _commands;
+        std::map<char, ModeFunc>                            _set_modes;
+        std::map<char, ModeFunc>                            _unset_modes;
         int                                                 _status;
         bool                                                _visible;
 

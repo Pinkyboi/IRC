@@ -188,16 +188,23 @@ void    Server::mode_cmd(int usr_id)
 
     if ( nargs == 2 || nargs == 3 )
     {
-        std::string c_name = args.front();
+        std::string t_name = args.front();
         std::string argument = "";
         std::string modes = args.at(1);
         Client &client  = _clients.at(usr_id);
         if (nargs == 3)
             argument = args.back();
-        if (_channels.find(c_name) != _channels.end())
+        if (_nicks.find(t_name) != _nicks.end())
         {
-            if (_channels.at(c_name).is_client_operator(client))
-                _channels.at(c_name).handle_modes(modes, argument);
+            if (client.get_nick() == t_name)
+                client.handle_modes(modes);
+            else
+                add_reply(usr_id, _servername, "MODE", ERR_USERSDONTMATCH, MSG_USERSDONTMATCH);
+        }
+        else if (_channels.find(t_name) != _channels.end())
+        {
+            if (_channels.at(t_name).is_client_operator(client))
+                _channels.at(t_name).handle_modes(modes, argument);
             else
                 add_reply(usr_id, _servername, "MODE", ERR_CHANOPRIVSNEEDED, MSG_CHANOPRIVSNEEDED);
         }
@@ -307,7 +314,6 @@ void    Server::update_nick(int usr_id, std::string newnick)
 
 void    Server::add_nick(int usr_id, std::string nick)
 {
-    _clients.at(usr_id).set_nick(nick);
     _nicks.insert(std::pair<std::string, int>(nick, usr_id));
 }
 
