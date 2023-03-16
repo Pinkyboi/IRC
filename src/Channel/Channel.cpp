@@ -87,14 +87,14 @@ bool    Channel::is_client(int client_id)
     return (_clients.find(client_id) != _clients.end());
 }
 
-void    Channel::add_to_invites(std::string nick)
+void    Channel::add_to_invites(Client &client)
 {
-    _invites.push_back(nick);
+    _invites.insert(std::pair<int, Client&>(client.get_id(), client));
 }
 
-void    Channel::remove_from_invites(std::string nick)
+void    Channel::remove_from_invites(int client_id)
 {
-    _invites.remove(nick);
+    _invites.erase(client_id);
 }
 
 std::map<int, Client&>  &Channel::get_clients(void)
@@ -320,7 +320,7 @@ bool    Channel::is_client_operator(Client &client) const
 bool    Channel::is_client_invited(Client &client) const
 {
     if (is_channel_invite_only())
-        return (std::find(_invites.begin(), _invites.end(), client.get_nick()) != _invites.end());
+        return (_invites.find(client.get_id()) != _invites.end());
     return true;
 }
 
