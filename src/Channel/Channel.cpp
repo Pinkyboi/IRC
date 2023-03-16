@@ -1,6 +1,6 @@
 #include "Channel.hpp"
 
-Channel::Channel(Client &client ,const std::string name): _name(name), _topic(""), _modes(0), _owner(client)
+Channel::Channel(Client &client ,const std::string name): _name(name), _topic(""), _modes(0), _owner(client), _limit(0), _key("")
 {
     _set_modes.insert(std::pair<char, SetMode>('t', &Channel::set_mode_t));
     _set_modes.insert(std::pair<char, SetMode>('n', &Channel::set_mode_n));
@@ -11,6 +11,7 @@ Channel::Channel(Client &client ,const std::string name): _name(name), _topic(""
     _set_modes.insert(std::pair<char, SetMode>('v', &Channel::set_mode_v));
     _set_modes.insert(std::pair<char, SetMode>('b', &Channel::set_mode_b));
     _set_modes.insert(std::pair<char, SetMode>('o', &Channel::set_mode_o));
+    _set_modes.insert(std::pair<char, SetMode>('l', &Channel::set_mode_l));
     _unset_modes.insert(std::pair<char, UnsetMode>('t', &Channel::unset_mode_t));
     _unset_modes.insert(std::pair<char, UnsetMode>('n', &Channel::unset_mode_n));
     _unset_modes.insert(std::pair<char, UnsetMode>('s', &Channel::unset_mode_s));
@@ -20,6 +21,7 @@ Channel::Channel(Client &client ,const std::string name): _name(name), _topic(""
     _unset_modes.insert(std::pair<char, UnsetMode>('v', &Channel::unset_mode_v));
     _unset_modes.insert(std::pair<char, UnsetMode>('b', &Channel::unset_mode_b));
     _unset_modes.insert(std::pair<char, UnsetMode>('o', &Channel::unset_mode_o));
+    _unset_modes.insert(std::pair<char, UnsetMode>('l', &Channel::unset_mode_l));
     add_client(client);
     add_operator(client);
 }
@@ -128,8 +130,11 @@ void    Channel::set_mode_k(std::string &mode_argument)
 
 void    Channel::set_mode_v(std::string &mode_argument)
 {
-    if (std::find(_voices.begin(), _voices.end(), mode_argument) == _voices.end())
-        _voices.push_back(mode_argument);
+    for (std::map<int, Client&>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+    {
+        if (it->second.get_nick() == mode_argument)
+            _voices.insert(std::pair<int, Client&>(it->second.get_id(), it->second));
+    }
 }
 
 void    Channel::set_mode_b(std::string &mode_argument)
@@ -159,6 +164,13 @@ void    Channel::set_mode_o(std::string &mode_argument)
             break;
         }
     }
+}
+
+void    Channel::set_mode_l(std::string &mode_argument)
+{
+    long input_limit = strtol(mode_argument.c_str(), NULL, 10);
+    if (_clients.size() > input_limit)
+        _limit = input_limit;
 }
 
 void    Channel::unset_mode_t(std::string &mode_argument)
@@ -199,7 +211,17 @@ void    Channel::unset_mode_k(std::string &mode_argument)
 
 void    Channel::unset_mode_v(std::string &mode_argument)
 {
-    _voices.remove(mode_argument);
+    if (mode_argument == _owner.get_nick())
+        return ;
+    for (std::map<int, Client&>::iterator it = _voices.begin(); it != _voices.end(); ++it)
+    {
+        if (it->second.get_nick() == mode_argument)
+        {
+            if (is_client_operator(it->second) == false)
+                _voices.erase(it);
+            break;
+        }
+    }
 }
 
 void    Channel::unset_mode_b(std::string &mode_argument)
@@ -221,12 +243,18 @@ void    Channel::unset_mode_o(std::string &mode_argument)
     }
 }
 
+void    Channel::unset_mode_l(std::string &mode_argument)
+{
+    (void)mode_argument;
+    _limit = 0;
+}
+
 bool    Channel::is_topic_lock() const
 {
     return (_modes & MODE_T);
 }
 
-bool    Channel::is_channel_only() const
+bool    Channel::is_channel_client_only() const
 {
     return (_modes & MODE_N);
 }
@@ -253,7 +281,7 @@ bool    Channel::is_channel_protected() const
 
 bool    Channel::is_client_unmute(Client &client) const
 {
-    return (std::find(_voices.begin(), _voices.end(), client.get_nick()) != _voices.end());
+    return (_voices.find(client.get_id()) != _voices.end());
 }
 
 bool    Channel::is_client_banned(Client &client) const
@@ -270,6 +298,13 @@ bool    Channel::is_client_invited(Client &client) const
 {
     if (is_channel_invite_only())
         return (std::find(_invites.begin(), _invites.end(), client.get_nick()) != _invites.end());
+    return true;
+}
+
+bool    Channel::is_there_space() const
+{
+    if (_limit > 0)
+        return (_clients.size() < _limit);
     return true;
 }
 

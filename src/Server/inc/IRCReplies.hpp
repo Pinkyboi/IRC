@@ -128,4 +128,6 @@
 #define MSG_WELCOME "Welcome to our super duper IRC server"
 #define MSG_NONICKNAMEGIVEN "No nickname given"
 #define MSG_ERRONEUSNICKNAME "Erroneous nickname"
+#define MSG_CHANNELISFULL "The channel is full"
+#define MSG_CANNOTSENDTOCHAN "Cannot send to channel"
 #endif
