@@ -91,7 +91,7 @@ class Server
         static Server                               *_instance;
     private:
         const char                                  *_port;
-        const char                                  *_pass;
+        const std::string                           _pass;
         int                                         _sockfd;
         struct pollfd                               _pfds[CONN_LIMIT];
         int                                         _nfds;

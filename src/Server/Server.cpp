@@ -12,7 +12,7 @@ Server::~Server()
         close(_pfds[i].fd);
 }
 
-Server::Server(const char *port, const char *pass): _port(port), _nfds(0), _pass(pass)
+Server::Server(const char *port, const char *pass): _port(port), _nfds(0), _pass(std::string(pass))
 {
     bool on = true;
 
@@ -346,7 +346,9 @@ void    Server::pass_cmd(int usr_id)
 
     if ( _clients.at(usr_id).is_registered() )
         add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
-    if ( args.size() == 1 )
+    if (_pass.empty())
+        _clients.at(usr_id).set_pass_validity(true);
+    else if ( args.size() == 1 )
          _clients.at(usr_id).set_pass_validity(args.front() == _pass);
     else
         add_reply(usr_id, _servername, "PASS", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
