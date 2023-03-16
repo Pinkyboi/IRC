@@ -121,7 +121,7 @@ void    Server::remove_connection(int user_id)
         i++;
     struct pollfd *userfd = &_pfds[i];
     Client& client = _clients.at(user_id);
-    std::list<std::string> &channels = client.get_channels();
+    std::list<std::string> channels = client.get_channels();
     for (std::list<std::string>::iterator it = channels.begin(); it != channels.end(); it++)
         _channels.at(*it).remove_client(user_id);
     _nicks.erase(client.get_nick());
@@ -129,7 +129,6 @@ void    Server::remove_connection(int user_id)
     _operators.erase(user_id);
     memmove(userfd, userfd + 1, sizeof(struct pollfd) * (_nfds - i));
     close(user_id);
-    std::cout << "Client " << user_id << " has disconnected" << std::endl;
     _nfds--;
 }
 
@@ -291,8 +290,10 @@ void    Server::user_cmd(int usr_id)
     else
     {
         std::string username = args.front();
+        std::string mode = args.at(1);
         _clients.at(usr_id).set_username(username);
         _clients.at(usr_id).set_real_name(real_name);
+        _clients.at(usr_id).set_mode(mode);
     }
 }
 
@@ -534,6 +535,8 @@ void    Server::names_cmd(int usr_id)
                 std::string names = "";
                 for (std::map<int, Client &>::iterator it = clients.begin(); it != clients.end(); it++)
                 {
+                    if (it->second.is_visible() == false)
+                        continue;
                     if (channel.is_client_operator(it->second))
                         names += "@";
                     else if (channel.is_client_unmute(it->second))
@@ -552,8 +555,11 @@ void    Server::names_cmd(int usr_id)
     {
         // make a copy of _nicks keys in a vector called names
         std::vector<std::string> all_names;
-        for (std::map<std::string, int>::iterator it = _nicks.begin(); it != _nicks.end(); it++)
-            all_names.push_back(it->first);
+        for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+        {
+            if (it->second.is_visible())
+                all_names.push_back(it->second.get_nick());
+        }
         // loop throught he channels and remove the name found in channel from all names
         for (std::map<const std::string, Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
         {
@@ -563,9 +569,11 @@ void    Server::names_cmd(int usr_id)
                 std::string names = "";
                 for (std::map<int, Client &>::iterator it2 = clients.begin(); it2 != clients.end(); it2++)
                 {
+                    if (it2->second.is_visible() == false)
+                        continue;
                     if (it->second.is_client_operator(it2->second))
                         names += "@";
-                    else if (it->second.is_client_unmute(it2->second))
+                    else if (it->second.is_client_unmute(it2->second) && it->second.is_channel_moderated())
                         names += "+";
                     names += it2->second.get_nick() + " ";
                     std::vector<std::string>::iterator name_index = std::find(all_names.begin(), all_names.end(), it2->second.get_nick());
@@ -575,13 +583,11 @@ void    Server::names_cmd(int usr_id)
                 add_reply(usr_id, _servername, it->first, RPL_NAMREPLY, names);
             }
         }
-        if (all_names.size() > 0)
-        {
-            std::string names = "";
-            for (std::vector<std::string>::iterator it = all_names.begin(); it != all_names.end(); it++)
-                names += *it + " ";
+        std::string names = "";
+        for (std::vector<std::string>::iterator it = all_names.begin(); it != all_names.end(); it++)
+            names += *it + " ";
+        if (names.size() > 0)
             add_reply(usr_id, _servername, "*", RPL_NAMREPLY, names);
-        }
     }
 }
 //    ERR_CHANNELISFULL
@@ -686,11 +692,8 @@ void    Server::send_replies()
     {
         int fd = _replies.front().first;
         std::string reply = _replies.front().second;
-        size_t bytes = 0;
-        const char * c_reply = reply.c_str();
-        while (reply.size() > bytes)
-            bytes += send(fd, c_reply + bytes, reply.size() - bytes, 0);
-        _replies.pop();
+        if (send(fd, reply.c_str(), reply.length(), 0) > 0)
+            _replies.pop();
         if (_clients.at(fd).get_status() == Client::DOWN)
             remove_connection(fd);
     }
