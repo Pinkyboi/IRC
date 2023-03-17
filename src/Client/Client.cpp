@@ -51,6 +51,8 @@ std::string Client::get_command()
 {
     std::string cmd;
 
+    if (_commands.size() == 0)
+        return std::string("");
     if (_commands.front().first == false)
         return std::string("");
     cmd = std::string(_commands.front().second->get_buffer());
