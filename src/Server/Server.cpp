@@ -2,9 +2,7 @@
 
 Server *Server::_instance = NULL;
 std::string Server::_servername = "superDuperServer";
-std::string Server::_opname = "MybesOPT";
 std::string Server::_motd = "this is the message of the day";
-std::string Server::_oppass = "123456789";
 
 Server::~Server()
 {
@@ -39,7 +37,6 @@ void    Server::init_commands()
     _commands.insert(std::pair<std::string, cmd_func>("KICK", &Server::kick_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("TOPIC", &Server::topic_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("LIST", &Server::list_cmd));
-    _commands.insert(std::pair<std::string, cmd_func>("OPER", &Server::oper_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("PRIVMSG", &Server::privmsg_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("QUIT", &Server::quit_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("MODE", &Server::mode_cmd));
@@ -73,17 +70,6 @@ void    Server::setup()
     if (listen(this->_sockfd, CONN_LIMIT) < 0)
         throw Server::ServerException("Couldn't listen on socket.");
     freeaddrinfo(res);
-}
-
-
-bool    Server::is_operator(int client_id)
-{
-    return (_operators.find(client_id) != _operators.end());
-}
-
-void    Server::add_operator(Client& client)
-{
-    _operators.insert(std::pair<int, Client&>(client.get_id(), client));
 }
 
 void    Server::add_client(int id, struct sockaddr addr)
@@ -126,7 +112,6 @@ void    Server::remove_connection(int user_id)
         _channels.at(*it).remove_client(user_id);
     _nicks.erase(client.get_nick());
     _clients.erase(user_id);
-    _operators.erase(user_id);
     memmove(userfd, userfd + 1, sizeof(struct pollfd) * (_nfds - i));
     close(user_id);
     _nfds--;
@@ -360,32 +345,6 @@ void    Server::pass_cmd(int usr_id)
          _clients.at(usr_id).set_pass_validity(args.front() == _pass);
     else
         add_reply(usr_id, _servername, "PASS", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
-}
-
-void    Server::oper_cmd(int usr_id)
-{
-    std::vector<std::string> args = _parser.get_arguments();
-
-    if (args.size() == 2)
-    {
-        if (_opname.empty())
-            add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), ERR_NOOPERHOST, MSG_NOOPERHOST);
-        Client &client = _clients.at(usr_id);
-        std::string pass = args.back();
-        std::string name = args.front();
-        if (name == _opname && pass == _oppass) 
-        {
-            if (_operators.find(usr_id) == _operators.end())
-            {
-                _operators.insert(std::pair<int, Client&>(usr_id, client));
-                add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), RPL_YOUREOPER, MSG_YOUREOPER);
-            }
-        }
-        else if (pass != _oppass)
-            add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), ERR_PASSWDMISMATCH, MSG_PASSWDMISMATCH);
-    }
-    else if (args.size() < 2)
-        add_reply(usr_id, _servername, "OPER", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
 void    Server::part_cmd(int usr_id)
