@@ -237,12 +237,13 @@ void    Server::list_cmd(int usr_id)
     std::string nick = _clients.at(usr_id).get_nick();
     if (args.size() == 0)
     {
+        add_reply(usr_id, _servername, nick, RPL_LISTSTART, MSG_LISTSTART);
         for (std::map<const std::string, Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
         {
             if (it->second.is_channel_secret() == false || it->second.is_client(usr_id))
             {
                 std::string msg = it->first + " " + convert_to_string(it->second.get_clients_count()) + " " + it->second.get_topic();
-                add_reply(usr_id, _servername, nick, RPL_LIST, msg);
+                add_reply(usr_id, _servername, nick, RPL_LIST, msg, 0);
             }
         }
         add_reply(usr_id, _servername, nick, RPL_LISTEND, MSG_LISTEND);
@@ -268,6 +269,17 @@ void    Server::list_cmd(int usr_id)
 void    Server::add_reply(int usr_id, const std::string &sender, const std::string &target, const std::string &code, const std::string &msg)
 {
     std::string replymsg = ":" + sender + " " + code + " " + target + " :" + msg + CRLN;
+    std::cout << "reply: [" << replymsg << "]" << std::endl;
+    _replies.push(std::pair<int, std::string>(usr_id, replymsg));
+}
+
+void    Server::add_reply(int usr_id, const std::string &sender, const std::string &target, const std::string &code, const std::string &msg, int column)
+{
+    std::string replymsg = ":" + sender + " " + code + " " + target + " ";
+    if (column)
+        replymsg += ":";
+    replymsg += msg + CRLN;
+    std::cout << "reply: [" << replymsg << "]" << std::endl;
     _replies.push(std::pair<int, std::string>(usr_id, replymsg));
 }
 
