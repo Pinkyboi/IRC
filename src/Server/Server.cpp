@@ -44,6 +44,7 @@ void    Server::init_commands()
     _commands.insert(std::pair<std::string, cmd_func>("QUIT", &Server::quit_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("MODE", &Server::mode_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("INVITE", &Server::invite_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("PING", &Server::ping_cmd));
 }
 
 bool    Server::is_nick_used(std::string& nick)
@@ -417,6 +418,24 @@ void    Server::part_cmd(int usr_id)
         add_reply(usr_id, _servername, "PART", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
 
+void    Server::ping_cmd(int usr_id)
+{
+    std::vector<std::string> args = _parser.get_arguments();
+    size_t nargs = _parser.get_nargs();
+
+    if (nargs == 2)
+    {
+        std::cout << _servername << " " << args[1] << std::endl;
+        if (_nicks.find(args[0]) == _nicks.end())
+            add_reply(usr_id, _servername, "PING", ERR_NOSUCHSERVER, MSG_NOSUCHSERVER);
+        else
+        {
+            Client &client = _clients.at(usr_id);
+            add_reply(usr_id, _servername, client.get_nick(), "PONG", _servername);
+        }
+    }
+}
+
 void    Server::invite_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.get_arguments();
@@ -686,6 +705,7 @@ void    Server::print_msg(int fd)
     if ( (msg_len = recv(fd, msg_buffer, MAX_COMMAND_SIZE, MSG_DONTWAIT)) > 0)
     {
         msg_buffer[msg_len] = '\0';
+        std::cout << msg_buffer << std::endl;
         _clients.at(fd).add_command(std::string(msg_buffer));
     }
     while((command = _clients.at(fd).get_command()) != "")
