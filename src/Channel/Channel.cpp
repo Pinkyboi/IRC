@@ -330,6 +330,11 @@ bool    Channel::is_client_operator(Client &client) const
     return (_operators.find(client.get_id()) != _operators.end());
 }
 
+bool   Channel::is_client_owner(Client &client) const
+{
+    return (_owner.get_id() == client.get_id());
+}
+
 bool    Channel::is_client_invited(Client &client) const
 {
     if (is_channel_invite_only())

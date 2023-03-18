@@ -529,6 +529,8 @@ void    Server::names_cmd(int usr_id)
                 {
                     if (it->second.is_visible() == false)
                         continue;
+                    if (channel.is_client_owner(it->second))
+                        names += "~";
                     if (channel.is_client_operator(it->second))
                         names += "@";
                     else if (channel.is_client_unmute(it->second))
