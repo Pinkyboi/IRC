@@ -104,6 +104,7 @@
 
 #define RPL_PRIVMSG "PRIVMSG" // "PRIVMSG" - Private message
 
+#define MSG_LISTSTART "Start of list"
 #define MSG_NEEDMOREPARAMS "Need more parameters"
 #define MSG_ALREADYREGISTRED "You are already registered"
 #define MSG_NICKNAMEINUSE "Nickname already in use"
@@ -132,4 +133,5 @@
 #define MSG_CHANNELISFULL "The channel is full"
 #define MSG_CANNOTSENDTOCHAN "Cannot send to channel"
 #define MSG_USERSDONTMATCH "Users don't match"
+#define MSG_NOSUCHSERVER "No such server"
 #endif

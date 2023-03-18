@@ -67,23 +67,27 @@ class Server
         void                            remove_connection(int user_id);
         void                            init_commands();
         void                            add_reply(int usr_id, const std::string &sender, const std::string &target,
-                                                        const std::string &code, const std::string &msg);
+                                            const std::string &code, const std::string &msg);
+        void                            add_reply(int usr_id, const std::string &sender, const std::string &target, 
+                                            const std::string &code, const std::string &msg, int column);
+
         void                            handle_commands(int fd, std::string &command);
     private:
-        void                                        pass_cmd    (int usr_id); // basic version done
-        void                                        user_cmd    (int usr_id); // basic version done
-        void                                        nick_cmd    (int usr_id); // basic version done
-        void                                        join_cmd    (int usr_id); // basic version done
-        void                                        part_cmd    (int usr_id); // basic version done
-        void                                        topic_cmd   (int usr_id);
-        void                                        names_cmd   (int usr_id); // basic version done
-        void                                        list_cmd    (int usr_id);
-        void                                        kick_cmd    (int usr_id); // basic version done
-        void                                        privmsg_cmd (int usr_id);
-        void                                        notice_cmd  (int usr_id);
-        void                                        quit_cmd    (int usr_id);
-        void                                        mode_cmd    (int usr_id);
-        void                                        invite_cmd  (int usr_id);
+        void                            pass_cmd    (int usr_id); // basic version done
+        void                            user_cmd    (int usr_id); // basic version done
+        void                            nick_cmd    (int usr_id); // basic version done
+        void                            join_cmd    (int usr_id); // basic version done
+        void                            part_cmd    (int usr_id); // basic version done
+        void                            topic_cmd   (int usr_id);
+        void                            names_cmd   (int usr_id); // basic version done
+        void                            list_cmd    (int usr_id);
+        void                            kick_cmd    (int usr_id); // basic version done
+        void                            privmsg_cmd (int usr_id);
+        void                            notice_cmd  (int usr_id);
+        void                            quit_cmd    (int usr_id);
+        void                            mode_cmd    (int usr_id);
+        void                            invite_cmd  (int usr_id);
+        void                            ping_cmd    (int usr_id);
     private:
         static Server                               *_instance;
     private:
