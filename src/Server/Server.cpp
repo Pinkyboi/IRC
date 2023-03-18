@@ -615,11 +615,9 @@ void    Server::join_cmd(int usr_id)
             if (c_name.size() > 0)
             {
                 _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
-                Channel &channel = _channels.at(c_name);
                 add_reply(usr_id, _clients.at(usr_id).get_serv_id(), "JOIN", c_name);
                 topic_cmd(usr_id);
                 names_cmd(usr_id);
-                mode_cmd(usr_id);
             }
             else
                 add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, c_name, MSG_NOSUCHCHANNEL);
@@ -641,7 +639,6 @@ void    Server::join_cmd(int usr_id)
                     channel.add_client(client);
                     client.add_channel(c_name);
                     add_reply(usr_id, _clients.at(usr_id).get_serv_id(), "JOIN", c_name);
-                    add_reply(usr_id, _servername, "MODE", channel.get_name(), "+i", false);
                     topic_cmd(usr_id);
                     names_cmd(usr_id);
                 }

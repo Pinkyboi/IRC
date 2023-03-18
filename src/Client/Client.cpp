@@ -1,6 +1,6 @@
 # include "Client.hpp"
 
-Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _real_name(""), _pass_validity(false), _visible(true), _modes(0)
+Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _real_name(""), _pass_validity(false), _visible(true), _modes(MODE_W)
 {
     getnameinfo(&addr, sizeof(addr), _addr, sizeof(_addr), NULL, 0, NI_NUMERICHOST);
     _status = UNREGISTERED;
@@ -91,7 +91,10 @@ void    Client::set_mode(const std::string &mode)
 {
     long number = strtol(mode.c_str(), NULL, 10);
     if (number == MODE_I)
+    {
         _visible = false;
+        _modes |= MODE_I;
+    }
     else if (mode.size() > 1)
         handle_modes(mode);
 }

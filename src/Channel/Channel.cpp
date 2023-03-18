@@ -170,6 +170,7 @@ void    Channel::set_mode_i(std::string &mode_argument)
 void    Channel::set_mode_k(std::string &mode_argument)
 {
     _key = mode_argument;
+    _modes |= MODE_K;
 }
 
 void    Channel::set_mode_v(std::string &mode_argument)
@@ -221,8 +222,11 @@ void    Channel::set_mode_l(std::string &mode_argument)
     if (mode_argument == "")
         return ;
     input_limit = strtol(mode_argument.c_str(), NULL, 10);
-    if (_clients.size() > input_limit)
+    if (_clients.size() <= input_limit)
+    {
         _limit = input_limit;
+        _modes |= MODE_L;
+    }
 }
 
 void    Channel::unset_mode_t(std::string &mode_argument)
@@ -259,6 +263,7 @@ void    Channel::unset_mode_k(std::string &mode_argument)
 {
     if (_key == mode_argument)
         _key = "";
+    _modes &= ~MODE_K;
 }
 
 void    Channel::unset_mode_v(std::string &mode_argument)
@@ -303,6 +308,7 @@ void    Channel::unset_mode_l(std::string &mode_argument)
 {
     (void)mode_argument;
     _limit = 0;
+    _modes &= ~MODE_L;
 }
 
 bool    Channel::is_topic_lock() const
