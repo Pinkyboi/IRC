@@ -586,7 +586,7 @@ void    Server::names_cmd(int usr_id)
             add_reply(usr_id, _servername, "*", RPL_NAMREPLY, names);
     }
 }
-//    ERR_CHANNELISFULL
+
 void    Server::join_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.get_arguments();
