@@ -27,6 +27,7 @@ class Channel
         void                    remove_client(int client_id);
     public:
         bool                    is_client(int client_id);
+        static std::string      get_valid_channel_name(std::string name);
     public:
         std::map<int, Client&>  &get_clients(void);
         Client&                 get_client(int client_id);
