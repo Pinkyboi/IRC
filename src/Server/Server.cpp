@@ -185,7 +185,7 @@ void    Server::mode_cmd(int usr_id)
             if (client.get_nick() == t_name)
             {
                 client.handle_modes(modes);
-                add_reply(usr_id, _servername, RPL_CHANNELMODEIS, t_name, _channels.at(t_name).get_modes());
+                add_reply(usr_id, _servername, RPL_CHANNELMODEIS, t_name, client.get_modes());
             }
             else
                 add_reply(usr_id, _servername, ERR_USERSDONTMATCH, "MODE", MSG_USERSDONTMATCH);
