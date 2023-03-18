@@ -195,7 +195,7 @@ void    Server::mode_cmd(int usr_id)
             if (_channels.at(t_name).is_client_operator(client))
             {
                 _channels.at(t_name).handle_modes(modes, argument);
-                add_reply(usr_id, _servername, "MODE", _clients.at(_nicks.at(t_name)).get_modes(), "");
+                add_reply(usr_id, _servername, "MODE", _channels.at(t_name).get_modes(), "");
             }
             else
                 add_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, "MODE", MSG_CHANOPRIVSNEEDED);
