@@ -23,7 +23,7 @@ Channel::Channel(Client &client ,const std::string name): _name(name), _topic(""
     _unset_modes.insert(std::pair<char, ModeFunc>('o', &Channel::unset_mode_o));
     _unset_modes.insert(std::pair<char, ModeFunc>('l', &Channel::unset_mode_l));
     add_client(client);
-    if (_name.front() != '+')
+    if (_name[0] != '+')
         add_operator(client);
 }
 
