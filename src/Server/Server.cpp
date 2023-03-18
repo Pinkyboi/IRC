@@ -183,14 +183,20 @@ void    Server::mode_cmd(int usr_id)
         if (_nicks.find(t_name) != _nicks.end())
         {
             if (client.get_nick() == t_name)
+            {
                 client.handle_modes(modes);
+                add_reply(usr_id, _servername, RPL_CHANNELMODEIS, t_name, _channels.at(t_name).get_modes());
+            }
             else
                 add_reply(usr_id, _servername, ERR_USERSDONTMATCH, "MODE", MSG_USERSDONTMATCH);
         }
         else if (_channels.find(t_name) != _channels.end())
         {
             if (_channels.at(t_name).is_client_operator(client))
+            {
                 _channels.at(t_name).handle_modes(modes, argument);
+                add_reply(usr_id, _servername, "MODE", _clients.at(_nicks.at(t_name)).get_modes(), "");
+            }
             else
                 add_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, "MODE", MSG_CHANOPRIVSNEEDED);
         }
@@ -536,6 +542,10 @@ void    Server::names_cmd(int usr_id)
             {
                 std::map<int, Client &> clients = channel.get_clients();
                 std::string names = "";
+                if (channel.is_channel_secret())
+                    c_name = "@" + c_name;
+                else
+                    c_name = "=" + c_name;
                 for (std::map<int, Client &>::iterator it = clients.begin(); it != clients.end(); it++)
                 {
                     if (it->second.is_visible() == false && channel.is_client_operator(_clients.at(usr_id)) == false)
@@ -570,6 +580,11 @@ void    Server::names_cmd(int usr_id)
         for (std::map<const std::string, Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
         {
             std::map<int, Client &> clients = it->second.get_clients();
+            std::string c_name = it->first;
+            if (it->second.is_channel_secret())
+                c_name = "@" + c_name;
+            else
+                c_name = "=" + c_name;
             if ( it->second.is_channel_secret() == false || it->second.is_client(usr_id) )
             {
                 std::string names = "";
@@ -679,7 +694,10 @@ void    Server::handle_commands(int usr_id, std::string &command)
             else
                 add_reply(usr_id, _servername, ERR_NOTREGISTERED, client.get_nick(), MSG_NOTREGISTERED);
             if (client.get_status() == Client::REGISTERED)
+            {
                 add_reply(usr_id, _servername, RPL_WELCOME, client.get_nick(), _motd);
+                add_reply(usr_id, _servername, "MODE", client.get_nick(), client.get_modes());
+            }
         }
         else if ( client.get_status() == Client::REGISTERED )
         {
