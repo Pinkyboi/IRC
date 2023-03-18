@@ -276,6 +276,7 @@ void    Server::add_reply(int usr_id, const std::string &sender, const std::stri
             replymsg += ":";
     }
     replymsg += extra + CRLN;
+    std::cout << replymsg << std::endl;
     _replies.push(std::pair<int, std::string>(usr_id, replymsg));
 }
 
@@ -586,7 +587,7 @@ void    Server::names_cmd(int usr_id)
         add_reply(usr_id, _servername, RPL_ENDOFNAMES, "*", MSG_ENDOFNAMES);
     }
 }
-//    ERR_CHANNELISFULL
+
 void    Server::join_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.get_arguments();
@@ -602,7 +603,13 @@ void    Server::join_cmd(int usr_id)
         {
             c_name = Channel::get_valid_channel_name(c_name);
             if (c_name.size() > 0)
+            {
                 _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
+                Channel &channel = _channels.at(c_name);
+                add_reply(usr_id, _clients.at(usr_id).get_serv_id(), "JOIN", c_name);
+                add_reply(usr_id, _servername, "MODE", channel.get_name(), "+i", false);
+                names_cmd(usr_id);
+            }
             else
                 add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, c_name, MSG_NOSUCHCHANNEL);
         }
