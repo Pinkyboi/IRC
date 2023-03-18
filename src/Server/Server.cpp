@@ -603,6 +603,8 @@ void    Server::join_cmd(int usr_id)
             c_name = Channel::get_valid_channel_name(c_name);
             if (c_name.size() > 0)
                 _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
+            else
+                add_reply(usr_id, _servername, c_name, ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
         }
         else
         {
