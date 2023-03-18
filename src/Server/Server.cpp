@@ -129,8 +129,8 @@ void    Server::privmsg_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.get_arguments();
     std::string message = _parser.get_message();
-    std::string s_name = _clients.at(usr_id).get_serv_id();
     Client& client = _clients.at(usr_id);
+    std::string s_name = client.get_serv_id();
     if (message.size() == 0)
         add_reply(usr_id, _servername, s_name, ERR_NOTEXTTOSEND, MSG_NOTEXTTOSEND);
     if (args.size() == 1)
@@ -277,7 +277,7 @@ void    Server::user_cmd(int usr_id)
 
     if (args.size() != 3 || real_name.empty())
         add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
-    if (_clients.at(usr_id).is_registered())
+    else if (_clients.at(usr_id).is_registered())
         add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
     else
     {
@@ -336,13 +336,13 @@ void    Server::nick_cmd(int usr_id)
 void    Server::pass_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.get_arguments();
-
-    if ( _clients.at(usr_id).is_registered() )
-        add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
+    Client &client = _clients.at(usr_id);
+    if ( client.is_registered() )
+        add_reply(usr_id, _servername, client.get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
     if (_pass.empty())
-        _clients.at(usr_id).set_pass_validity(true);
+        client.set_pass_validity(true);
     else if ( args.size() == 1 )
-         _clients.at(usr_id).set_pass_validity(args.front() == _pass);
+         client.set_pass_validity(args.front() == _pass);
     else
         add_reply(usr_id, _servername, "PASS", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
 }
