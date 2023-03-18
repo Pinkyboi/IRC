@@ -528,11 +528,11 @@ void    Server::names_cmd(int usr_id)
                 std::string names = "";
                 for (std::map<int, Client &>::iterator it = clients.begin(); it != clients.end(); it++)
                 {
-                    if (it->second.is_visible() == false)
+                    if (it->second.is_visible() == false && channel.is_client_operator(_clients.at(usr_id)) == false)
                         continue;
                     if (channel.is_client_owner(it->second))
                         names += "~";
-                    if (channel.is_client_operator(it->second))
+                    else if (channel.is_client_operator(it->second))
                         names += "@";
                     else if (channel.is_client_unmute(it->second))
                         names += "+";
@@ -608,6 +608,7 @@ void    Server::join_cmd(int usr_id)
                 Channel &channel = _channels.at(c_name);
                 add_reply(usr_id, _clients.at(usr_id).get_serv_id(), "JOIN", c_name);
                 add_reply(usr_id, _servername, "MODE", channel.get_name(), "+i", false);
+                topic_cmd(usr_id);
                 names_cmd(usr_id);
             }
             else
@@ -629,7 +630,10 @@ void    Server::join_cmd(int usr_id)
                         channel.remove_from_invites(client.get_id());
                     channel.add_client(client);
                     client.add_channel(c_name);
-                    add_reply(usr_id, _servername, RPL_TOPIC, c_name, channel.get_topic());
+                    add_reply(usr_id, _clients.at(usr_id).get_serv_id(), "JOIN", c_name);
+                    add_reply(usr_id, _servername, "MODE", channel.get_name(), "+i", false);
+                    topic_cmd(usr_id);
+                    names_cmd(usr_id);
                 }
                 else
                     add_reply(usr_id, _servername, ERR_BANNEDFROMCHAN, c_name, MSG_BANNEDFROMCHAN);
