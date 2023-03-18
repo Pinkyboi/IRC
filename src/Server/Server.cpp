@@ -536,6 +536,7 @@ void    Server::names_cmd(int usr_id)
                     names += it->second.get_nick() + " ";
                 }
                 add_reply(usr_id, _servername, RPL_NAMREPLY, c_name, names);
+                add_reply(usr_id, _servername, RPL_ENDOFNAMES, "*", MSG_ENDOFNAMES);
             }
             else
                 add_reply(usr_id, _servername, ERR_NOTONCHANNEL, c_name, MSG_NOTONCHANNEL);
@@ -580,6 +581,7 @@ void    Server::names_cmd(int usr_id)
             names += *it + " ";
         if (names.size() > 0)
             add_reply(usr_id, _servername, RPL_NAMREPLY, "*", names);
+        add_reply(usr_id, _servername, RPL_ENDOFNAMES, "*", MSG_ENDOFNAMES);
     }
 }
 //    ERR_CHANNELISFULL
