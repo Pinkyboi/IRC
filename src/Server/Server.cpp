@@ -130,10 +130,10 @@ void    Server::privmsg_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.get_arguments();
     std::string message = _parser.get_message();
-    std::string s_name = _clients.at(usr_id).get_serv_id();
     Client& client = _clients.at(usr_id);
+    std::string s_name = client.get_serv_id();
     if (message.size() == 0)
-        add_reply(usr_id, _servername, s_name, ERR_NOTEXTTOSEND, MSG_NOTEXTTOSEND);
+        add_reply(usr_id, _servername, ERR_NOTEXTTOSEND, s_name, MSG_NOTEXTTOSEND);
     if (args.size() == 1)
     {
         std::string t_name = args.front();
@@ -142,27 +142,27 @@ void    Server::privmsg_cmd(int usr_id)
             Channel &t_channel = _channels.at(t_name);
 
             if (t_channel.is_channel_client_only() && t_channel.is_client(usr_id) == false)
-                add_reply(usr_id, _servername, t_name, ERR_CANNOTSENDTOCHAN, MSG_CANNOTSENDTOCHAN);
+                add_reply(usr_id, _servername, ERR_CANNOTSENDTOCHAN, t_name, MSG_CANNOTSENDTOCHAN);
             else if (t_channel.is_client_unmute(client) == false)
-                add_reply(usr_id, _servername, t_name, ERR_CANNOTSENDTOCHAN, MSG_CANNOTSENDTOCHAN);
+                add_reply(usr_id, _servername, ERR_CANNOTSENDTOCHAN, t_name, MSG_CANNOTSENDTOCHAN);
             else if (!t_channel.is_client_banned(_clients.at(usr_id)))
             {
                 std::map<int, Client&> &clients = t_channel.get_clients();
                 for (std::map<int, Client&>::iterator it = clients.begin(); it != clients.end(); it++)
-                    add_reply(it->first, s_name, it->second.get_nick(), RPL_PRIVMSG, message);
+                    add_reply(it->first, s_name, RPL_PRIVMSG, it->second.get_nick(), message);
             }
             else
-                add_reply(usr_id, _servername, t_name, ERR_BANNEDFROMCHAN, MSG_BANNEDFROMCHAN);
+                add_reply(usr_id, _servername, ERR_BANNEDFROMCHAN, t_name, MSG_BANNEDFROMCHAN);
         }
         else if (is_nick_used(t_name))
-            add_reply(_nicks.at(t_name), s_name, t_name, RPL_PRIVMSG, message);
+            add_reply(_nicks.at(t_name), s_name, RPL_PRIVMSG, t_name, message);
         else
-            add_reply(usr_id, _servername, "PRIVMSG", ERR_NOSUCHNICK, MSG_NOSUCHNICK);
+            add_reply(usr_id, _servername, ERR_NOSUCHNICK, "PRIVMSG", MSG_NOSUCHNICK);
     }
     else if (args.size() > 1)
-        add_reply(usr_id, _servername, "PRIVMSG", ERR_TOOMANYTARGETS, MSG_TOOMANYTARGETS);
+        add_reply(usr_id, _servername, ERR_TOOMANYTARGETS, "PRIVMSG", MSG_TOOMANYTARGETS);
     else
-        add_reply(usr_id, _servername, "PRIVMSG", ERR_NORECIPIENT, MSG_NORECIPIENT);
+        add_reply(usr_id, _servername, ERR_NORECIPIENT, "PRIVMSG", MSG_NORECIPIENT);
 }
 
 
@@ -185,20 +185,20 @@ void    Server::mode_cmd(int usr_id)
             if (client.get_nick() == t_name)
                 client.handle_modes(modes);
             else
-                add_reply(usr_id, _servername, "MODE", ERR_USERSDONTMATCH, MSG_USERSDONTMATCH);
+                add_reply(usr_id, _servername, ERR_USERSDONTMATCH, "MODE", MSG_USERSDONTMATCH);
         }
         else if (_channels.find(t_name) != _channels.end())
         {
             if (_channels.at(t_name).is_client_operator(client))
                 _channels.at(t_name).handle_modes(modes, argument);
             else
-                add_reply(usr_id, _servername, "MODE", ERR_CHANOPRIVSNEEDED, MSG_CHANOPRIVSNEEDED);
+                add_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, "MODE", MSG_CHANOPRIVSNEEDED);
         }
         else
-            add_reply(usr_id, _servername, "MODE", ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
+            add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, "MODE", MSG_NOSUCHCHANNEL);
     }
     else if (nargs < 2)
-        add_reply(usr_id, _servername, "MODE", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, "MODE", MSG_NEEDMOREPARAMS);
 }
 
 void    Server::notice_cmd(int usr_id)
@@ -215,10 +215,10 @@ void    Server::notice_cmd(int usr_id)
         {
             std::map<int, Client&> &clients = _channels.at(t_name).get_clients();
             for (std::map<int, Client&>::iterator it = clients.begin(); it != clients.end(); it++)
-                add_reply(it->first, s_name, it->second.get_nick(), RPL_PRIVMSG, message);
+                add_reply(it->first, s_name, RPL_PRIVMSG, it->second.get_nick(), message);
         }
         else if (is_nick_used(t_name))
-            add_reply(_nicks.at(t_name), _servername, s_name, RPL_PRIVMSG, message);
+            add_reply(_nicks.at(t_name), _servername, RPL_PRIVMSG, s_name, message);
     }
 }
 
@@ -237,16 +237,16 @@ void    Server::list_cmd(int usr_id)
     std::string nick = _clients.at(usr_id).get_nick();
     if (args.size() == 0)
     {
-        add_reply(usr_id, _servername, nick, RPL_LISTSTART, MSG_LISTSTART);
+        add_reply(usr_id, _servername, RPL_LISTSTART, nick, MSG_LISTSTART);
         for (std::map<const std::string, Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
         {
             if (it->second.is_channel_secret() == false || it->second.is_client(usr_id))
             {
                 std::string msg = it->first + " " + convert_to_string(it->second.get_clients_count()) + " " + it->second.get_topic();
-                add_reply(usr_id, _servername, nick, RPL_LIST, msg, 0);
+                add_reply(usr_id, _servername, RPL_LIST, nick, msg, false);
             }
         }
-        add_reply(usr_id, _servername, nick, RPL_LISTEND, MSG_LISTEND);
+        add_reply(usr_id, _servername, RPL_LISTEND, nick, MSG_LISTEND);
     }
     else if (args.size() >= 1)
     {
@@ -257,29 +257,25 @@ void    Server::list_cmd(int usr_id)
             if (channel.is_channel_secret() == false || channel.is_client(usr_id))
             {
                 std::string msg = c_name + " " + convert_to_string(channel.get_clients_count()) + " " + channel.get_topic();
-                add_reply(usr_id, _servername, nick, RPL_LIST, msg);
+                add_reply(usr_id, _servername, RPL_LIST, nick, msg);
             }
         }
         else
-            add_reply(usr_id, _servername, nick, ERR_NOSUCHCHANNEL, args[0] + " " + MSG_NOSUCHCHANNEL);
-        add_reply(usr_id, _servername, nick, RPL_LISTEND, MSG_LISTEND);
+            add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, c_name, MSG_NOSUCHCHANNEL);
+        add_reply(usr_id, _servername, RPL_LISTEND, "LIST", MSG_LISTEND);
     }
 }
 
-void    Server::add_reply(int usr_id, const std::string &sender, const std::string &target, const std::string &code, const std::string &msg)
+void    Server::add_reply(int usr_id, const std::string &sender, const std::string &code, const std::string &target, const std::string &extra, bool is_msg)
 {
-    std::string replymsg = ":" + sender + " " + code + " " + target + " :" + msg + CRLN;
-    std::cout << "reply: [" << replymsg << "]" << std::endl;
-    _replies.push(std::pair<int, std::string>(usr_id, replymsg));
-}
-
-void    Server::add_reply(int usr_id, const std::string &sender, const std::string &target, const std::string &code, const std::string &msg, int column)
-{
-    std::string replymsg = ":" + sender + " " + code + " " + target + " ";
-    if (column)
-        replymsg += ":";
-    replymsg += msg + CRLN;
-    std::cout << "reply: [" << replymsg << "]" << std::endl;
+    std::string replymsg = ":" + sender + " " + code + " " + target;
+    if (extra.size())
+    {
+        replymsg += " ";
+        if (is_msg)
+            replymsg += ":";
+    }
+    replymsg += extra + CRLN;
     _replies.push(std::pair<int, std::string>(usr_id, replymsg));
 }
 
@@ -289,9 +285,9 @@ void    Server::user_cmd(int usr_id)
     std::string real_name = _parser.get_message();
 
     if (args.size() != 3 || real_name.empty())
-        add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
-    if (_clients.at(usr_id).is_registered())
-        add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
+        add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, _clients.at(usr_id).get_nick(), MSG_NEEDMOREPARAMS);
+    else if (_clients.at(usr_id).is_registered())
+        add_reply(usr_id, _servername, ERR_ALREADYREGISTRED, _clients.at(usr_id).get_nick(), MSG_ALREADYREGISTRED);
     else
     {
         std::string username = args.front();
@@ -330,7 +326,7 @@ void    Server::nick_cmd(int usr_id)
             else
             {
                 if (Client::is_nick_valid(nick) == false)
-                    add_reply(usr_id, _servername, "NICK", ERR_ERRONEUSNICKNAME, MSG_ERRONEUSNICKNAME);
+                    add_reply(usr_id, _servername, ERR_ERRONEUSNICKNAME, "NICK", MSG_ERRONEUSNICKNAME);
                 else
                 {
                     client.set_nick(nick);
@@ -339,25 +335,25 @@ void    Server::nick_cmd(int usr_id)
             }
         }
         else
-            add_reply(usr_id, _servername, client.get_nick(), ERR_NICKNAMEINUSE,  MSG_NICKNAMEINUSE);
+            add_reply(usr_id, _servername, ERR_NICKNAMEINUSE, "NICK",  MSG_NICKNAMEINUSE);
         
     }
     else
-        add_reply(usr_id, _servername, "NICK", ERR_NONICKNAMEGIVEN, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, _servername, ERR_NONICKNAMEGIVEN, "NICK", MSG_NEEDMOREPARAMS);
 }
 
 void    Server::pass_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.get_arguments();
-
-    if ( _clients.at(usr_id).is_registered() )
-        add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
+    Client &client = _clients.at(usr_id);
+    if ( client.is_registered() )
+        add_reply(usr_id, _servername, ERR_ALREADYREGISTRED, client.get_nick(), MSG_ALREADYREGISTRED);
     if (_pass.empty())
-        _clients.at(usr_id).set_pass_validity(true);
+        client.set_pass_validity(true);
     else if ( args.size() == 1 )
-         _clients.at(usr_id).set_pass_validity(args.front() == _pass);
+         client.set_pass_validity(args.front() == _pass);
     else
-        add_reply(usr_id, _servername, "PASS", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, "PASS", MSG_NEEDMOREPARAMS);
 }
 
 void    Server::part_cmd(int usr_id)
@@ -380,13 +376,13 @@ void    Server::part_cmd(int usr_id)
                 client.remove_channel(c_name);
             }
             else
-                add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), ERR_NOTONCHANNEL, MSG_NOTONCHANNEL);
+                add_reply(usr_id, _servername, ERR_NOTONCHANNEL, _clients.at(usr_id).get_nick(), MSG_NOTONCHANNEL);
         }
         else
-            add_reply(usr_id, _servername, c_name, ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
+            add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, c_name, MSG_NOSUCHCHANNEL);
     }
     else if (args.size() == 0)
-        add_reply(usr_id, _servername, "PART", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, "PART", MSG_NEEDMOREPARAMS);
 }
 
 void    Server::ping_cmd(int usr_id)
@@ -398,11 +394,11 @@ void    Server::ping_cmd(int usr_id)
     {
         std::cout << _servername << " " << args[1] << std::endl;
         if (_nicks.find(args[0]) == _nicks.end())
-            add_reply(usr_id, _servername, "PING", ERR_NOSUCHSERVER, MSG_NOSUCHSERVER);
+            add_reply(usr_id, _servername, ERR_NOSUCHSERVER, "PING", MSG_NOSUCHSERVER);
         else
         {
             Client &client = _clients.at(usr_id);
-            add_reply(usr_id, _servername, client.get_nick(), "PONG", _servername);
+            add_reply(usr_id, _servername, "PONG", client.get_nick(), _servername);
         }
     }
 }
@@ -416,15 +412,15 @@ void    Server::invite_cmd(int usr_id)
     if ( nargs == 2 )
     {
         if (_nicks.find(args.at(0)) == _nicks.end())
-            add_reply(usr_id, _servername, _clients.at(usr_id).get_nick(), ERR_NOSUCHNICK, MSG_NOSUCHNICK);
+            add_reply(usr_id, _servername, ERR_NOSUCHNICK, _clients.at(usr_id).get_nick(), MSG_NOSUCHNICK);
         else if (_channels.find(args.at(1)) == _channels.end())
-            add_reply(usr_id, _servername, args.at(1), ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
+            add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, args.at(1), MSG_NOSUCHCHANNEL);
         else
         {
             Channel &channel = _channels.at(args.at(1));
             Client &client = _clients.at(_nicks.at(args.at(0)));
             if (channel.is_client(client.get_id()) == true)
-                add_reply(usr_id, _servername, client.get_nick(), ERR_USERONCHANNEL, MSG_USERONCHANNEL);
+                add_reply(usr_id, _servername, ERR_USERONCHANNEL, client.get_nick(), MSG_USERONCHANNEL);
             else
             {
                 // Here we check the previliges of the invitor
@@ -433,14 +429,14 @@ void    Server::invite_cmd(int usr_id)
                 else
                 {
                     channel.add_to_invites(client);
-                    add_reply(invitor.get_id(), _servername, invitor.get_nick(), RPL_INVITING, "");
-                    add_reply(client.get_id(), _servername, client.get_nick(), "INVITE", channel.get_name());
+                    add_reply(invitor.get_id(), _servername, RPL_INVITING, client.get_nick(), channel.get_name(), false);
+                    add_reply(client.get_id(), _servername, "INVITE", client.get_nick(), channel.get_name(), false);
                 }
             }
         }
     }
     else if ( nargs < 2 )
-        add_reply(usr_id, _servername, "INVITE", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, "INVITE", MSG_NEEDMOREPARAMS);
 }
 
 void    Server::kick_cmd(int usr_id)
@@ -459,25 +455,25 @@ void    Server::kick_cmd(int usr_id)
             if (is_nick_used(t_name) && target_channel.is_client(_nicks.at(t_name)))
             {
                 if (target_channel.is_client(usr_id) == false)
-                        add_reply(usr_id, _servername, sender.get_nick(), ERR_NOTONCHANNEL, MSG_NOTONCHANNEL);
+                        add_reply(usr_id, _servername, ERR_NOTONCHANNEL, sender.get_nick(), MSG_NOTONCHANNEL);
                 else if (target_channel.is_client_operator(sender) and t_name != target_channel.get_owner_nick())
                 {
                     int target_id = _nicks.at(t_name);
                     target_channel.remove_client(target_id);
                     _clients.at(target_id).remove_channel(c_name);
-                    add_reply(target_id, sender.get_serv_id(), t_name, RPL_PRIVMSG, message);
+                    add_reply(target_id, sender.get_serv_id(), RPL_PRIVMSG, t_name, message);
                 }
                 else
-                    add_reply(usr_id, _servername, sender.get_nick(), ERR_CHANOPRIVSNEEDED, MSG_CHANOPRIVSNEEDED);
+                    add_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, sender.get_nick(), MSG_CHANOPRIVSNEEDED);
             }
             else
-                add_reply(usr_id, _servername, sender.get_nick(), ERR_USERNOTINCHANNEL, MSG_USERNOTINCHANNEL);
+                add_reply(usr_id, _servername, ERR_USERNOTINCHANNEL, sender.get_nick(), MSG_USERNOTINCHANNEL);
         }
         else
-            add_reply(usr_id, _servername, c_name, ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
+            add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, c_name, MSG_NOSUCHCHANNEL);
     }
     else if (args.size() < 2)
-        add_reply(usr_id, _servername, "KICK", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, "KICK", MSG_NEEDMOREPARAMS);
 }
 
 void    Server::topic_cmd(int usr_id)
@@ -493,27 +489,27 @@ void    Server::topic_cmd(int usr_id)
         {
             Channel &channel = _channels.at(c_name);
             if (!channel.is_client(usr_id))
-                add_reply(usr_id, _servername, c_name, ERR_NOTONCHANNEL, MSG_NOTONCHANNEL);
+                add_reply(usr_id, _servername, ERR_NOTONCHANNEL, c_name, MSG_NOTONCHANNEL);
             else if (!has_topic)
             {
                 if (!_channels.at(c_name).get_topic().empty())
-                    add_reply(usr_id, _servername, c_name, RPL_TOPIC, _channels.at(c_name).get_topic());
+                    add_reply(usr_id, _servername, RPL_TOPIC, c_name, _channels.at(c_name).get_topic());
                 else
-                    add_reply(usr_id, _servername, c_name, RPL_NOTOPIC, MSG_NOTOPIC);
+                    add_reply(usr_id, _servername, RPL_NOTOPIC, c_name, MSG_NOTOPIC);
             }
             else
             {
                 if (channel.is_topic_lock() && channel.is_client_operator(client) == false)
-                    add_reply(usr_id, _servername, c_name, ERR_CHANOPRIVSNEEDED, MSG_CHANOPRIVSNEEDED);
+                    add_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, c_name, MSG_CHANOPRIVSNEEDED);
                 else
                     _channels.at(c_name).set_topic(topic);
             }
         }
         else
-            add_reply(usr_id, _servername, c_name, ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
+            add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, c_name, MSG_NOSUCHCHANNEL);
     }
     else if (args.size() == 0)
-        add_reply(usr_id, _servername, "TOPIC", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, "TOPIC", MSG_NEEDMOREPARAMS);
 }
 
 void    Server::names_cmd(int usr_id)
@@ -539,13 +535,13 @@ void    Server::names_cmd(int usr_id)
                         names += "+";
                     names += it->second.get_nick() + " ";
                 }
-                add_reply(usr_id, _servername, c_name, RPL_NAMREPLY, names);
+                add_reply(usr_id, _servername, RPL_NAMREPLY, c_name, names);
             }
             else
-                add_reply(usr_id, _servername, c_name, ERR_NOTONCHANNEL, MSG_NOTONCHANNEL);
+                add_reply(usr_id, _servername, ERR_NOTONCHANNEL, c_name, MSG_NOTONCHANNEL);
         }
         else
-            add_reply(usr_id, _servername, c_name, ERR_NOSUCHCHANNEL, MSG_NOSUCHCHANNEL);
+            add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, c_name, MSG_NOSUCHCHANNEL);
     }
     else if (args.size() == 0)
     {
@@ -576,14 +572,14 @@ void    Server::names_cmd(int usr_id)
                     if (name_index != all_names.end())
                         all_names.erase(name_index);
                 }
-                add_reply(usr_id, _servername, it->first, RPL_NAMREPLY, names);
+                add_reply(usr_id, _servername, RPL_NAMREPLY, it->first, names);
             }
         }
         std::string names = "";
         for (std::vector<std::string>::iterator it = all_names.begin(); it != all_names.end(); it++)
             names += *it + " ";
         if (names.size() > 0)
-            add_reply(usr_id, _servername, "*", RPL_NAMREPLY, names);
+            add_reply(usr_id, _servername, RPL_NAMREPLY, "*", names);
     }
 }
 
@@ -599,7 +595,13 @@ void    Server::join_cmd(int usr_id)
         if (args.size() == 2)
             key = args.at(1);
         if (_channels.find(c_name) == _channels.end())
-            _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
+        {
+            c_name = Channel::get_valid_channel_name(c_name);
+            if (c_name.size() > 0)
+                _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
+            else
+                add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, c_name, MSG_NOSUCHCHANNEL);
+        }
         else
         {
             Channel &channel = _channels.at(c_name);
@@ -607,26 +609,26 @@ void    Server::join_cmd(int usr_id)
             {
                 bool is_invited = channel.is_client_invited(client);
                 if (is_invited == false)
-                    add_reply(usr_id, _servername, c_name, ERR_INVITEONLYCHAN, MSG_INVITEONLYCHAN);
+                    add_reply(usr_id, _servername, ERR_INVITEONLYCHAN, c_name, MSG_INVITEONLYCHAN);
                 else if (channel.is_there_space() == false)
-                    add_reply(usr_id, _servername, c_name, ERR_CHANNELISFULL, MSG_CHANNELISFULL);
+                    add_reply(usr_id, _servername, ERR_CHANNELISFULL, c_name, MSG_CHANNELISFULL);
                 else if (channel.is_client_banned(client) == false)
                 {
                     if (is_invited == true)
                         channel.remove_from_invites(client.get_id());
                     channel.add_client(client);
                     client.add_channel(c_name);
-                    add_reply(usr_id, _servername, c_name, RPL_TOPIC, channel.get_topic());
+                    add_reply(usr_id, _servername, RPL_TOPIC, c_name, channel.get_topic());
                 }
                 else
-                    add_reply(usr_id, _servername, c_name, ERR_BANNEDFROMCHAN, MSG_BANNEDFROMCHAN);
+                    add_reply(usr_id, _servername, ERR_BANNEDFROMCHAN, c_name, MSG_BANNEDFROMCHAN);
             }
             else
-                add_reply(usr_id, _servername, c_name, ERR_BADCHANNELKEY, MSG_BADCHANNELKEY);
+                add_reply(usr_id, _servername, ERR_BADCHANNELKEY, c_name, MSG_BADCHANNELKEY);
         }
     }
     else if (args.size() < 1)
-        add_reply(usr_id, _servername, "JOIN", ERR_NEEDMOREPARAMS, MSG_NEEDMOREPARAMS);
+        add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, "JOIN", MSG_NEEDMOREPARAMS);
 }
 
 void    Server::handle_commands(int usr_id, std::string &command)
@@ -653,14 +655,14 @@ void    Server::handle_commands(int usr_id, std::string &command)
                 _clients.at(usr_id).update_registration();
             }
             else
-                add_reply(usr_id, _servername, client.get_nick(), ERR_NOTREGISTERED, MSG_NOTREGISTERED);
+                add_reply(usr_id, _servername, ERR_NOTREGISTERED, client.get_nick(), MSG_NOTREGISTERED);
             if (client.get_status() == Client::REGISTERED)
-                add_reply(usr_id, _servername, client.get_nick(), RPL_WELCOME, _motd);
+                add_reply(usr_id, _servername, RPL_WELCOME, client.get_nick(), _motd);
         }
         else if ( client.get_status() == Client::REGISTERED )
         {
             if ( command_name == "PASS" ||  command_name == "USER" )
-                add_reply(usr_id, _servername, client.get_nick(), ERR_ALREADYREGISTRED, MSG_ALREADYREGISTRED);
+                add_reply(usr_id, _servername, ERR_ALREADYREGISTRED, client.get_nick(), MSG_ALREADYREGISTRED);
             else
                 (this->*_commands[command_name])(usr_id);
         }

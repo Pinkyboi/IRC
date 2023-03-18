@@ -49,6 +49,10 @@ size_t  Parser::get_nargs() const
 void    Parser::parse(std::string message)
 {
     std::vector<std::string>    tokens;
+
+    if (message.empty())
+        return ;
+
     _command.clear();
     _arguments.clear();
     _message.clear();
