@@ -55,7 +55,7 @@ class Channel
         bool                    is_client_banned(Client &client) const;
         bool                    is_client_operator(Client &client) const;
         bool                    is_client_invited(Client &client) const;
-        bool                    is_client_owner(Client &client) const
+        bool                    is_client_owner(Client &client) const;
         void                    add_to_invites(Client &client);
         void                    remove_from_invites(int client_id);
     private:
