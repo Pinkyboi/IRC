@@ -67,9 +67,7 @@ class Server
         void                            remove_connection(int user_id);
         void                            init_commands();
         void                            add_reply(int usr_id, const std::string &sender, const std::string &target,
-                                            const std::string &code, const std::string &msg);
-        void                            add_reply(int usr_id, const std::string &sender, const std::string &target, 
-                                            const std::string &code, const std::string &msg, int column);
+                                                const std::string &code, const std::string &extra = "", bool is_msg = true);
 
         void                            handle_commands(int fd, std::string &command);
     private:
