@@ -38,7 +38,7 @@ std::string Channel::get_valid_channel_name(std::string name)
     if (name.size() > 50)
         return "";
     if (name[0] != '#' && name[0] != '&' && name[0] != '+')
-        name = "#" + name;
+        return "";
     return name;
 }
 
@@ -65,6 +65,28 @@ std::string Channel::get_key() const
 std::string Channel::get_owner_nick() const
 {
     return (_owner.get_nick());
+}
+
+std::string Channel::get_modes() const
+{
+    if (_modes == 0)
+        return "";
+    std::string modes = "+";
+    if (_modes & MODE_T)
+        modes += "t";
+    if (_modes & MODE_N)
+        modes += "n";
+    if (_modes & MODE_S)
+        modes += "s";
+    if (_modes & MODE_M)
+        modes += "m";
+    if (_modes & MODE_I)
+        modes += "i";
+    if (_modes & MODE_K)
+        modes += "k";
+    if (_modes & MODE_L)
+        modes += "l";
+    return modes;
 }
 
 int    Channel::get_clients_count() const

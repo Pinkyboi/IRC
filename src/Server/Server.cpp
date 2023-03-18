@@ -197,7 +197,17 @@ void    Server::mode_cmd(int usr_id)
         else
             add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, "MODE", MSG_NOSUCHCHANNEL);
     }
-    else if (nargs < 2)
+    else if (nargs == 1)
+    {
+        std::string t_name = args.front();
+        if (_nicks.find(t_name) != _nicks.end())
+            add_reply(usr_id, _servername, RPL_UMODEIS, _clients.at(_nicks.at(t_name)).get_modes(), "");
+        else if (_channels.find(t_name) != _channels.end())
+            add_reply(usr_id, _servername, RPL_CHANNELMODEIS, t_name, _channels.at(t_name).get_modes());
+        else
+            add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, "MODE", MSG_NOSUCHCHANNEL);
+    }
+    else
         add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, "MODE", MSG_NEEDMOREPARAMS);
 }
 
@@ -607,9 +617,9 @@ void    Server::join_cmd(int usr_id)
                 _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
                 Channel &channel = _channels.at(c_name);
                 add_reply(usr_id, _clients.at(usr_id).get_serv_id(), "JOIN", c_name);
-                add_reply(usr_id, _servername, "MODE", channel.get_name(), "+i", false);
                 topic_cmd(usr_id);
                 names_cmd(usr_id);
+                mode_cmd(usr_id);
             }
             else
                 add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, c_name, MSG_NOSUCHCHANNEL);

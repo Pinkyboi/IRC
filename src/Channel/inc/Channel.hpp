@@ -35,6 +35,7 @@ class Channel
         std::string             get_topic() const;
         std::string             get_key() const;
         std::string             get_owner_nick() const;
+        std::string             get_modes() const;
         int                     get_clients_count() const;
         bool                    parse_mode(std::string mode, uint32_t target = 0);
     public:

@@ -13,6 +13,8 @@
 # define MAX_COMMAND_SIZE 512
 
 # define MODE_I (uint16_t)((uint16_t)(0x1) << 3)
+# define MODE_W (uint16_t)((uint16_t)(0x1) << 2)
+
 class Client
 {
     public:
@@ -37,7 +39,9 @@ class Client
         void        set_status(int status);
         void        set_mode(const std::string &mode);
         void        set_invisible(void);
-        void        set_visible(void);
+        void        unset_invisible(void);
+        void        set_wallop(void);
+        void        unset_wallop(void);
         void        update_registration();
         void        add_channel(const std::string &channel_name);
         void        remove_channel(const std::string &channel_name);
@@ -52,6 +56,7 @@ class Client
         std::string                 get_real_name() const;
         std::string                 get_command();
         std::string                 get_serv_id() const;
+        std::string                 get_modes() const;
         bool                        is_in_channel(std::string &c_name) const;
         bool                        is_visible() const;
     public:
@@ -71,6 +76,7 @@ class Client
         std::map<char, ModeFunc>                            _unset_modes;
         int                                                 _status;
         bool                                                _visible;
+        uint16_t                                            _modes;
 
 };
 

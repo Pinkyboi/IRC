@@ -1,11 +1,13 @@
 # include "Client.hpp"
 
-Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _real_name(""), _pass_validity(false), _visible(true)
+Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _real_name(""), _pass_validity(false), _visible(true), _modes(0)
 {
     getnameinfo(&addr, sizeof(addr), _addr, sizeof(_addr), NULL, 0, NI_NUMERICHOST);
     _status = UNREGISTERED;
     _set_modes.insert(std::make_pair('i', &Client::set_invisible));
-    _unset_modes.insert(std::make_pair('i', &Client::set_visible));
+    _unset_modes.insert(std::make_pair('i', &Client::unset_invisible));
+    _set_modes.insert(std::make_pair('w', &Client::set_wallop));
+    _unset_modes.insert(std::make_pair('w', &Client::unset_wallop));
 }
 
 Client::~Client()
@@ -97,11 +99,23 @@ void    Client::set_mode(const std::string &mode)
 void    Client::set_invisible(void)
 {
     _visible = false;
+    _modes |= MODE_I;
 }
 
-void    Client::set_visible(void)
+void    Client::unset_invisible(void)
 {
     _visible = true;
+    _modes &= ~MODE_I;
+}
+
+void    Client::set_wallop(void)
+{
+    _modes |= MODE_W;
+}
+
+void    Client::unset_wallop(void)
+{
+    _modes &= ~MODE_W;
 }
 
 void    Client::add_channel(const std::string &channel_name)
@@ -187,6 +201,19 @@ void Client::update_registration()
 std::string Client::get_serv_id() const
 {
     return _nick + "!" + _username + "@" + std::string(_addr);
+}
+
+std::string Client::get_modes() const
+{
+    std::string mode;
+    if (!_modes)
+        return "";
+    mode = "+";
+    if (_modes & MODE_I)
+        mode += "i";
+    if (_modes & MODE_W)
+        mode += "w";
+    return (mode);
 }
 
 void    Client::handle_modes(std::string mode)
