@@ -184,8 +184,13 @@ void    Server::mode_cmd(int usr_id)
         {
             if (client.get_nick() == t_name)
             {
-                client.handle_modes(modes);
-                add_reply(usr_id, _servername, RPL_CHANNELMODEIS, t_name, client.get_modes());
+                if (modes.size())
+                {
+                    client.handle_modes(modes);
+                    add_reply(usr_id, _servername, "MODE", t_name, client.get_modes());
+                }
+                else
+                    add_reply(usr_id, _servername, RPL_UMODEIS, t_name, client.get_modes());
             }
             else
                 add_reply(usr_id, _servername, ERR_USERSDONTMATCH, "MODE", MSG_USERSDONTMATCH);
@@ -194,8 +199,13 @@ void    Server::mode_cmd(int usr_id)
         {
             if (_channels.at(t_name).is_client_operator(client))
             {
-                _channels.at(t_name).handle_modes(modes, argument);
-                add_reply(usr_id, _servername, "MODE", _channels.at(t_name).get_modes(), "");
+                if (argument.size())
+                {
+                    _channels.at(t_name).handle_modes(modes, argument);
+                    add_reply(usr_id, _servername, "MODE", t_name, _channels.at(t_name).get_modes());
+                }
+                else
+                    add_reply(usr_id, _servername, RPL_CHANNELMODEIS, t_name, _channels.at(t_name).get_modes());
             }
             else
                 add_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, "MODE", MSG_CHANOPRIVSNEEDED);
@@ -694,10 +704,7 @@ void    Server::handle_commands(int usr_id, std::string &command)
             else
                 add_reply(usr_id, _servername, ERR_NOTREGISTERED, client.get_nick(), MSG_NOTREGISTERED);
             if (client.get_status() == Client::REGISTERED)
-            {
                 add_reply(usr_id, _servername, RPL_WELCOME, client.get_nick(), _motd);
-                add_reply(usr_id, _servername, "MODE", client.get_nick(), client.get_modes());
-            }
         }
         else if ( client.get_status() == Client::REGISTERED )
         {
