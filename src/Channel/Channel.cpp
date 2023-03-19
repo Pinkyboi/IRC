@@ -71,12 +71,12 @@ std::string Channel::get_mode_args() const
 {
     std::string args = "";
     if (_key.size())
-        args += " " + _key;
+        args += _key;
     if (_limit)
     {
         std::stringstream ss;
         ss << _limit;
-        args += " " + ss.str();
+        args += ss.str();
     }
     return args;
 }
@@ -106,7 +106,7 @@ std::string Channel::get_modes() const
 
 std::string Channel::get_modes_with_args() const
 {
-    return get_modes() + get_mode_args();
+    return get_modes() + " " + get_mode_args();
 }
 
 int    Channel::get_clients_count() const
