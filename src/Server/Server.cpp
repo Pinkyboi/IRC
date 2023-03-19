@@ -549,9 +549,9 @@ void    Server::names_cmd(int usr_id)
                 std::map<int, Client &> clients = channel.get_clients();
                 std::string names = "";
                 if (channel.is_channel_secret())
-                    c_name = "@" + c_name;
+                    c_name = "@ " + c_name;
                 else
-                    c_name = "=" + c_name;
+                    c_name = "= " + c_name;
                 for (std::map<int, Client &>::iterator it = clients.begin(); it != clients.end(); it++)
                 {
                     if (it->second.is_visible() == false && channel.is_client_operator(_clients.at(usr_id)) == false)
@@ -588,9 +588,9 @@ void    Server::names_cmd(int usr_id)
             std::map<int, Client &> clients = it->second.get_clients();
             std::string c_name = it->first;
             if (it->second.is_channel_secret())
-                c_name = "@" + c_name;
+                c_name = "@ " + c_name;
             else
-                c_name = "=" + c_name;
+                c_name = "= " + c_name;
             if ( it->second.is_channel_secret() == false || it->second.is_client(usr_id) )
             {
                 std::string names = "";
