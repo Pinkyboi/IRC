@@ -556,13 +556,15 @@ void    Server::names_cmd(int usr_id)
                 {
                     if (it->second.is_visible() == false && channel.is_client_operator(_clients.at(usr_id)) == false)
                         continue;
+                    if (it != clients.begin())
+                        names += " ";
                     if (channel.is_client_owner(it->second))
                         names += "~";
                     else if (channel.is_client_operator(it->second))
                         names += "@";
                     else if (channel.is_client_unmute(it->second))
                         names += "+";
-                    names += it->second.get_nick() + " ";
+                    names += it->second.get_nick();
                 }
                 add_reply(usr_id, _servername, RPL_NAMREPLY, c_name, names);
                 add_reply(usr_id, _servername, RPL_ENDOFNAMES, "NAMES", MSG_ENDOFNAMES);
@@ -598,13 +600,15 @@ void    Server::names_cmd(int usr_id)
                 {
                     if (it2->second.is_visible() == false)
                         continue;
+                    if (it2 != clients.begin())
+                        names += " ";
                     if (it->second.is_client_owner(it2->second))
                         names += "~";
                     if (it->second.is_client_operator(it2->second))
                         names += "@";
                     else if (it->second.is_client_unmute(it2->second) && it->second.is_channel_moderated())
                         names += "+";
-                    names += it2->second.get_nick() + " ";
+                    names += it2->second.get_nick();
                     std::vector<std::string>::iterator name_index = std::find(all_names.begin(), all_names.end(), it2->second.get_nick());
                     if (name_index != all_names.end())
                         all_names.erase(name_index);
