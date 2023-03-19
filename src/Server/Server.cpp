@@ -206,7 +206,7 @@ void    Server::mode_cmd(int usr_id)
                     add_reply(usr_id, _servername, "MODE", t_name, t_channel.get_modes());
                 }
                 else
-                    add_reply(usr_id, _servername, RPL_CHANNELMODEIS, t_name, t_channel.get_modes() + " " + t_channel.get_mode_args());
+                    add_reply(usr_id, _servername, RPL_CHANNELMODEIS, client.get_nick(), t_name + " " + t_channel.get_modes() + " " + t_channel.get_mode_args());
             }
             else
                 add_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, "MODE", MSG_CHANOPRIVSNEEDED);

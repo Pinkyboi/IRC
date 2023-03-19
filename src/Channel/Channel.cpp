@@ -85,7 +85,7 @@ std::string Channel::get_modes() const
     if (_modes == 0)
         return "";
     std::string modes = "";
-    modes += "+ ";
+    modes += "+";
     if (_modes & MODE_T)
         modes += "t";
     if (_modes & MODE_N)
