@@ -80,6 +80,7 @@ std::string Channel::get_mode_args() const
     }
     return args;
 }
+
 std::string Channel::get_modes() const
 {
     if (_modes == 0)
@@ -101,6 +102,11 @@ std::string Channel::get_modes() const
     if (_modes & MODE_L)
         modes += "l";
     return modes;
+}
+
+std::string Channel::get_modes_with_args() const
+{
+    return _name + get_modes() + get_mode_args();
 }
 
 int    Channel::get_clients_count() const

@@ -171,13 +171,13 @@ void    Server::mode_cmd(int usr_id)
     std::vector<std::string> args = _parser.get_arguments();
     std::string message = _parser.get_message();
     size_t nargs = _parser.get_nargs();
+    Client &client  = _clients.at(usr_id);
 
     if ( nargs == 2 || nargs == 3 )
     {
         std::string t_name = args.front();
         std::string argument = "";
         std::string modes = args.at(1);
-        Client &client  = _clients.at(usr_id);
         if (nargs == 3)
             argument = args.back();
         if (_nicks.find(t_name) != _nicks.end())
@@ -203,10 +203,10 @@ void    Server::mode_cmd(int usr_id)
                 if (modes.size())
                 {
                     t_channel.handle_modes(modes, argument);
-                    add_reply(usr_id, _servername, "MODE", t_name, t_channel.get_modes());
+                    add_reply(usr_id, _servername, "MODE", t_name, t_channel.get_modes_with_args());
                 }
                 else
-                    add_reply(usr_id, _servername, RPL_CHANNELMODEIS, client.get_nick(), t_name + " " + t_channel.get_modes() + " " + t_channel.get_mode_args());
+                    add_reply(usr_id, _servername, RPL_CHANNELMODEIS, client.get_nick(), t_channel.get_modes_with_args());
             }
             else
                 add_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, "MODE", MSG_CHANOPRIVSNEEDED);
@@ -218,9 +218,14 @@ void    Server::mode_cmd(int usr_id)
     {
         std::string t_name = args.front();
         if (_nicks.find(t_name) != _nicks.end())
-            add_reply(usr_id, _servername, RPL_UMODEIS, _clients.at(_nicks.at(t_name)).get_modes(), "");
+        {
+            if (client.get_nick() == t_name)
+                add_reply(usr_id, _servername, RPL_UMODEIS, client.get_nick(), client.get_modes());
+            else
+                add_reply(usr_id, _servername, ERR_USERSDONTMATCH, "MODE", MSG_USERSDONTMATCH);
+        }
         else if (_channels.find(t_name) != _channels.end())
-            add_reply(usr_id, _servername, RPL_CHANNELMODEIS, t_name, _channels.at(t_name).get_modes());
+            add_reply(usr_id, _servername, RPL_CHANNELMODEIS, client.get_nick(), _channels.at(t_name).get_modes_with_args());
         else
             add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, "MODE", MSG_NOSUCHCHANNEL);
     }
