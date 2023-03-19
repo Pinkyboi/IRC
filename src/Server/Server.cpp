@@ -215,7 +215,7 @@ void    Server::mode_cmd(int usr_id)
                 add_reply(usr_id, _servername, ERR_USERSDONTMATCH, "MODE", MSG_USERSDONTMATCH);
         }
         else if (_channels.find(t_name) != _channels.end())
-            add_reply(usr_id, _servername, RPL_CHANNELMODEIS, client.get_nick(), t_name+" "+_channels.at(t_name).get_modes_with_args());
+            add_reply(usr_id, _servername, RPL_CHANNELMODEIS, t_name, _channels.at(t_name).get_modes_with_args());
         else
             add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, t_name, MSG_NOSUCHCHANNEL);
     }
@@ -290,7 +290,7 @@ void    Server::list_cmd(int usr_id)
 
 void    Server::add_reply(int usr_id, const std::string &sender, const std::string &code, const std::string &target, const std::string &extra, bool is_msg)
 {
-    std::string replymsg = ":" + sender + " " + code + " " + target;
+    std::string replymsg = ":" + sender + " " + code + " " + target + " " +_clients.at(usr_id).get_nick();
     if (extra.size())
     {
         replymsg += " ";
@@ -598,6 +598,8 @@ void    Server::names_cmd(int usr_id)
                 {
                     if (it2->second.is_visible() == false)
                         continue;
+                    if (it->second.is_client_owner(it2->second))
+                        names += "~";
                     if (it->second.is_client_operator(it2->second))
                         names += "@";
                     else if (it->second.is_client_unmute(it2->second) && it->second.is_channel_moderated())
