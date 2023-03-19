@@ -219,16 +219,21 @@ std::string Client::get_modes() const
     return (mode);
 }
 
-void    Client::handle_modes(std::string mode)
+bool    Client::handle_modes(std::string mode)
 {
+    std::map<char, ModeFunc>    mode_func = _set_modes;
+    bool                        mode_used = false;
     if (mode.empty() || (mode[0] != '+' && mode[0] != '-'))
-        return;
-    std::map<char, ModeFunc> mode_func = _set_modes;
+        return mode_used;
     if (mode[0] == '-')
         mode_func = _unset_modes;
     for (size_t i = 1; i < mode.size(); i++)
     {
         if (mode_func.find(mode[i]) != mode_func.end())
+        {
             (this->*mode_func[mode[i]])();
+            mode_used = true;
+        }
     }
+    return (mode_used);
 }

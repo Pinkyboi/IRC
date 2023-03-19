@@ -87,7 +87,7 @@ class Channel
         void                    unset_mode_b  (std::string &mode_argument);
         void                    unset_mode_o  (std::string &mode_argument);
     public:
-        void                    handle_modes(std::string mode, std::string mode_arg);
+        bool                    handle_modes(std::string mode, std::string mode_arg);
     public:
         uint16_t                    _modes;
     private:

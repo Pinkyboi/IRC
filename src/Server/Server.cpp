@@ -184,8 +184,8 @@ void    Server::mode_cmd(int usr_id)
         {
             if (client.get_nick() == t_name)
             {
-                client.handle_modes(modes);
-                add_reply(usr_id, _servername, "MODE", t_name, client.get_modes());
+                if (client.handle_modes(modes))
+                    add_reply(usr_id, _servername, "MODE", t_name, client.get_modes());
             }
             else
                 add_reply(usr_id, _servername, ERR_USERSDONTMATCH, "MODE", MSG_USERSDONTMATCH);
@@ -195,11 +195,8 @@ void    Server::mode_cmd(int usr_id)
             if (_channels.at(t_name).is_client_operator(client))
             {
                 Channel& t_channel =  _channels.at(t_name);
-                if (modes.front() == '+' || modes.front() == '-')
-                {
-                    t_channel.handle_modes(modes, argument);
+                if (t_channel.handle_modes(modes, argument))
                     add_reply(usr_id, _servername, "MODE", t_name, t_channel.get_modes_with_args());
-                }
             }
             else
                 add_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, "MODE", MSG_CHANOPRIVSNEEDED);

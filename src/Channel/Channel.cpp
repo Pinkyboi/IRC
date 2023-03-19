@@ -397,16 +397,21 @@ bool    Channel::is_there_space() const
     return true;
 }
 
-void Channel::handle_modes(std::string mode, std::string mode_arg)
+bool Channel::handle_modes(std::string mode, std::string mode_arg)
 {
+    std::map<char, ModeFunc>    mode_func = _set_modes;
+    bool                        mode_used = false;
     if (mode.empty() || (mode[0] != '+' && mode[0] != '-'))
-        return;
-    std::map<char, ModeFunc> mode_func = _set_modes;
+        return false;
     if (mode[0] == '-')
         mode_func = _unset_modes;
     for (size_t i = 1; i < mode.size(); i++)
     {
         if (mode_func.find(mode[i]) != mode_func.end())
+        {
             (this->*mode_func[mode[i]])(mode_arg);
+            mode_used = true;
+        }
     }
+    return mode_used;
 }

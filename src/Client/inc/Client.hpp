@@ -60,7 +60,7 @@ class Client
         bool                        is_in_channel(std::string &c_name) const;
         bool                        is_visible() const;
     public:
-        void                        handle_modes(std::string mode);
+        bool                        handle_modes(std::string mode);
 
     private:
         typedef void (Client::*ModeFunc)(void);
