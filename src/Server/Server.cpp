@@ -202,7 +202,7 @@ void    Server::mode_cmd(int usr_id)
                 add_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, "MODE", MSG_CHANOPRIVSNEEDED);
         }
         else
-            add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, "MODE", MSG_NOSUCHCHANNEL);
+            add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, t_name, MSG_NOSUCHCHANNEL);
     }
     else if (nargs == 1)
     {
@@ -217,7 +217,7 @@ void    Server::mode_cmd(int usr_id)
         else if (_channels.find(t_name) != _channels.end())
             add_reply(usr_id, _servername, RPL_CHANNELMODEIS, client.get_nick(), t_name+" "+_channels.at(t_name).get_modes_with_args());
         else
-            add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, "MODE", MSG_NOSUCHCHANNEL);
+            add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, t_name, MSG_NOSUCHCHANNEL);
     }
     else
         add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, "MODE", MSG_NEEDMOREPARAMS);
