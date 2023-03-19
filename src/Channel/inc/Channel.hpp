@@ -5,6 +5,7 @@
 #include <list>
 #include <string>
 #include <algorithm>
+#include <sstream>
 #include "Client.hpp"
 
 #define MODE_T (uint16_t)(0x1) //Topic lock, which means that only channel operators can change the channel topic.
