@@ -71,7 +71,17 @@ std::string Channel::get_modes() const
 {
     if (_modes == 0)
         return "";
-    std::string modes = "+";
+    std::string modes = "";
+    if (_modes & MODE_K)
+        modes += "+k " + _key + " ";
+    if (_modes & MODE_L)
+    {
+        std::stringstream ss;
+
+        ss << _limit;
+        modes += "+l" + ss.str() + " ";
+    }
+    modes += "+ ";
     if (_modes & MODE_T)
         modes += "t";
     if (_modes & MODE_N)
@@ -82,10 +92,6 @@ std::string Channel::get_modes() const
         modes += "m";
     if (_modes & MODE_I)
         modes += "i";
-    if (_modes & MODE_K)
-        modes += "+k " + _key + " ";
-    if (_modes & MODE_L)
-        modes += "l" + std::to_string(_limit) + " ";
     return modes;
 }
 
