@@ -185,7 +185,7 @@ void    Server::mode_cmd(int usr_id)
             if (client.get_nick() == t_name)
             {
                 if (client.handle_modes(modes))
-                    add_reply(usr_id, _servername, "MODE", t_name, client.get_modes());
+                    add_reply(usr_id, _servername, "MODE", client.get_modes());
             }
             else
                 add_reply(usr_id, _servername, ERR_USERSDONTMATCH, "MODE", MSG_USERSDONTMATCH);
@@ -210,7 +210,7 @@ void    Server::mode_cmd(int usr_id)
         if (_nicks.find(t_name) != _nicks.end())
         {
             if (client.get_nick() == t_name)
-                add_reply(usr_id, _servername, RPL_UMODEIS, client.get_nick(), client.get_modes());
+                add_reply(usr_id, _servername, RPL_UMODEIS, client.get_modes());
             else
                 add_reply(usr_id, _servername, ERR_USERSDONTMATCH, "MODE", MSG_USERSDONTMATCH);
         }
