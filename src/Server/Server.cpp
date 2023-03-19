@@ -195,7 +195,7 @@ void    Server::mode_cmd(int usr_id)
             if (_channels.at(t_name).is_client_operator(client))
             {
                 Channel& t_channel =  _channels.at(t_name);
-                if (modes.size())
+                if (modes.front() == '+' || modes.front() == '-')
                 {
                     t_channel.handle_modes(modes, argument);
                     add_reply(usr_id, _servername, "MODE", t_name, t_channel.get_modes_with_args());
