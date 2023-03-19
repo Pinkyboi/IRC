@@ -538,6 +538,7 @@ void    Server::topic_cmd(int usr_id)
 void    Server::names_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.get_arguments();
+    std::string usr_nick = _clients.at(usr_id).get_nick();
     if (args.size() == 1)
     {
         std::string c_name = args.front();
@@ -566,7 +567,7 @@ void    Server::names_cmd(int usr_id)
                         names += "+";
                     names += it->second.get_nick();
                 }
-                add_reply(usr_id, _servername, RPL_NAMREPLY, c_name, names);
+                add_reply(usr_id, _servername, RPL_NAMREPLY, usr_nick + " " + c_name, names);
                 add_reply(usr_id, _servername, RPL_ENDOFNAMES, "NAMES", MSG_ENDOFNAMES);
             }
             else
@@ -613,7 +614,7 @@ void    Server::names_cmd(int usr_id)
                     if (name_index != all_names.end())
                         all_names.erase(name_index);
                 }
-                add_reply(usr_id, _servername, RPL_NAMREPLY, it->first, names);
+                add_reply(usr_id, _servername, RPL_NAMREPLY, usr_nick + " " + it->first, names);
             }
         }
         std::string names = "";
