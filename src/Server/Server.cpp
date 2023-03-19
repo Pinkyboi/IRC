@@ -225,7 +225,7 @@ void    Server::mode_cmd(int usr_id)
                 add_reply(usr_id, _servername, ERR_USERSDONTMATCH, "MODE", MSG_USERSDONTMATCH);
         }
         else if (_channels.find(t_name) != _channels.end())
-            add_reply(usr_id, _servername, RPL_CHANNELMODEIS, client.get_nick(), _channels.at(t_name).get_modes_with_args());
+            add_reply(usr_id, _servername, RPL_CHANNELMODEIS, client.get_nick(), t_name+" "+_channels.at(t_name).get_modes_with_args());
         else
             add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, "MODE", MSG_NOSUCHCHANNEL);
     }
