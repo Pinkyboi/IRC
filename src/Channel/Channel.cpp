@@ -67,6 +67,19 @@ std::string Channel::get_owner_nick() const
     return (_owner.get_nick());
 }
 
+std::string Channel::get_mode_args() const
+{
+    std::string args = "";
+    if (_key.size())
+        args += " " + _key;
+    if (_limit)
+    {
+        std::stringstream ss;
+        ss << _limit;
+        args += " " + ss.str();
+    }
+    return args;
+}
 std::string Channel::get_modes() const
 {
     if (_modes == 0)
@@ -87,14 +100,6 @@ std::string Channel::get_modes() const
         modes += "k";
     if (_modes & MODE_L)
         modes += "l";
-    if (_key.size())
-        modes += " " + _key;
-    if (_limit)
-    {
-        std::stringstream ss;
-        ss << _limit;
-        modes += " " + ss.str();
-    }
     return modes;
 }
 
