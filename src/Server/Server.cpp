@@ -290,7 +290,7 @@ void    Server::list_cmd(int usr_id)
 
 void    Server::add_reply(int usr_id, const std::string &sender, const std::string &code, const std::string &target, const std::string &extra, bool is_msg)
 {
-    std::string replymsg = ":" + sender + " " + code + " " + target + " " +_clients.at(usr_id).get_nick();
+    std::string replymsg = ":" + sender + " " + code + " " + target;
     if (extra.size())
     {
         replymsg += " ";
@@ -397,6 +397,7 @@ void    Server::part_cmd(int usr_id)
                 if (message != "")
                     privmsg_cmd(usr_id);
                 client.remove_channel(c_name);
+                add_reply(usr_id, client.get_serv_id(), "PART", c_name);
             }
             else
                 add_reply(usr_id, _servername, ERR_NOTONCHANNEL, _clients.at(usr_id).get_nick(), MSG_NOTONCHANNEL);
@@ -446,7 +447,6 @@ void    Server::invite_cmd(int usr_id)
                 add_reply(usr_id, _servername, ERR_USERONCHANNEL, client.get_nick(), MSG_USERONCHANNEL);
             else
             {
-                // Here we check the previliges of the invitor
                 if (channel.is_client_operator(invitor) == false && channel.is_channel_invite_only())
                     add_reply(usr_id, _servername, invitor.get_nick(), ERR_CHANOPRIVSNEEDED, MSG_CHANOPRIVSNEEDED);
                 else
