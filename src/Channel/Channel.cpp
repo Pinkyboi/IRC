@@ -106,7 +106,7 @@ std::string Channel::get_modes() const
 
 std::string Channel::get_modes_with_args() const
 {
-    return _name + get_modes() + get_mode_args();
+    return get_modes() + get_mode_args();
 }
 
 int    Channel::get_clients_count() const
