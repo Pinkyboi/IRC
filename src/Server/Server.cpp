@@ -149,7 +149,8 @@ void    Server::privmsg_cmd(int usr_id)
             {
                 std::map<int, Client&> &clients = t_channel.get_clients();
                 for (std::map<int, Client&>::iterator it = clients.begin(); it != clients.end(); it++)
-                    add_reply(it->first, s_name, RPL_PRIVMSG, it->second.get_nick(), message);
+                    if (it->first != usr_id)
+                        add_reply(it->first, s_name, RPL_PRIVMSG, it->second.get_nick(), message);
             }
             else
                 add_reply(usr_id, _servername, ERR_BANNEDFROMCHAN, t_name, MSG_BANNEDFROMCHAN);
@@ -157,12 +158,12 @@ void    Server::privmsg_cmd(int usr_id)
         else if (is_nick_used(t_name))
             add_reply(_nicks.at(t_name), s_name, RPL_PRIVMSG, t_name, message);
         else
-            add_reply(usr_id, _servername, ERR_NOSUCHNICK, "PRIVMSG", MSG_NOSUCHNICK);
+            add_info_reply(usr_id, _servername, ERR_NOSUCHNICK, client.get_nick(), t_name, MSG_NOSUCHNICK);
     }
     else if (args.size() > 1)
-        add_reply(usr_id, _servername, ERR_TOOMANYTARGETS, "PRIVMSG", MSG_TOOMANYTARGETS);
+        add_info_reply(usr_id, _servername, ERR_TOOMANYTARGETS, client.get_nick(), args.at(2), MSG_TOOMANYTARGETS);
     else
-        add_reply(usr_id, _servername, ERR_NORECIPIENT, "PRIVMSG", MSG_NORECIPIENT);
+        add_reply(usr_id, _servername, ERR_NORECIPIENT, client.get_nick(), MSG_NORECIPIENT);
 }
 
 
@@ -199,10 +200,10 @@ void    Server::mode_cmd(int usr_id)
                     add_reply(usr_id, client.get_serv_id(), "MODE", t_name, t_channel.get_modes_with_args());
             }
             else
-                add_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, client.get_nick(), MSG_CHANOPRIVSNEEDED);
+                add_info_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, client.get_nick(), t_name, MSG_CHANOPRIVSNEEDED);
         }
         else
-            add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, t_name, MSG_NOSUCHCHANNEL);
+            add_info_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, client.get_nick(), t_name, MSG_NOSUCHCHANNEL);
     }
     else if (nargs == 1)
     {
@@ -212,12 +213,12 @@ void    Server::mode_cmd(int usr_id)
             if (client.get_nick() == t_name)
                 add_reply(usr_id, _servername, RPL_UMODEIS, client.get_nick(), client.get_modes());
             else
-                add_reply(usr_id, _servername, ERR_USERSDONTMATCH, t_name, MSG_USERSDONTMATCH);
+                add_info_reply(usr_id, _servername, ERR_USERSDONTMATCH, client.get_nick(), t_name, MSG_USERSDONTMATCH);
         }
         else if (_channels.find(t_name) != _channels.end())
-            add_reply(usr_id, _servername, RPL_CHANNELMODEIS, t_name, _channels.at(t_name).get_modes_with_args());
+            add_info_reply(usr_id, _servername, RPL_CHANNELMODEIS, client.get_nick(), t_name, _channels.at(t_name).get_modes_with_args());
         else
-            add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, t_name, MSG_NOSUCHCHANNEL);
+            add_info_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, client.get_nick(), t_name, MSG_NOSUCHCHANNEL);
     }
     else
         add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, "MODE", MSG_NEEDMOREPARAMS);
@@ -497,13 +498,13 @@ void    Server::kick_cmd(int usr_id)
             if (is_nick_used(t_name) && target_channel.is_client(_nicks.at(t_name)))
             {
                 if (target_channel.is_client(usr_id) == false)
-                        add_reply(usr_id, _servername, ERR_NOTONCHANNEL, sender.get_nick(), MSG_NOTONCHANNEL);
+                        add_info_reply(usr_id, _servername, ERR_NOTONCHANNEL, sender.get_nick(), t_name, MSG_NOTONCHANNEL);
                 else if (target_channel.is_client_operator(sender) and t_name != target_channel.get_owner_nick())
                 {
                     int target_id = _nicks.at(t_name);
                     target_channel.remove_client(target_id);
                     _clients.at(target_id).remove_channel(c_name);
-                    add_reply(target_id, sender.get_serv_id(), RPL_PRIVMSG, t_name, message);
+                    add_reply(target_id, sender.get_serv_id(), "PART", t_name, message);
                 }
                 else
                     add_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, sender.get_nick(), MSG_CHANOPRIVSNEEDED);
