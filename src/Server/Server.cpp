@@ -535,7 +535,7 @@ void    Server::topic_cmd(int usr_id)
             else if (!has_topic)
             {
                 if (channel.get_topic().size())
-                    add_info_reply(usr_id, _servername, RPL_TOPIC, client.get_nick(), channel.get_name_with_topic());
+                    add_info_reply(usr_id, _servername, RPL_TOPIC, client.get_nick(), c_name, channel.get_topic());
                 else
                     add_info_reply(usr_id, _servername, RPL_NOTOPIC, client.get_nick(), c_name, MSG_NOTOPIC);
             }
@@ -546,7 +546,7 @@ void    Server::topic_cmd(int usr_id)
                 else
                 {
                     channel.set_topic(topic);
-                    add_info_reply(usr_id, _servername, RPL_TOPIC, client.get_nick(), channel.get_name_with_topic());
+                    add_info_reply(usr_id, _servername, RPL_TOPIC, client.get_nick(), c_name, channel.get_topic());
                 }
             }
         }
@@ -662,16 +662,16 @@ void    Server::join_cmd(int usr_id)
             key = args.at(1);
         if (_channels.find(c_name) == _channels.end())
         {
-            c_name = Channel::get_valid_channel_name(c_name);
-            if (c_name.size() > 0)
+            std::string t_name = Channel::get_valid_channel_name(c_name);
+            if (t_name.size() > 0)
             {
-                _channels.insert(std::pair<std::string, Channel>(c_name, Channel(client, c_name)));
-                add_reply(usr_id, client.get_serv_id(), "JOIN", c_name);
+                _channels.insert(std::pair<std::string, Channel>(t_name, Channel(client, t_name)));
+                add_reply(usr_id, client.get_serv_id(), "JOIN", t_name);
                 topic_cmd(usr_id);
                 names_cmd(usr_id);
             }
             else
-                add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, c_name, MSG_NOSUCHCHANNEL);
+                add_info_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, client.get_nick(), c_name, MSG_NOSUCHCHANNEL);
         }
         else
         {

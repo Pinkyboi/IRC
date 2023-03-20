@@ -35,11 +35,10 @@ std::string Channel::get_valid_channel_name(std::string name)
 {
     if (name.empty())
         return "";
-    if (name.size() > 50)
-        return "";
     if (name[0] != '#' && name[0] != '&' && name[0] != '+')
         return "";
-    return name;
+    name = name.substr(0, name.find_first_of(","));
+    return name.substr(0, 50);
 }
 
 void    Channel::set_topic(std::string topic)
@@ -76,14 +75,12 @@ std::string Channel::get_mode_args() const
 {
     std::string args = "";
     if (_key.size())
-        args += _key;
+        args += " " + _key;
     if (_limit)
     {
         std::stringstream ss;
         ss << _limit;
-        if (args.size())
-            args += " ";
-        args += ss.str();
+        args += " " + ss.str();
     }
     return args;
 }
@@ -113,7 +110,7 @@ std::string Channel::get_modes() const
 
 std::string Channel::get_modes_with_args() const
 {
-    return get_modes() + " " + get_mode_args();
+    return get_modes() + get_mode_args();
 }
 
 int    Channel::get_clients_count() const
