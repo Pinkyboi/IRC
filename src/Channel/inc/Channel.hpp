@@ -24,12 +24,16 @@ class Channel
     public:
                                 Channel(Client &client ,const std::string name);
                                 ~Channel();
+        std::string             get_member_prefix(Client &client);
         void                    add_client(Client& client);
+        void                    join_client(Client& client);
         void                    remove_client(int client_id);
+        void                    part_client(int client_id);
     public:
         bool                    is_client(int client_id);
         static std::string      get_valid_channel_name(std::string name);
     public:
+        std::map<int, Client&>  &get_present_clients(void);
         std::map<int, Client&>  &get_clients(void);
         Client&                 get_client(int client_id);
         std::string             get_name() const;
@@ -60,6 +64,7 @@ class Channel
         bool                    is_client_banned(Client &client) const;
         bool                    is_client_operator(Client &client) const;
         bool                    is_client_invited(Client &client) const;
+        bool                    is_client_present(Client &client) const;
         bool                    is_client_owner(Client &client) const;
         void                    add_to_invites(Client &client);
         void                    remove_from_invites(int client_id);
@@ -100,6 +105,7 @@ class Channel
         std::map<int, Client&>      _clients;
         std::map<int, Client&>      _operators;
         std::map<int, Client&>      _voices;
+        std::map<int, Client&>      _present;
         std::map<char, ModeFunc>    _set_modes;
         std::map<char, ModeFunc>    _unset_modes;
         std::list<std::string>      _bans;

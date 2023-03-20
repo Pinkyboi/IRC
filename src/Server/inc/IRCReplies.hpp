@@ -54,6 +54,7 @@
 #define RPL_USERS "393" // "393" - Users list message
 #define RPL_ENDOFUSERS "394" // "394" - End of users list message
 #define RPL_NOUSERS "395" // "395" - No users on the server message
+#define RPL_ENDOFWHO "315"
 
 #define ERR_NOSUCHNICK "401" // "401" - No such nickname message
 #define ERR_NOSUCHSERVER "402" // "402" - No such server message
@@ -115,7 +116,7 @@
 #define MSG_USERNOTINCHANNEL "User is not in channel"
 #define MSG_USERONCHANNEL "User already in channel"
 #define MSG_NOTOPIC "No topic is set"
-#define MSG_LISTEND "End of LIST"
+#define MSG_LISTEND "End of /LIST list"
 #define MSG_TOOMANYTARGETS "Too many targets"
 #define MSG_NORECIPIENT "No recipient found"
 #define MSG_NOSUCHNICK "No such nickname"
@@ -128,6 +129,7 @@
 #define MSG_BANNEDFROMCHAN "You are banned from this channel"
 #define MSG_INVITEONLYCHAN "This channel is invite only"
 #define MSG_ENDOFNAMES "End of /NAMES list"
+#define MSG_ENDOFWHO "End of /WHO list"
 #define MSG_WELCOME "Welcome to our super duper IRC server"
 #define MSG_NONICKNAMEGIVEN "No nickname given"
 #define MSG_ERRONEUSNICKNAME "Erroneous nickname"

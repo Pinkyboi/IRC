@@ -1,6 +1,6 @@
 #include "Channel.hpp"
 
-Channel::Channel(Client &client ,const std::string name): _name(name), _topic(""), _modes(0), _owner(client), _limit(0), _key("")
+Channel::Channel(Client &client ,const std::string name): _name(name), _topic(""), _modes(MODE_N | MODE_T), _owner(client), _limit(0), _key("")
 {
     _set_modes.insert(std::pair<char, ModeFunc>('t', &Channel::set_mode_t));
     _set_modes.insert(std::pair<char, ModeFunc>('n', &Channel::set_mode_n));
@@ -22,7 +22,7 @@ Channel::Channel(Client &client ,const std::string name): _name(name), _topic(""
     _unset_modes.insert(std::pair<char, ModeFunc>('b', &Channel::unset_mode_b));
     _unset_modes.insert(std::pair<char, ModeFunc>('o', &Channel::unset_mode_o));
     _unset_modes.insert(std::pair<char, ModeFunc>('l', &Channel::unset_mode_l));
-    add_client(client);
+    join_client(client);
     if (_name[0] != '+')
         add_operator(client);
 }
@@ -70,6 +70,20 @@ std::string Channel::get_owner_nick() const
 {
     return (_owner.get_nick());
 }
+
+std::string Channel::get_member_prefix(Client &client)
+{
+    std::string name;
+
+    if (is_client_owner(client))
+        name = "~";
+    else if (is_client_operator(client))
+        name = "@";
+    else if (is_channel_moderated() && is_client_unmute(client))
+        name = "+";
+    return (name); 
+}
+
 
 std::string Channel::get_mode_args() const
 {
@@ -139,6 +153,21 @@ void    Channel::remove_client(int client_id)
     _operators.erase(client_id);
     _invites.erase(client_id);
     _voices.erase(client_id);
+    _present.erase(client_id);
+}
+
+void    Channel::part_client(int client_id)
+{
+    _present.erase(client_id);
+}
+
+void    Channel::join_client(Client& client)
+{
+    int client_id = client.get_id();
+    if (_clients.find(client_id) == _clients.end())
+        add_client(client);
+    if (_present.find(client_id) == _present.end())
+        _present.insert(std::pair<int, Client&>(client_id, client));
 }
 
 bool    Channel::is_client(int client_id)
@@ -154,6 +183,11 @@ void    Channel::add_to_invites(Client &client)
 void    Channel::remove_from_invites(int client_id)
 {
     _invites.erase(client_id);
+}
+
+std::map<int, Client&>  &Channel::get_present_clients(void)
+{
+    return _present;
 }
 
 std::map<int, Client&>  &Channel::get_clients(void)
@@ -380,6 +414,11 @@ bool    Channel::is_client_banned(Client &client) const
 bool    Channel::is_client_operator(Client &client) const
 {
     return (_operators.find(client.get_id()) != _operators.end());
+}
+
+bool    Channel::is_client_present(Client &client) const
+{
+    return (_present.find(client.get_id()) != _present.end());
 }
 
 bool   Channel::is_client_owner(Client &client) const

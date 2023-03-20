@@ -1,8 +1,11 @@
 # include "Client.hpp"
 
-Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _real_name(""), _pass_validity(false), _visible(true), _modes(MODE_W)
+Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _real_name(""), _pass_validity(false), _visible(true), _modes(MODE_W), _active_channel("*")
 {
-    getnameinfo(&addr, sizeof(addr), _addr, sizeof(_addr), NULL, 0, NI_NUMERICHOST);
+    char c_addr[NI_MAXHOST];
+
+    getnameinfo(&addr, sizeof(addr), c_addr, sizeof(c_addr), NULL, 0, NI_NUMERICHOST);
+    _addr = std::string(c_addr);
     _status = UNREGISTERED;
     _set_modes.insert(std::make_pair('i', &Client::set_invisible));
     _unset_modes.insert(std::make_pair('i', &Client::unset_invisible));
@@ -120,9 +123,14 @@ void    Client::unset_wallop(void)
     _modes &= ~MODE_W;
 }
 
-void    Client::add_channel(const std::string &channel_name)
+void    Client::join_channel(const std::string &channel_name)
 {
-    _channels.push_back(channel_name);
+    std::list<std::string>::iterator it;
+
+    it = std::find(_channels.begin(), _channels.end(), channel_name);
+    if (it == _channels.end())
+        _channels.push_back(channel_name);
+    _active_channel = channel_name;
 }
 
 void    Client::set_pass_validity(const bool validity)
@@ -157,6 +165,16 @@ std::string Client::get_username() const
 std::string Client::get_real_name() const
 {
     return (_real_name);
+}
+
+std::string Client::get_addr() const
+{
+    return (_addr);
+}
+
+std::string Client::get_active_channel() const
+{
+    return (_active_channel);
 }
 
 std::list <std::string> Client::get_channels() const
@@ -202,7 +220,7 @@ void Client::update_registration()
 
 std::string Client::get_serv_id() const
 {
-    return _nick + "!" + _username + "@" + std::string(_addr);
+    return _nick + "!" + _username + "@" + _addr;
 }
 
 std::string Client::get_modes() const
@@ -215,6 +233,8 @@ std::string Client::get_modes() const
         mode += "i";
     if (_modes & MODE_W)
         mode += "w";
+    if (_modes & MODE_O)
+        mode += "o";
     return (mode);
 }
 

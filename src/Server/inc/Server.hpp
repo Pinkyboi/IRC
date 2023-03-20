@@ -44,8 +44,6 @@ class Server
     public:
         static std::string _servername;
         static std::string _motd;
-        static std::string _opname;
-        static std::string _oppass;
     public:
         static Server*                  getInstance();
         static void                     initServer(const char *port, const char *pass);
@@ -66,10 +64,11 @@ class Server
         void                            accept_connection();
         void                            remove_connection(int user_id);
         void                            init_commands();
+        std::string                     who_information(Client &client, const std::string &channel_name);
         void                            add_info_reply(int usr_id, const std::string &sender, const std::string &target,
                                                 const std::string &code, const std::string &extra = "");
         void                            add_reply(int usr_id, const std::string &sender, const std::string &target,
-                                                const std::string &code, const std::string &specifier, const std::string &extra = "");
+                                                const std::string &code, const std::string &specifier, const std::string &extra = "", bool is_msg = true);
         void                            handle_commands(int fd, std::string &command);
     private:
         void                            pass_cmd    (int usr_id); // basic version done
@@ -86,6 +85,7 @@ class Server
         void                            quit_cmd    (int usr_id);
         void                            mode_cmd    (int usr_id);
         void                            invite_cmd  (int usr_id);
+        void                            who_cmd     (int usr_id);
         void                            ping_cmd    (int usr_id);
     private:
         static Server                               *_instance;

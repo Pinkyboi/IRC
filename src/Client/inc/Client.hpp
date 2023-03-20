@@ -14,6 +14,7 @@
 
 # define MODE_I (uint16_t)((uint16_t)(0x1) << 3)
 # define MODE_W (uint16_t)((uint16_t)(0x1) << 2)
+# define MODE_O (uint16_t)((uint16_t)(0x1) << 9) 
 
 class Client
 {
@@ -39,14 +40,15 @@ class Client
         void        set_status(int status);
         void        set_mode(const std::string &mode);
         void        set_invisible(void);
-        void        unset_invisible(void);
         void        set_wallop(void);
+        void        set_oper(void);
+        void        unset_invisible(void);
         void        unset_wallop(void);
+        void        unset_oper(void);
         void        update_registration();
-        void        add_channel(const std::string &channel_name);
+        void        join_channel(const std::string &channel_name);
         void        remove_channel(const std::string &channel_name);
     public:
-        void                        get_addr() const;
         int                         get_id() const;
         int                         get_status() const;
         bool                        get_pass_validity() const;
@@ -54,6 +56,8 @@ class Client
         std::string                 get_nick() const;
         std::string                 get_username() const;
         std::string                 get_real_name() const;
+        std::string                 get_addr() const;
+        std::string                 get_active_channel() const;
         std::string                 get_command();
         std::string                 get_serv_id() const;
         std::string                 get_modes() const;
@@ -66,11 +70,12 @@ class Client
         typedef void (Client::*ModeFunc)(void);
         int                                                 _id;
         bool                                                _pass_validity;
-        char                                                _addr[NI_MAXHOST];
         std::string                                         _nick;
         std::string                                         _username;
         std::string                                         _real_name;
+        std::string                                         _addr;  
         std::list<std::string>                              _channels;
+        std::string                                         _active_channel;
         std::queue< std::pair< bool, CircularBuffer *> >    _commands;
         std::map<char, ModeFunc>                            _set_modes;
         std::map<char, ModeFunc>                            _unset_modes;
