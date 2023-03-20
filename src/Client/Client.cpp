@@ -73,8 +73,7 @@ bool    Client::is_nick_valid(const std::string &nick)
 
 void    Client::set_nick(const std::string &nick)
 {
-    if (Client::is_nick_valid(nick))
-        _nick = nick;
+    _nick = nick;
 }
 
 void    Client::set_username(const std::string &username)

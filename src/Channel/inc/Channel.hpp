@@ -34,6 +34,7 @@ class Channel
         Client&                 get_client(int client_id);
         std::string             get_name() const;
         std::string             get_topic() const;
+        std::string             get_name_with_topic() const;
         std::string             get_key() const;
         std::string             get_owner_nick() const;
         std::string             get_modes() const;

@@ -57,6 +57,11 @@ std::string Channel::get_name() const
     return (_name);
 }
 
+std::string Channel::get_name_with_topic() const
+{
+    return (_name + " :" + _topic);
+}
+
 std::string Channel::get_key() const
 {
     return (_key);
@@ -76,6 +81,8 @@ std::string Channel::get_mode_args() const
     {
         std::stringstream ss;
         ss << _limit;
+        if (args.size())
+            args += " ";
         args += ss.str();
     }
     return args;

@@ -68,7 +68,8 @@ class Server
         void                            init_commands();
         void                            add_reply(int usr_id, const std::string &sender, const std::string &target,
                                                 const std::string &code, const std::string &extra = "", bool is_msg = true);
-
+        void                            add_info_reply(int usr_id, const std::string &sender, const std::string &target,
+                                                const std::string &code, const std::string &specifier, const std::string &extra = "", bool is_msg = true);
         void                            handle_commands(int fd, std::string &command);
     private:
         void                            pass_cmd    (int usr_id); // basic version done
