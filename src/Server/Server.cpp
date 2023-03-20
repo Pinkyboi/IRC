@@ -462,18 +462,18 @@ void    Server::invite_cmd(int usr_id)
         else
         {
             Channel &channel = _channels.at(args.at(1));
-            Client &client = _clients.at(_nicks.at(args.at(0)));
-            if (channel.is_client(client.get_id()) == true)
-                add_reply(usr_id, _servername, ERR_USERONCHANNEL, client.get_nick(), MSG_USERONCHANNEL);
+            Client &invited = _clients.at(_nicks.at(args.at(0)));
+            if (channel.is_client(invited.get_id()) == true)
+                add_reply(usr_id, _servername, ERR_USERONCHANNEL, invitor.get_nick(), invited.get_nick(), MSG_USERONCHANNEL);
             else
             {
                 if (channel.is_client_operator(invitor) == false && channel.is_channel_invite_only())
                     add_reply(usr_id, _servername, invitor.get_nick(), ERR_CHANOPRIVSNEEDED, MSG_CHANOPRIVSNEEDED);
                 else
                 {
-                    channel.add_to_invites(client);
-                    add_reply(invitor.get_id(), _servername, RPL_INVITING, invitor.get_nick(), channel.get_name(), false);
-                    add_reply(client.get_id(), _servername, "INVITE", client.get_nick(), channel.get_name(), false);
+                    channel.add_to_invites(invited);
+                    add_info_reply(invitor.get_id(), _servername, RPL_INVITING, invitor.get_nick(), invited.get_nick(), channel.get_name());
+                    add_info_reply(invited.get_id(), invitor.get_serv_id(), "INVITE", invited.get_nick(), channel.get_name());
                 }
             }
         }
