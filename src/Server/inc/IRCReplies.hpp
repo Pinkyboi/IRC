@@ -127,7 +127,7 @@
 #define MSG_NOTREGISTERED "You have not registered"
 #define MSG_BANNEDFROMCHAN "You are banned from this channel"
 #define MSG_INVITEONLYCHAN "This channel is invite only"
-#define MSG_ENDOFNAMES "End of NAMES list"
+#define MSG_ENDOFNAMES "End of /NAMES list"
 #define MSG_WELCOME "Welcome to our super duper IRC server"
 #define MSG_NONICKNAMEGIVEN "No nickname given"
 #define MSG_ERRONEUSNICKNAME "Erroneous nickname"
