@@ -38,6 +38,7 @@ void    Server::init_commands()
     _commands.insert(std::pair<std::string, cmd_func>("TOPIC", &Server::topic_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("LIST", &Server::list_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("PRIVMSG", &Server::privmsg_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("NOTICE", &Server::notice_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("QUIT", &Server::quit_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("MODE", &Server::mode_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("INVITE", &Server::invite_cmd));
@@ -244,7 +245,7 @@ void    Server::notice_cmd(int usr_id)
             }
         }
         else if (is_nick_used(t_name))
-            add_info_reply(_nicks.at(t_name), _servername, RPL_PRIVMSG, s_name, message);
+            add_info_reply(_nicks.at(t_name), s_name, RPL_PRIVMSG, t_name, message);
     }
 }
 
