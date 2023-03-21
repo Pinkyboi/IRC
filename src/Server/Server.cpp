@@ -176,7 +176,7 @@ void    Server::mode_cmd(int usr_id)
     size_t nargs = _parser.get_nargs();
     Client &client  = _clients.at(usr_id);
 
-    if ( nargs == 2 || nargs == 3 )
+    if ( nargs >= 2 )
     {
         std::string t_name = args.front();
         std::string argument = "";
@@ -297,7 +297,8 @@ void    Server::list_cmd(int usr_id)
     }
 }
 
-void    Server::add_info_reply(int usr_id, const std::string &sender, const std::string &code, const std::string &target, const std::string &extra)
+void    Server::add_info_reply(int usr_id, const std::string &sender, const std::string &code,
+                    const std::string &target, const std::string &extra)
 {
     std::string replymsg = ":" + sender + " " + code + " " + target;
     if (extra.size())
@@ -311,7 +312,8 @@ void    Server::add_info_reply(int usr_id, const std::string &sender, const std:
     _replies.push(std::pair<int, std::string>(usr_id, replymsg));
 }
 
-void    Server::add_reply(int usr_id, const std::string &sender, const std::string &code, const std::string &target, const std::string &specifier, const std::string &extra, bool is_msg)
+void    Server::add_reply(int usr_id, const std::string &sender, const std::string &code,
+                    const std::string &target, const std::string &specifier, const std::string &extra, bool is_msg)
 {
     std::string replymsg = ":" + sender + " " + code + " " + target + " " + specifier;
     if (extra.size())
@@ -332,7 +334,7 @@ void    Server::user_cmd(int usr_id)
     std::string real_name = _parser.get_message();
     Client &user = _clients.at(usr_id);
 
-    if (args.size() != 3 || real_name.empty())
+    if (args.size() < 3 || real_name.empty())
         add_info_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, user.get_nick(), MSG_NEEDMOREPARAMS);
     else if (user.is_registered())
         add_info_reply(usr_id, _servername, ERR_ALREADYREGISTRED, user.get_nick(), MSG_ALREADYREGISTRED);
@@ -416,7 +418,7 @@ void    Server::part_cmd(int usr_id)
     std::vector<std::string> args = _parser.get_arguments();
     Client      &client = _clients.at(usr_id);
 
-    if (_parser.get_nargs() == 1)
+    if (_parser.get_nargs() >= 1)
     {  
         std::string c_name  = args.front();
         std::string message = _parser.get_message();
@@ -435,7 +437,7 @@ void    Server::part_cmd(int usr_id)
         else
             add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, client.get_nick(), c_name, MSG_NOSUCHCHANNEL);
     }
-    else if (args.size() == 0)
+    else
         add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, client.get_nick(), "PART", MSG_NEEDMOREPARAMS);
 }
 
@@ -471,7 +473,9 @@ std::string Server::who_information(Client &client, const std::string &channel_n
         if (channel.is_client_present(client) == false)
             status = "G";
     }
-    who_msg = "~" + client.get_username() + " " + client.get_addr() + " " + _servername + " " + client.get_nick() + " " + status + prefix + ":0" + " " + client.get_real_name();
+    who_msg = "~" + client.get_username() + " " + client.get_addr();
+    who_msg += " " + _servername + " " + client.get_nick() + " ";
+    who_msg += status + prefix + ":0" + " " + client.get_real_name();
     return who_msg;
 }
 
@@ -512,7 +516,7 @@ void    Server::invite_cmd(int usr_id)
     size_t nargs = _parser.get_nargs();
     Client &invitor = _clients.at(usr_id);
 
-    if ( nargs == 2 )
+    if ( nargs >= 2 )
     {
         if (_nicks.find(args.at(0)) == _nicks.end())
             add_reply(usr_id, _servername, ERR_NOSUCHNICK, invitor.get_nick(), args.at(0), MSG_NOSUCHNICK);
@@ -537,7 +541,7 @@ void    Server::invite_cmd(int usr_id)
             }
         }
     }
-    else if ( nargs < 2 )
+    else
         add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, invitor.get_nick(), "INVITE", MSG_NEEDMOREPARAMS);
 }
 
@@ -547,7 +551,7 @@ void    Server::kick_cmd(int usr_id)
     Client  &sender =   _clients.at(usr_id);
     size_t nargs = _parser.get_nargs();
 
-    if ( nargs == 2 )
+    if ( nargs >= 2 )
     {
         std::string c_name   = args.front();
         std::string t_name   = args.at(1);
@@ -579,7 +583,7 @@ void    Server::kick_cmd(int usr_id)
         else
             add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, sender.get_nick(), c_name, MSG_NOSUCHCHANNEL);
     }
-    else if (nargs < 2)
+    else
         add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, sender.get_nick(), "KICK", MSG_NEEDMOREPARAMS);
 }
 
@@ -589,7 +593,7 @@ void    Server::topic_cmd(int usr_id)
     Client& client = _clients.at(usr_id);
     size_t nargs = _parser.get_nargs();
 
-    if ( nargs == 1 )
+    if ( nargs >= 1 )
     {
         std::string c_name  = args.front();
         std::string topic   = _parser.get_message();
@@ -620,7 +624,7 @@ void    Server::topic_cmd(int usr_id)
         else
             add_reply(usr_id, _servername, ERR_NOSUCHCHANNEL, client.get_nick(), c_name, MSG_NOSUCHCHANNEL);
     }
-    else if (nargs == 0)
+    else
         add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, client.get_nick(), "TOPIC", MSG_NEEDMOREPARAMS);
 }
 
@@ -701,12 +705,12 @@ void    Server::join_cmd(int usr_id)
     std::vector<std::string> args = _parser.get_arguments();
     Client      &client = _clients.at(usr_id);
     size_t nargs = _parser.get_nargs();
-    if ( nargs == 1 || nargs == 2 )
+    if ( nargs >= 1 )
     {
         std::string c_name  = args.front();
         std::string key     = "";
 
-        if (nargs == 2)
+        if (nargs >= 2)
             key = args.at(1);
         if (_channels.find(c_name) == _channels.end())
         {
@@ -751,7 +755,7 @@ void    Server::join_cmd(int usr_id)
                 add_reply(usr_id, _servername, ERR_BADCHANNELKEY, client.get_nick(), c_name, MSG_BADCHANNELKEY);
         }
     }
-    else if (nargs < 1)
+    else
         add_info_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, client.get_nick(), MSG_NEEDMOREPARAMS);
 }
 
