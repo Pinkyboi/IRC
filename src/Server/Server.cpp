@@ -637,11 +637,7 @@ void    Server::names_cmd(int usr_id)
             if (channel.is_client(usr_id))
             {
                 std::map<int, Client &> clients = channel.get_present_clients();
-                std::string c_status = "";
-                if (channel.is_channel_secret())
-                    c_status = "@ " + c_name;
-                else
-                    c_status = "= " + c_name;
+                std::string c_status = (channel.is_channel_secret() ? "@" : "=") + c_name;
                 std::string names = "";
                 for (std::map<int, Client &>::iterator it = clients.begin(); it != clients.end(); it++)
                 {
@@ -673,11 +669,7 @@ void    Server::names_cmd(int usr_id)
         {
             Channel &channel = it->second;
             std::map<int, Client &> clients = channel.get_present_clients();
-            std::string c_status = "";
-            if (channel.is_channel_secret())
-                c_status += "@ " + it->first;
-            else
-                c_status += "= " + it->first;
+            std::string c_status = (channel.is_channel_secret() ? "@" : "=") + it->first;
             if ( channel.is_channel_secret() == false || channel.is_client(usr_id) )
             {
                 std::string names = "";
@@ -698,8 +690,7 @@ void    Server::names_cmd(int usr_id)
         std::string names = "";
         for (std::vector<std::string>::iterator it = all_names.begin(); it != all_names.end(); it++)
             names += *it + " ";
-        if (names.size() > 0)
-            add_reply(usr_id, _servername, RPL_NAMREPLY, usr_nick, "* *", names);
+        add_reply(usr_id, _servername, RPL_NAMREPLY, usr_nick, "* *", names);
         add_reply(usr_id, _servername, RPL_ENDOFNAMES, usr_nick, "*", MSG_ENDOFNAMES);
     }
 }
