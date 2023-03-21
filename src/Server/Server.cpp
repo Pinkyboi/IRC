@@ -202,14 +202,10 @@ void    Server::mode_cmd(int usr_id)
             if (t_channel.is_client_operator(client))
             {
                 std::queue <std::string> args_queue;
-                std::string mode_arg = "";
                 if (args.size() > 2)
                 {
                     for (std::vector<std::string>::iterator it = args.begin() + 2; it != args.end(); it++)
-                    {
                         args_queue.push(*it);
-                        mode_arg += *it + " ";
-                    }
                 }
                 std::string used_modes = t_channel.handle_modes(modes, args_queue);
                 add_reply(usr_id, client.get_serv_id(), "MODE", t_name, used_modes);
@@ -278,7 +274,7 @@ void    Server::list_cmd(int usr_id)
     std::string nick = _clients.at(usr_id).get_nick();
     if (args.size() == 0)
     {
-        add_reply(usr_id, _servername, RPL_LISTSTART, nick, "Channel",MSG_LISTSTART);
+        add_reply(usr_id, _servername, RPL_LISTSTART, nick, "LIST", MSG_LISTSTART);
         for (std::map<const std::string, Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
         {
             if (it->second.is_channel_secret() == false || it->second.is_client(usr_id))
@@ -478,8 +474,7 @@ std::string Server::who_information(Client &client, const std::string &channel_n
     {
         Channel &channel = _channels.at(channel_name);
         prefix = channel.get_member_prefix(client);
-        if (prefix == "~")
-            prefix = "@";
+        prefix = (prefix == "~") ? "@" : prefix;
         if (channel.is_client_present(client) == false)
             status = "G";
     }

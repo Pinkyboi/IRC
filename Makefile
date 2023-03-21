@@ -10,11 +10,14 @@ OBJ_FOLDER = ./obj
 CLASS_FOLDERS = Server\
 				Client\
 				Channel\
-				Parser
+				Parser\
+				CircularBuffer
 
 SRC_FOLDERS = $(addprefix  $(SRC_FOLDER)/, $(CLASS_FOLDERS))
 
-VPATH = $(SRC_FOLDERS)
+HDR_FOLDERS = $(addsuffix  /$(INC_FOLDER), $(SRC_FOLDERS))
+
+VPATH = %.cpp $(SRC_FOLDERS) : %.hpp $(HDR_FOLDERS)
 
 SRC_FILES =	Parser.cpp\
 			Server.cpp\
@@ -23,15 +26,22 @@ SRC_FILES =	Parser.cpp\
 			CircularBuffer.cpp\
 			main.cpp
 
+HDR_FILES = Parser.hpp\
+			Server.hpp\
+			Client.hpp\
+			Channel.hpp\
+			CircularBuffer.hpp
+
 OBJ_FILES = $(SRC_FILES:.cpp=.o)
 
-CLASS_INC = $(addsuffix  /$(INC_FOLDER), $(SRC_FOLDERS))
-INC = $(addprefix -I, $(CLASS_INC))
+# HDR_FOLDERS = $(addsuffix  /$(INC_FOLDER), $(SRC_FOLDERS))
+
+INC = $(addprefix -I, $(HDR_FOLDERS))
 OBJ = $(addprefix $(OBJ_FOLDER)/,$(OBJ_FILES))
 
 all : $(NAME)
 
-$(OBJ_FOLDER)/%.o : %.cpp $(CLASS_INC)
+$(OBJ_FOLDER)/%.o : %.cpp $(HDR_FILES)
 	@mkdir -p $(OBJ_FOLDER)
 	@echo "Compiling $< ..."
 	@$(CC) $(CFLAGS) $(INC) -o $@ -c $<

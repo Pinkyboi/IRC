@@ -8,7 +8,7 @@
 # include <list>
 # include <map>
 # include <algorithm>
-# include "CommandBuffer.hpp"
+# include "CircularBuffer.hpp"
 
 # define MAX_COMMAND_SIZE 512
 
