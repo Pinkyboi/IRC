@@ -439,7 +439,7 @@ bool    Channel::is_channel_invite_only() const
 
 bool    Channel::is_channel_protected() const
 {
-    return (_key != "");
+    return (_modes & MODE_K);
 }
 
 bool    Channel::is_client_unmute(Client &client) const
@@ -472,7 +472,11 @@ bool   Channel::is_client_owner(Client &client) const
 bool    Channel::is_client_invited(Client &client) const
 {
     if (is_channel_invite_only())
+    {
+        if (_clients.find(client.get_id()) != _clients.end())
+            return true;
         return (_invites.find(client.get_id()) != _invites.end());
+    }
     return true;
 }
 

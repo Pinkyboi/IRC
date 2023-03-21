@@ -638,7 +638,7 @@ void    Server::names_cmd(int usr_id)
     std::vector<std::string> args = _parser.get_arguments();
     Client& client = _clients.at(usr_id);
     std::string usr_nick = client.get_nick();
-    if (args.size() == 1)
+    if (args.size() >= 1)
     {
         std::string c_name = args.front();
         if (_channels.find(c_name) != _channels.end())
@@ -734,7 +734,7 @@ void    Server::join_cmd(int usr_id)
         else
         {
             Channel &channel = _channels.at(c_name);
-            if (channel.get_key() == key)
+            if (channel.is_channel_protected() ||  channel.get_key() == key)
             {
                 bool is_invited = channel.is_client_invited(client);
                 if (is_invited == false)
