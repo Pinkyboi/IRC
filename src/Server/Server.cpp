@@ -1,8 +1,8 @@
 #include "Server.hpp"
 
 Server *Server::_instance = NULL;
-std::string Server::_servername = "irc.choopa.net";
-std::string Server::_motd = "this is the message of the day";
+std::string Server::_servername = "irc.3assifa.net";
+std::string Server::_motd = "This is the message of the day";
 
 Server::~Server()
 {
