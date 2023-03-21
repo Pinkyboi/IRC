@@ -233,8 +233,6 @@ std::string Client::get_modes() const
         mode += "i";
     if (_modes & MODE_W)
         mode += "w";
-    if (_modes & MODE_O)
-        mode += "o";
     return (mode);
 }
 

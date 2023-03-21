@@ -190,174 +190,201 @@ std::map<int, Client&>  &Channel::get_clients(void)
     return _clients;
 }
 
-void    Channel::set_mode_t(std::string &mode_argument)
+void    Channel::set_mode_t(std::queue<std::string> &mode_argument)
 {
     (void)mode_argument;
     _modes |= MODE_T;
 }
 
-void    Channel::set_mode_n(std::string &mode_argument)
+void    Channel::set_mode_n(std::queue<std::string> &mode_argument)
 {
     (void)mode_argument;
     _modes |= MODE_N;
 }
 
-void    Channel::set_mode_s(std::string &mode_argument)
+void    Channel::set_mode_s(std::queue<std::string> &mode_argument)
 {
     (void)mode_argument;
     _modes |= MODE_S;
 }
 
-void    Channel::set_mode_m(std::string &mode_argument)
+void    Channel::set_mode_m(std::queue<std::string> &mode_argument)
 {
     (void)mode_argument;
     _modes |= MODE_M;
 }
 
-void    Channel::set_mode_i(std::string &mode_argument)
+void    Channel::set_mode_i(std::queue<std::string> &mode_argument)
 {
     (void)mode_argument;
     _modes |= MODE_I;
 }
 
-void    Channel::set_mode_k(std::string &mode_argument)
+void    Channel::set_mode_k(std::queue<std::string> &mode_argument)
 {
-    _key = mode_argument;
+    if (mode_argument.empty())
+        return ;
+    std::string mode_arg = mode_argument.front();
+    _key = mode_arg;
     _modes |= MODE_K;
+    mode_argument.pop();
 }
 
-void    Channel::set_mode_v(std::string &mode_argument)
+void    Channel::set_mode_v(std::queue<std::string> &mode_argument)
 {
+    if (mode_argument.empty())
+        return ;
+    std::string mode_arg = mode_argument.front();
     for (std::map<int, Client&>::iterator it = _clients.begin(); it != _clients.end(); ++it)
     {
-        if (it->second.get_nick() == mode_argument)
+        if (it->second.get_nick() == mode_arg)
             _voices.insert(std::pair<int, Client&>(it->second.get_id(), it->second));
     }
+    mode_argument.pop();
 }
 
-void    Channel::set_mode_b(std::string &mode_argument)
+void    Channel::set_mode_b(std::queue<std::string> &mode_argument)
 {
-    if (mode_argument == "")
+    if (mode_argument.empty())
         return ;
-    if (std::find(_bans.begin(), _bans.end(), mode_argument) == _bans.end())
+    std::string mode_arg = mode_argument.front();
+    if (std::find(_bans.begin(), _bans.end(), mode_arg) == _bans.end())
     {
         for (std::map<int, Client&>::iterator it = _clients.begin(); it != _clients.end(); ++it)
         {
-            if (it->second.get_nick() == mode_argument)
+            if (it->second.get_nick() == mode_arg)
             {
                 it->second.remove_channel(_name);
                 remove_client(it->first);
                 break;
             }
         }
-        _bans.push_back(mode_argument);
+        _bans.push_back(mode_arg);
     }
+    mode_argument.pop();
 }
 
-void    Channel::set_mode_o(std::string &mode_argument)
+void    Channel::set_mode_o(std::queue<std::string> &mode_argument)
 {
-    if (mode_argument == "")
+    if (mode_argument.empty())
         return ;
+    std::string mode_arg = mode_argument.front();
     for (std::map<int, Client&>::iterator it = _clients.begin(); it != _clients.end(); ++it)
     {
-        if (it->second.get_nick() == mode_argument)
+        if (it->second.get_nick() == mode_arg)
         {
             add_operator(it->second);
             break;
         }
     }
+    mode_argument.pop();
 }
 
-void    Channel::set_mode_l(std::string &mode_argument)
+void    Channel::set_mode_l(std::queue<std::string> &mode_argument)
 {
     long input_limit;
 
-    if (mode_argument == "")
+    if (mode_argument.empty())
         return ;
-    input_limit = strtol(mode_argument.c_str(), NULL, 10);
+    std::string mode_arg = mode_argument.front();
+    input_limit = strtol(mode_arg.c_str(), NULL, 10);
     if (_clients.size() <= input_limit)
     {
         _limit = input_limit;
         _modes |= MODE_L;
     }
+    mode_argument.pop();
 }
 
-void    Channel::unset_mode_t(std::string &mode_argument)
+void    Channel::unset_mode_t(std::queue<std::string> &mode_argument)
 {
     (void)mode_argument;
     _modes &= ~MODE_T;
 }
 
-void    Channel::unset_mode_n(std::string &mode_argument)
+void    Channel::unset_mode_n(std::queue<std::string> &mode_argument)
 {
     (void)mode_argument;
     _modes &= ~MODE_N;
 }
 
-void    Channel::unset_mode_s(std::string &mode_argument)
+void    Channel::unset_mode_s(std::queue<std::string> &mode_argument)
 {
     (void)mode_argument;
     _modes &= ~MODE_S;
 }
 
-void    Channel::unset_mode_m(std::string &mode_argument)
+void    Channel::unset_mode_m(std::queue<std::string> &mode_argument)
 {
     (void)mode_argument;
     _modes &= ~MODE_M;
 }
 
-void    Channel::unset_mode_i(std::string &mode_argument)
+void    Channel::unset_mode_i(std::queue<std::string> &mode_argument)
 {
     (void)mode_argument;
     _modes &= ~MODE_I;
 }
 
-void    Channel::unset_mode_k(std::string &mode_argument)
+void    Channel::unset_mode_k(std::queue<std::string> &mode_argument)
 {
-    if (_key == mode_argument)
-        _key = "";
+    if (mode_argument.empty())
+        return ;
+    std::string mode_arg = mode_argument.front();
+    if (_key != mode_arg)
+        return ;
+    _key = "";
     _modes &= ~MODE_K;
+    mode_argument.pop();    
 }
 
-void    Channel::unset_mode_v(std::string &mode_argument)
+void    Channel::unset_mode_v(std::queue<std::string> &mode_argument)
 {
-    if (mode_argument == "")
+    if (mode_argument.empty())
         return ;
-    if (mode_argument == _owner.get_nick())
+    std::string mode_arg = mode_argument.front();
+    if (mode_arg == _owner.get_nick())
         return ;
     for (std::map<int, Client&>::iterator it = _voices.begin(); it != _voices.end(); ++it)
     {
-        if (it->second.get_nick() == mode_argument)
+        if (it->second.get_nick() == mode_arg)
         {
             if (is_client_operator(it->second) == false)
                 _voices.erase(it);
             break;
         }
     }
+    mode_argument.pop();
 }
 
-void    Channel::unset_mode_b(std::string &mode_argument)
+void    Channel::unset_mode_b(std::queue<std::string> &mode_argument)
 {
-    _bans.remove(mode_argument);
-}
-
-void    Channel::unset_mode_o(std::string &mode_argument)
-{
-    if (mode_argument == "")
+    if (mode_argument.empty())
         return ;
-    if (mode_argument == _owner.get_nick())
+    std::string mode_arg = mode_argument.front();
+    _bans.remove(mode_arg);
+    mode_argument.pop();
+}
+
+void    Channel::unset_mode_o(std::queue<std::string> &mode_argument)
+{
+    if (mode_argument.empty())
+        return ;
+    std::string mode_arg = mode_argument.front();
+    if (mode_arg == _owner.get_nick())
         return ;
     for (std::map<int, Client&>::iterator it = _operators.begin(); it != _operators.end(); ++it)
     {
-        if (it->second.get_nick() == mode_argument)
+        if (it->second.get_nick() == mode_arg)
         {
             _operators.erase(it);
             break;
         }
     }
+    mode_argument.pop();
 }
 
-void    Channel::unset_mode_l(std::string &mode_argument)
+void    Channel::unset_mode_l(std::queue<std::string> &mode_argument)
 {
     (void)mode_argument;
     _limit = 0;
@@ -435,21 +462,31 @@ bool    Channel::is_there_space() const
     return true;
 }
 
-bool Channel::handle_modes(std::string mode, std::string mode_arg)
+std::string Channel::handle_modes(std::string mode, std::queue<std::string>& mode_arg)
 {
     std::map<char, ModeFunc>    mode_func = _set_modes;
-    bool                        mode_used = false;
+    std::string                 mode_used = "+";
+    std::string                 arg_used = "";
     if (mode.empty() || (mode[0] != '+' && mode[0] != '-'))
-        return false;
+        return "";
     if (mode[0] == '-')
+    {
         mode_func = _unset_modes;
+        mode_used = "-";
+    }
     for (size_t i = 1; i < mode.size(); i++)
     {
         if (mode_func.find(mode[i]) != mode_func.end())
         {
-            (this->*mode_func[mode[i]])(mode_arg);
-            mode_used = true;
+            if (mode_used.find(mode[i]) == std::string::npos)
+            {
+                if (mode[i] == 'k' || mode[i] == 'l')
+                    if (mode_arg.size())
+                        arg_used += " " + mode_arg.front();
+                (this->*mode_func[mode[i]])(mode_arg);
+                mode_used += mode[i];
+            }
         }
     }
-    return mode_used;
+    return mode_used + arg_used;
 }

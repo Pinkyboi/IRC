@@ -190,7 +190,7 @@ void    Server::mode_cmd(int usr_id)
             if (client.get_nick() == t_name)
             {
                 if (client.handle_modes(modes))
-                    add_reply(usr_id, client.get_serv_id(), "MODE", client.get_nick(), client.get_modes());
+                    add_reply(usr_id, client.get_serv_id(), "MODE", t_name, modes);
             }
             else
                 add_reply(usr_id, _servername, ERR_USERSDONTMATCH, client.get_nick(), t_name, MSG_USERSDONTMATCH);
@@ -201,8 +201,18 @@ void    Server::mode_cmd(int usr_id)
 
             if (t_channel.is_client_operator(client))
             {
-                if (t_channel.handle_modes(modes, argument))
-                    add_reply(usr_id, client.get_serv_id(), "MODE", t_name, t_channel.get_modes_with_args());
+                std::queue <std::string> args_queue;
+                std::string mode_arg = "";
+                if (args.size() > 2)
+                {
+                    for (std::vector<std::string>::iterator it = args.begin() + 2; it != args.end(); it++)
+                    {
+                        args_queue.push(*it);
+                        mode_arg += *it + " ";
+                    }
+                }
+                std::string used_modes = t_channel.handle_modes(modes, args_queue);
+                add_reply(usr_id, client.get_serv_id(), "MODE", t_name, used_modes);
             }
             else
                 add_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, client.get_nick(), t_name, MSG_CHANOPRIVSNEEDED);

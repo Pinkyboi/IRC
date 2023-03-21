@@ -14,7 +14,6 @@
 
 # define MODE_I (uint16_t)((uint16_t)(0x1) << 3)
 # define MODE_W (uint16_t)((uint16_t)(0x1) << 2)
-# define MODE_O (uint16_t)((uint16_t)(0x1) << 9) 
 
 class Client
 {
