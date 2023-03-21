@@ -627,7 +627,8 @@ void    Server::topic_cmd(int usr_id)
 void    Server::names_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.get_arguments();
-    std::string usr_nick = _clients.at(usr_id).get_nick();
+    Client& client = _clients.at(usr_id);
+    std::string usr_nick = client.get_nick();
     if (args.size() == 1)
     {
         std::string c_name = args.front();
@@ -637,11 +638,11 @@ void    Server::names_cmd(int usr_id)
             if (channel.is_client(usr_id))
             {
                 std::map<int, Client &> clients = channel.get_present_clients();
-                std::string c_status = (channel.is_channel_secret() ? "@" : "=") + c_name;
+                std::string c_status = (channel.is_channel_secret() ? "@ " : "= ") + c_name;
                 std::string names = "";
                 for (std::map<int, Client &>::iterator it = clients.begin(); it != clients.end(); it++)
                 {
-                    if (!(it->second.is_visible() || channel.is_client_operator(_clients.at(usr_id)) ||  it->second.get_nick() == usr_nick))
+                    if ( !(it->second.is_visible() || channel.is_client_operator(client) ||  it->second.get_nick() == usr_nick) )
                         continue;
                     if (it != clients.begin())
                         names += " ";
@@ -669,13 +670,13 @@ void    Server::names_cmd(int usr_id)
         {
             Channel &channel = it->second;
             std::map<int, Client &> clients = channel.get_present_clients();
-            std::string c_status = (channel.is_channel_secret() ? "@" : "=") + it->first;
             if ( channel.is_channel_secret() == false || channel.is_client(usr_id) )
             {
+                std::string c_status = (channel.is_channel_secret() ? "@ " : "= ") + it->first;
                 std::string names = "";
                 for (std::map<int, Client &>::iterator it2 = clients.begin(); it2 != clients.end(); it2++)
                 {
-                    if (!(it2->second.is_visible() || channel.is_client_operator(_clients.at(usr_id)) ||  it2->second.get_nick() == usr_nick))
+                    if ( !(it2->second.is_visible() || channel.is_client_operator(client) ||  it2->second.get_nick() == usr_nick) )
                         continue;
                     if (it2 != clients.begin())
                         names += " ";
@@ -739,7 +740,8 @@ void    Server::join_cmd(int usr_id)
                     client.join_channel(c_name);
                     add_info_reply(usr_id, client.get_serv_id(), "JOIN", c_name);
                     add_reply(usr_id, _servername, "MODE", c_name, channel.get_modes_with_args());
-                    topic_cmd(usr_id);
+                    if (channel.get_topic().size())
+                        topic_cmd(usr_id);
                     names_cmd(usr_id);
                 }
                 else

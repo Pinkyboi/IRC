@@ -26,7 +26,6 @@ class Channel
                                 ~Channel();
         std::string             get_member_prefix(Client &client);
         void                    add_client(Client& client);
-        void                    join_client(Client& client);
         void                    remove_client(int client_id);
         void                    part_client(int client_id);
     public:

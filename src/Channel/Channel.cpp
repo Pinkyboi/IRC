@@ -22,7 +22,7 @@ Channel::Channel(Client &client ,const std::string name): _name(name), _topic(""
     _unset_modes.insert(std::pair<char, ModeFunc>('b', &Channel::unset_mode_b));
     _unset_modes.insert(std::pair<char, ModeFunc>('o', &Channel::unset_mode_o));
     _unset_modes.insert(std::pair<char, ModeFunc>('l', &Channel::unset_mode_l));
-    join_client(client);
+    add_client(client);
     if (_name[0] != '+')
         add_operator(client);
 }
@@ -132,11 +132,6 @@ int    Channel::get_clients_count() const
     return (_clients.size());
 }
 
-void    Channel::add_client(Client& client)
-{
-    _clients.insert(std::pair<int, Client&>(client.get_id(), client));
-}
-
 void    Channel::add_operator(Client& client)
 {
     _operators.insert(std::pair<int, Client&>(client.get_id(), client));
@@ -161,11 +156,11 @@ void    Channel::part_client(int client_id)
     _present.erase(client_id);
 }
 
-void    Channel::join_client(Client& client)
+void    Channel::add_client(Client& client)
 {
     int client_id = client.get_id();
     if (_clients.find(client_id) == _clients.end())
-        add_client(client);
+        _clients.insert(std::pair<int, Client&>(client.get_id(), client));
     if (_present.find(client_id) == _present.end())
         _present.insert(std::pair<int, Client&>(client_id, client));
 }
