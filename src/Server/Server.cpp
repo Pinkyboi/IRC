@@ -568,6 +568,7 @@ void    Server::kick_cmd(int usr_id)
                     if (message.empty())
                         message = t_name;
                     add_reply(target_id, sender.get_serv_id(), "KICK", c_name, t_name, message);
+                    add_reply(usr_id, sender.get_serv_id(), "KICK", c_name, t_name, message);
                 }
                 else
                     add_reply(usr_id, _servername, ERR_CHANOPRIVSNEEDED, sender.get_nick(), c_name, MSG_CHANOPRIVSNEEDED);
