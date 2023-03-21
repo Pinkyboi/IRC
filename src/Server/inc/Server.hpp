@@ -37,7 +37,7 @@ class Server
         {
             public:
                 ServerException(const char *msg):_msg(msg){};
-                const char* what() { return this->_msg; };
+                virtual const char* what() const throw() { return this->_msg; };
             private:
                 const char  *_msg;
         };
@@ -94,7 +94,7 @@ class Server
         const std::string                           _pass;
         int                                         _sockfd;
         struct pollfd                               _pfds[CONN_LIMIT];
-        int                                         _nfds;
+        size_t                                      _nfds;
         std::map<int, Client>                       _clients;
         std::map<const std::string, Channel>        _channels;
         std::map<std::string, int>                  _nicks;

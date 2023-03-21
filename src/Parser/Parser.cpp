@@ -8,7 +8,6 @@ std::vector<std::string>    split_command(std::string message, std::string sep)
     std::vector<std::string>    tokens;
     std::string                 token;
     size_t                      i, j;
-    size_t                      f, l;
 
     j = 0;
     for (i = 0; j != std::string::npos; i = j + 1)

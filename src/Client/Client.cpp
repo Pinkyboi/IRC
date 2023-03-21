@@ -1,6 +1,6 @@
 # include "Client.hpp"
 
-Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _real_name(""), _pass_validity(false), _visible(true), _modes(MODE_W), _active_channel("*")
+Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""), _real_name(""), _pass_validity(false), _active_channel("*"), _modes(MODE_W)
 {
     char c_addr[NI_MAXHOST];
 
@@ -93,23 +93,18 @@ void    Client::set_mode(const std::string &mode)
 {
     long number = strtol(mode.c_str(), NULL, 10);
     if (number == MODE_I)
-    {
-        _visible = false;
         _modes |= MODE_I;
-    }
     else if (mode.size() > 1)
         handle_modes(mode);
 }
 
 void    Client::set_invisible(void)
 {
-    _visible = false;
     _modes |= MODE_I;
 }
 
 void    Client::unset_invisible(void)
 {
-    _visible = true;
     _modes &= ~MODE_I;
 }
 
@@ -189,7 +184,7 @@ bool Client::is_in_channel(std::string &c_name) const
 
 bool Client::is_visible() const
 {
-    return (_visible);
+    return (!(_modes & MODE_I));
 }
 
 bool Client::get_pass_validity() const

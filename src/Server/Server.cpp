@@ -6,11 +6,11 @@ std::string Server::_motd = "This is the message of the day";
 
 Server::~Server()
 {
-    for (int i = 0; i < _nfds; i++)
+    for (size_t i = 0; i < _nfds; i++)
         close(_pfds[i].fd);
 }
 
-Server::Server(const char *port, const char *pass): _port(port), _nfds(0), _pass(std::string(pass))
+Server::Server(const char *port, const char *pass): _port(port), _pass(std::string(pass)), _nfds(0)
 {
     bool on = true;
 
@@ -86,7 +86,7 @@ void    Server::accept_connection()
     socklen_t       addrlen;
     int             new_fd;
 
-    addr = (sockaddr){0};
+    memset(&addr, 0x00, sizeof(struct sockaddr));
     addrlen = sizeof(struct sockaddr_in);
     if ((new_fd = accept(_sockfd, &addr, &addrlen)) > 0)
     {
@@ -737,11 +737,7 @@ void    Server::join_cmd(int usr_id)
             if (channel.is_channel_protected() ||  channel.get_key() == key)
             {
                 bool is_invited = channel.is_client_invited(client);
-                if (is_invited == false)
-                    add_reply(usr_id, _servername, ERR_INVITEONLYCHAN, client.get_nick(), c_name, MSG_INVITEONLYCHAN);
-                else if (channel.is_there_space() == false)
-                    add_reply(usr_id, _servername, ERR_CHANNELISFULL, client.get_nick(), c_name, MSG_CHANNELISFULL);
-                else if (channel.is_client_banned(client) == false)
+                if (channel.is_client(usr_id) || is_invited)
                 {
                     if (is_invited == true)
                         channel.remove_from_invites(client.get_id());
@@ -753,7 +749,11 @@ void    Server::join_cmd(int usr_id)
                         topic_cmd(usr_id);
                     names_cmd(usr_id);
                 }
-                else
+                else if (is_invited == false)
+                    add_reply(usr_id, _servername, ERR_INVITEONLYCHAN, client.get_nick(), c_name, MSG_INVITEONLYCHAN);
+                else if (channel.is_there_space() == false)
+                    add_reply(usr_id, _servername, ERR_CHANNELISFULL, client.get_nick(), c_name, MSG_CHANNELISFULL);
+                else if (channel.is_client_banned(client) == false)
                     add_reply(usr_id, _servername, ERR_BANNEDFROMCHAN, client.get_nick(), c_name, MSG_BANNEDFROMCHAN);
             }
             else
@@ -837,7 +837,7 @@ void    Server::start()
     {
         if (poll(_pfds, _nfds, -1) < 0)
             continue;
-        for (int i = 0; i < _nfds; i++)
+        for (size_t i = 0; i < _nfds; i++)
         {
 #if defined(__linux__)
             if (_pfds[i].revents & POLLRDHUP)

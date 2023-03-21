@@ -1,6 +1,6 @@
 #include "Channel.hpp"
 
-Channel::Channel(Client &client ,const std::string name): _name(name), _topic(""), _modes(MODE_N | MODE_T), _owner(client), _limit(0), _key("")
+Channel::Channel(Client &client ,const std::string name): _name(name), _topic(""), _owner(client), _modes(MODE_N | MODE_T), _key(""), _limit(0)
 {
     _set_modes.insert(std::pair<char, ModeFunc>('t', &Channel::set_mode_t));
     _set_modes.insert(std::pair<char, ModeFunc>('n', &Channel::set_mode_n));
@@ -298,7 +298,9 @@ bool    Channel::set_mode_l(std::queue<std::string> &mode_argument)
     std::string mode_arg = mode_argument.front();
     mode_argument.pop();
     input_limit = strtol(mode_arg.c_str(), NULL, 10);
-    if (_clients.size() <= input_limit)
+    if (input_limit < 0)
+        return false;
+    if (_clients.size() <= (unsigned long)input_limit)
     {
         _limit = input_limit;
         _modes |= MODE_L;

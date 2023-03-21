@@ -67,19 +67,18 @@ class Client
 
     private:
         typedef void (Client::*ModeFunc)(void);
+        std::map<char, ModeFunc>                            _set_modes;
+        std::map<char, ModeFunc>                            _unset_modes;
         int                                                 _id;
-        bool                                                _pass_validity;
         std::string                                         _nick;
         std::string                                         _username;
         std::string                                         _real_name;
+        bool                                                _pass_validity;
         std::string                                         _addr;  
         std::list<std::string>                              _channels;
         std::string                                         _active_channel;
         std::queue< std::pair< bool, CircularBuffer *> >    _commands;
-        std::map<char, ModeFunc>                            _set_modes;
-        std::map<char, ModeFunc>                            _unset_modes;
         int                                                 _status;
-        bool                                                _visible;
         uint16_t                                            _modes;
 
 };

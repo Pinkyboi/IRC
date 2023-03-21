@@ -1,6 +1,6 @@
 NAME = ircserv
 CC = clang++ -std=c++98
-CFLAGS = #-Wall -Werror -Wextra
+CFLAGS = -Wall -Werror -Wextra
 
 SRC_FOLDER = src
 INC_FOLDER = inc

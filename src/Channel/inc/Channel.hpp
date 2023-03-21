@@ -94,22 +94,22 @@ class Channel
     public:
         std::string             handle_modes(std::string mode, std::queue<std::string>& mode_arg);
     public:
-        uint16_t                    _modes;
     private:
         typedef bool (Channel::*ModeFunc)(std::queue<std::string>&);
+        std::map<char, ModeFunc>    _set_modes;
+        std::map<char, ModeFunc>    _unset_modes;
         const std::string           _name;
-        std::string                 _key;
         std::string                 _topic;
         Client&                     _owner;
+        uint16_t                    _modes;
+        std::string                 _key;
+        unsigned long               _limit;
         std::map<int, Client&>      _clients;
         std::map<int, Client&>      _operators;
         std::map<int, Client&>      _voices;
         std::map<int, Client&>      _present;
-        std::map<char, ModeFunc>    _set_modes;
-        std::map<char, ModeFunc>    _unset_modes;
         std::list<std::string>      _bans;
         std::map<int, Client&>      _invites;
-        unsigned int                _limit;
 };
 
 #endif
