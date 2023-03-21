@@ -70,33 +70,33 @@ class Channel
     private:
         void                    add_operator(Client& client);
     private:
-        void                    set_mode_t    (std::queue<std::string> &mode_argument);
-        void                    set_mode_n    (std::queue<std::string> &mode_argument);
-        void                    set_mode_s    (std::queue<std::string> &mode_argument);
-        void                    set_mode_m    (std::queue<std::string> &mode_argument);
-        void                    set_mode_k    (std::queue<std::string> &mode_argument);
-        void                    set_mode_i    (std::queue<std::string> &mode_argument);
-        void                    set_mode_l    (std::queue<std::string> &mode_argument);
-        void                    unset_mode_t  (std::queue<std::string> &mode_argument);
-        void                    unset_mode_n  (std::queue<std::string> &mode_argument);
-        void                    unset_mode_s  (std::queue<std::string> &mode_argument);
-        void                    unset_mode_m  (std::queue<std::string> &mode_argument);
-        void                    unset_mode_k  (std::queue<std::string> &mode_argument);
-        void                    unset_mode_i  (std::queue<std::string> &mode_argument);
-        void                    unset_mode_l  (std::queue<std::string> &mode_argument);
+        bool                    set_mode_t    (std::queue<std::string> &mode_argument);
+        bool                    set_mode_n    (std::queue<std::string> &mode_argument);
+        bool                    set_mode_s    (std::queue<std::string> &mode_argument);
+        bool                    set_mode_m    (std::queue<std::string> &mode_argument);
+        bool                    set_mode_k    (std::queue<std::string> &mode_argument);
+        bool                    set_mode_i    (std::queue<std::string> &mode_argument);
+        bool                    set_mode_l    (std::queue<std::string> &mode_argument);
+        bool                    unset_mode_t  (std::queue<std::string> &mode_argument);
+        bool                    unset_mode_n  (std::queue<std::string> &mode_argument);
+        bool                    unset_mode_s  (std::queue<std::string> &mode_argument);
+        bool                    unset_mode_m  (std::queue<std::string> &mode_argument);
+        bool                    unset_mode_k  (std::queue<std::string> &mode_argument);
+        bool                    unset_mode_i  (std::queue<std::string> &mode_argument);
+        bool                    unset_mode_l  (std::queue<std::string> &mode_argument);
     private:
-        void                    set_mode_v    (std::queue<std::string> &mode_argument);
-        void                    set_mode_b    (std::queue<std::string> &mode_argument);
-        void                    set_mode_o    (std::queue<std::string> &mode_argument);
-        void                    unset_mode_v  (std::queue<std::string> &mode_argument);
-        void                    unset_mode_b  (std::queue<std::string> &mode_argument);
-        void                    unset_mode_o  (std::queue<std::string> &mode_argument);
+        bool                    set_mode_v    (std::queue<std::string> &mode_argument);
+        bool                    set_mode_b    (std::queue<std::string> &mode_argument);
+        bool                    set_mode_o    (std::queue<std::string> &mode_argument);
+        bool                    unset_mode_v  (std::queue<std::string> &mode_argument);
+        bool                    unset_mode_b  (std::queue<std::string> &mode_argument);
+        bool                    unset_mode_o  (std::queue<std::string> &mode_argument);
     public:
         std::string             handle_modes(std::string mode, std::queue<std::string>& mode_arg);
     public:
         uint16_t                    _modes;
     private:
-        typedef void (Channel::*ModeFunc)(std::queue<std::string>&);
+        typedef bool (Channel::*ModeFunc)(std::queue<std::string>&);
         const std::string           _name;
         std::string                 _key;
         std::string                 _topic;
