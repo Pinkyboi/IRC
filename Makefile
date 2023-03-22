@@ -30,7 +30,8 @@ HDR_FILES = Parser.hpp\
 			Server.hpp\
 			Client.hpp\
 			Channel.hpp\
-			CircularBuffer.hpp
+			CircularBuffer.hpp\
+			IRCReplies.hpp\
 
 OBJ_FILES = $(SRC_FILES:.cpp=.o)
 

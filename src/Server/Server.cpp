@@ -44,6 +44,7 @@ void    Server::init_commands()
     _commands.insert(std::pair<std::string, cmd_func>("INVITE", &Server::invite_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("PING", &Server::ping_cmd));
     _commands.insert(std::pair<std::string, cmd_func>("WHO", &Server::who_cmd));
+    _commands.insert(std::pair<std::string, cmd_func>("USERHOST", &Server::userhost_cmd));
 }
 
 bool    Server::is_nick_used(std::string& nick)
@@ -487,7 +488,7 @@ void    Server::who_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.get_arguments();
     size_t nargs = _parser.get_nargs();
-    Client &invitor = _clients.at(usr_id);
+    Client &client = _clients.at(usr_id);
 
     if (nargs == 1)
     {
@@ -510,8 +511,34 @@ void    Server::who_cmd(int usr_id)
                 add_reply(usr_id, _servername, RPL_WHOREPLY, client.get_nick(), t_name, who_msg, false);
             }
         }
-        add_reply(usr_id, _servername, RPL_ENDOFWHO, invitor.get_nick(), t_name, MSG_ENDOFWHO);
+        add_reply(usr_id, _servername, RPL_ENDOFWHO, client.get_nick(), t_name, MSG_ENDOFWHO);
     }    
+}
+
+void    Server::userhost_cmd(int usr_id)
+{
+    std::vector<std::string> args = _parser.get_arguments();
+    size_t nargs = _parser.get_nargs();
+    Client &client = _clients.at(usr_id);
+    if (nargs >= 1)
+    {
+        std::string userhost_msg = "";
+        nargs = (nargs > 5) ? 5 : nargs;
+        for (size_t i = 0; i < nargs; i++)
+        {
+            std::string t_nick = args[i];
+            if (_nicks.find(t_nick) != _nicks.end())
+            {
+                Client &t_client = _clients.at(_nicks.at(t_nick));
+                userhost_msg += t_client.get_nick() + "=+" + t_client.get_username() + "@" + t_client.get_addr();
+                if (i != nargs - 1)
+                    userhost_msg += " ";
+            }
+        }
+        add_info_reply(usr_id, _servername, RPL_USERHOST, client.get_nick(), userhost_msg);
+    }
+    else
+        add_reply(usr_id, _servername, ERR_NEEDMOREPARAMS, client.get_nick(), "USERHOST", MSG_NEEDMOREPARAMS);
 }
 
 void    Server::invite_cmd(int usr_id)
