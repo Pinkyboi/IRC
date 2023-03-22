@@ -454,7 +454,6 @@ void    Server::ping_cmd(int usr_id)
 
     if (nargs == 2)
     {
-        std::cout << _servername << " " << args[1] << std::endl;
         if (_nicks.find(args[0]) == _nicks.end())
             add_info_reply(usr_id, _servername, ERR_NOSUCHSERVER, "PING", MSG_NOSUCHSERVER);
         else
@@ -497,7 +496,7 @@ void    Server::who_cmd(int usr_id)
         {
             Client &client = _clients.at(_nicks.at(t_name));
             std::string channel_name = client.get_active_channel();
-            std::string who_msg = who_information(client, t_name);
+            std::string who_msg = who_information(client, channel_name);
             add_reply(usr_id, _servername, RPL_WHOREPLY, client.get_nick(), channel_name, who_msg, false);
         }
         if (_channels.find(t_name) != _channels.end())
@@ -668,7 +667,6 @@ void    Server::names_cmd(int usr_id)
     }
     else if (args.size() == 0)
     {
-        // make a copy of _nicks keys in a vector called names
         std::vector<std::string> all_names;
         for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
         {
