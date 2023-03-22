@@ -400,10 +400,9 @@ void    Server::nick_cmd(int usr_id)
         }
         else
             add_reply(usr_id, _servername, ERR_NICKNAMEINUSE, client.get_nick(), nick,  MSG_NICKNAMEINUSE);
-        
     }
     else
-        add_info_reply(usr_id, _servername, ERR_NONICKNAMEGIVEN, client.get_nick(), MSG_NEEDMOREPARAMS);
+        add_info_reply(usr_id, _servername, ERR_NONICKNAMEGIVEN, client.get_nick(), MSG_NONICKNAMEGIVEN);
 }
 
 void    Server::pass_cmd(int usr_id)
@@ -423,7 +422,7 @@ void    Server::pass_cmd(int usr_id)
 void    Server::part_cmd(int usr_id)
 {
     std::vector<std::string> args = _parser.get_arguments();
-    Client      &client = _clients.at(usr_id);
+    Client &client = _clients.at(usr_id);
 
     if (_parser.get_nargs() >= 1)
     {  
