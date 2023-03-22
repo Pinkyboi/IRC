@@ -1,7 +1,8 @@
 from socket import socket
 from socket import AddressFamily, SocketKind
-from time   import sleep
 from deep_translator import GoogleTranslator, exceptions
+import argparse
+import sys
 
 class Bot:
 
@@ -52,7 +53,10 @@ class Bot:
         self.socket.send(bytes(f"PASS {self.pswd}\r\n", "utf-8"))
         self.socket.send(bytes(f"USER {self.user} {self.user} {self.user} :{self.user}\r\n", "utf-8"))
         self.socket.send(bytes(f"NICK {self.nick}\r\n", "utf-8"))
-        self.receive(4096)
+        responce, size = self.receive(4096)
+        if "461" in responce or "431" in responce or "432" in responce or "433" in responce:
+            print(responce.split('\r\n')[0])
+            exit(1)
 
     def connect(self):
         self.socket.connect((self.host, self.port))
@@ -75,7 +79,7 @@ class Bot:
         params  = args[0]
 
         if len(args) == 2:
-            message = args[-1]
+            message = args[-1].strip()
         else:
             message = None
 
@@ -91,7 +95,6 @@ class Bot:
             text = tokens[-1]
             langs = tokens[0:-1]
 
-            print(langs)
             if len(langs) == 0:
                 return
             if len(langs) == 1:
@@ -104,9 +107,9 @@ class Bot:
                     continue
                 try:
                     translated = GoogleTranslator(source=srcl, target=dst).translate(text=text)
-                    self.send(target, f"{target}[{dst}] {translated}")
+                    self.send(target, f"[{dst}] {translated}")
                 except exceptions.LanguageNotSupportedException:
-                    self.send(target, f"{target}[{dst}] No support for the provided language.")
+                    self.send(target, f"[{dst}] No support for the provided language.")
                 except Exception as E:
                     continue
 
@@ -120,8 +123,13 @@ class Bot:
             self.respond(request, size)
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("name", type=str, default="TheBot", help="Username of the bot in the server")
+    parser.add_argument("nick", type=str, default="BotNick", help="Nickname of the bot in the server")
+    parser.add_argument("pswd", type=str, default="pass", help="Password of the server")
+    arguments = parser.parse_args(sys.argv[1:])
     try:
-        bot = Bot("localhost", 6667, "Bot", "Bot", "mok")
+        bot = Bot("localhost", 6667, arguments.name, arguments.nick, arguments.pswd)
         bot.run()
     except:
         exit(1)
