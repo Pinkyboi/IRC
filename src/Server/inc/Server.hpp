@@ -31,6 +31,15 @@
 class Server
 {
     typedef void (Server::*cmd_func)(int);
+    struct case_insensitive_cmp {
+        bool operator() (const std::string& s1, const std::string& s2) const {
+            std::string str1(s1.length(),' ');
+            std::string str2(s2.length(),' ');
+            std::transform(s1.begin(), s1.end(), str1.begin(), tolower);
+            std::transform(s2.begin(), s2.end(), str2.begin(), tolower);
+            return  str1 < str2;
+        }
+    };
 
     public:
         class ServerException : public std::exception
@@ -89,19 +98,19 @@ class Server
         void                            userhost_cmd    (int usr_id);
         void                            ping_cmd        (int usr_id);
     private:
-        static Server                               *_instance;
+        static Server                                               *_instance;
     private:
-        const char                                  *_port;
-        const std::string                           _pass;
-        int                                         _sockfd;
-        struct pollfd                               _pfds[CONN_LIMIT];
-        size_t                                      _nfds;
-        std::map<int, Client>                       _clients;
-        std::map<const std::string, Channel>        _channels;
-        std::map<std::string, int>                  _nicks;
-        std::map<std::string, cmd_func>             _commands;
-        std::queue< std::pair<int, std::string> >   _replies;
-        Parser                                      _parser;
+        const char                                                  *_port;
+        const std::string                                           _pass;
+        int                                                         _sockfd;
+        struct pollfd                                               _pfds[CONN_LIMIT];
+        size_t                                                      _nfds;
+        std::map<int, Client>                                       _clients;
+        std::map<const std::string, Channel, case_insensitive_cmp>  _channels;
+        std::map<const std::string, int, case_insensitive_cmp>      _nicks;
+        std::map<std::string, cmd_func>                             _commands;
+        std::queue< std::pair<int, std::string> >                   _replies;
+        Parser                                                      _parser;
 };
 
 
