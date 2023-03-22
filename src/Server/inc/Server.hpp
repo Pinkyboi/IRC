@@ -59,7 +59,7 @@ class Server
         void                            update_nick(int client_id, std::string nick);
     private:
                                         Server(const char *port, const char *pass);
-        void                            print_msg(int fd);
+        void                            receive_request(int fd);
         void                            send_replies();
         void                            accept_connection();
         void                            remove_connection(int user_id);

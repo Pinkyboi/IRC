@@ -802,7 +802,7 @@ void    Server::handle_commands(int usr_id, std::string &command)
     }
 }
 
-void    Server::print_msg(int fd)
+void    Server::receive_request(int fd)
 {
     static char msg_buffer[MAX_COMMAND_SIZE];
     size_t      msg_len;
@@ -848,7 +848,7 @@ void    Server::start()
             else if (_pfds[i].revents & POLLIN)
             {
                 if (_pfds[i].fd != _sockfd)
-                    print_msg(_pfds[i].fd);
+                    receive_request(_pfds[i].fd);
                 else
                     accept_connection();
             }
