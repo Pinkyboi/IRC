@@ -670,7 +670,7 @@ void    Server::names_cmd(int usr_id)
         std::vector<std::string> all_names;
         for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
         {
-            if (it->second.is_visible() | it->second.get_nick() == usr_nick)
+            if (it->second.is_visible() || it->second.get_nick() == usr_nick)
                 all_names.push_back(it->second.get_nick());
         }
         for (std::map<const std::string, Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
