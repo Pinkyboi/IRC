@@ -37,7 +37,8 @@ std::string Channel::get_valid_channel_name(std::string name)
         return "";
     if (name[0] != '#' && name[0] != '&' && name[0] != '+')
         return "";
-    name = name.substr(0, name.find_first_of(","));
+    if (name.find_first_of(",+-!?.=*@~") != std::string::npos)
+        return "";
     return name.substr(0, 50);
 }
 
