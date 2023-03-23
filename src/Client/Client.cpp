@@ -15,8 +15,14 @@ Client::Client(int id, struct sockaddr addr): _id(id), _nick(""), _username(""),
 
 Client::~Client()
 {
+    CircularBuffer* cmd_ptr;
+
     while(_commands.size() > 0)
+    {
+        cmd_ptr = _commands.front().second;
         _commands.pop();
+        delete cmd_ptr;
+    }
 }
 
 void    Client::add_command(std::string cmd)

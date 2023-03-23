@@ -91,7 +91,6 @@ void    Server::accept_connection()
     addrlen = sizeof(struct sockaddr_in);
     if ((new_fd = accept(_sockfd, &addr, &addrlen)) > 0)
     {
-        std::cout << "new connection: " << new_fd << std::endl;
         add_client(new_fd, addr);
 #if defined(__linux__)
         _pfds[_nfds] = (struct pollfd){ .fd = new_fd,
@@ -315,7 +314,6 @@ void    Server::add_info_reply(int usr_id, const std::string &sender, const std:
         replymsg += extra;
     }
     replymsg += CRLN;
-    std::cout << "SENDED BY SERV: " << replymsg << std::endl;
     _replies.push(std::pair<int, std::string>(usr_id, replymsg));
 }
 
@@ -330,7 +328,6 @@ void    Server::add_reply(int usr_id, const std::string &sender, const std::stri
             replymsg += ":";
         replymsg += extra;
     }
-    std::cout << "SENDED BY SERV: " << replymsg << std::endl;
     replymsg += CRLN;
     _replies.push(std::pair<int, std::string>(usr_id, replymsg));
 }
@@ -836,7 +833,6 @@ void    Server::receive_request(int fd)
     if ( (msg_len = recv(fd, msg_buffer, MAX_COMMAND_SIZE, MSG_DONTWAIT)) > 0)
     {
         msg_buffer[msg_len] = '\0';
-        std::cout << "MSG RECVED:" << msg_buffer << std::endl;
         _clients.at(fd).add_command(std::string(msg_buffer));
     }
     while((command = _clients.at(fd).get_command()) != "")
