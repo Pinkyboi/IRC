@@ -58,6 +58,7 @@ class Channel
         bool                    is_channel_moderated() const;
         bool                    is_channel_invite_only() const;
         bool                    is_channel_protected() const;
+        bool                    is_key_valid(const std::string &key) const;
     public:
         bool                    is_client_unmute(Client &client) const;
         bool                    is_client_banned(Client &client) const;

@@ -755,7 +755,7 @@ void    Server::join_cmd(int usr_id)
         else
         {
             Channel &channel = _channels.at(c_name);
-            if (channel.is_channel_protected() ||  channel.get_key() == key)
+            if (channel.is_channel_protected() == false ||  channel.is_key_valid(key))
             {
                 bool is_invited = channel.is_client_invited(client);
                 if (channel.is_client(usr_id) || is_invited)

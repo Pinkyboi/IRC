@@ -445,6 +445,10 @@ bool    Channel::is_channel_protected() const
     return (_modes & MODE_K);
 }
 
+bool    Channel::is_key_valid(const std::string &key) const
+{
+    return (_key == key);
+}
 bool    Channel::is_client_unmute(Client &client) const
 {
     if (is_channel_moderated() == false || is_client_operator(client))
