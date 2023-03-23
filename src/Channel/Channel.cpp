@@ -171,6 +171,7 @@ bool    Channel::is_client(int client_id)
     return (_clients.find(client_id) != _clients.end());
 }
 
+
 void    Channel::add_to_invites(Client &client)
 {
     _invites.insert(std::pair<int, Client&>(client.get_id(), client));

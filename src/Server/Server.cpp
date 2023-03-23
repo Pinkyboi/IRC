@@ -143,7 +143,7 @@ void    Server::privmsg_cmd(int usr_id)
         {
             Channel &t_channel = _channels.at(t_name);
 
-            if (t_channel.is_channel_client_only() && t_channel.is_client(usr_id) == false)
+            if (t_channel.is_channel_client_only() && t_channel.is_client_present(client) == false)
                 add_reply(usr_id, _servername, ERR_CANNOTSENDTOCHAN, client.get_nick(), t_name, MSG_CANNOTSENDTOCHAN);
             else if (t_channel.is_client_unmute(client) == false)
                 add_reply(usr_id, _servername, ERR_CANNOTSENDTOCHAN, client.get_nick(), t_name, MSG_CANNOTSENDTOCHAN);
@@ -429,7 +429,7 @@ void    Server::part_cmd(int usr_id)
         if (_channels.find(c_name) != _channels.end())
         {
             Channel &t_channel = _channels.at(c_name);
-            if (t_channel.is_client(usr_id))
+            if (t_channel.is_client_present(client))
             {
                 t_channel.part_client(usr_id);
                 add_info_reply(usr_id, client.get_serv_id(), "PART", c_name, message);
@@ -486,9 +486,9 @@ void    Server::who_cmd(int usr_id)
     size_t nargs = _parser.get_nargs();
     Client &client = _clients.at(usr_id);
 
-    if (nargs == 1)
+    if (nargs > 0)
     {
-        std::string t_name = args.front();
+        std::string t_name = args.at( nargs - 1 );
         if (_nicks.find(t_name) != _nicks.end())
         {
             Client &client = _clients.at(_nicks.at(t_name));
@@ -589,8 +589,8 @@ void    Server::kick_cmd(int usr_id)
 
             if (is_nick_used(t_name) && target_channel.is_client(_nicks.at(t_name)))
             {
-                if (target_channel.is_client(usr_id) == false)
-                        add_reply(usr_id, _servername, ERR_NOTONCHANNEL, sender.get_nick(), t_name, MSG_NOTONCHANNEL);
+                if (target_channel.is_client_present(sender) == false)
+                    add_reply(usr_id, _servername, ERR_NOTONCHANNEL, sender.get_nick(), t_name, MSG_NOTONCHANNEL);
                 else if (target_channel.is_client_operator(sender) and t_name != target_channel.get_owner_nick())
                 {
                     int target_id = _nicks.at(t_name);
@@ -832,6 +832,7 @@ void    Server::receive_request(int fd)
     if ( (msg_len = recv(fd, msg_buffer, MAX_COMMAND_SIZE, MSG_DONTWAIT)) > 0)
     {
         msg_buffer[msg_len] = '\0';
+        std::cout << "Serv recv:" << msg_buffer << std::endl;
         _clients.at(fd).add_command(std::string(msg_buffer));
     }
     while((command = _clients.at(fd).get_command()) != "")
@@ -843,9 +844,16 @@ void    Server::send_replies()
     while (!_replies.empty())
     {
         int fd = _replies.front().first;
-        std::string reply = _replies.front().second;
-        if (send(fd, reply.c_str(), reply.length(), 0) > 0)
-            _replies.pop();
+        const char *msg = _replies.front().second.c_str();
+        size_t  msg_len = _replies.front().second.length();
+        ssize_t send_len;
+        std::cout << "Serv send:" << msg << std::endl;
+        while ((send_len = send(fd, msg, msg_len, 0)) > 0)
+        {
+            msg += msg_len;
+            msg_len -= send_len;
+        }
+        _replies.pop();
         if (_clients.at(fd).get_status() == Client::DOWN)
             remove_connection(fd);
     }
