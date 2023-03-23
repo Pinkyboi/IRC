@@ -15,7 +15,6 @@ class Bot:
         self._nick = nick
         self._pswd = pswd
         self._socket = socket(AddressFamily.AF_INET, SocketKind.SOCK_STREAM)
-        self._tr = GoogleTranslator()
 
     @property
     def socket(self):
@@ -45,10 +44,6 @@ class Bot:
     def pswd(self):
         return self._pswd
 
-    @property
-    def tr(self):
-        return self._tr
-
     def identify(self):
         self.socket.send(bytes(f"PASS {self.pswd}\r\n", "utf-8"))
         self.socket.send(bytes(f"USER {self.user} {self.user} {self.user} :{self.user}\r\n", "utf-8"))
@@ -76,20 +71,9 @@ class Bot:
         args    = args[-1].split(maxsplit = 1)
         command = args[0]
         args    = args[-1].split(':', maxsplit = 1)
-        params  = args[0]
+        message = args[-1].strip() if len(args) == 2 else None
 
-        if len(args) == 2:
-            message = args[-1].strip()
-        else:
-            message = None
-
-        print(f"({sender})({command})({params})({message})")
-
-        if command == "PING":
-            pong = f"PONG {self.nick} {' '.join(args.split()[1:])}"
-            self.socket.send(bytes(f"{pong}\r\n", "utf-8"))
-
-        elif command == "PRIVMSG" and message:
+        if command == "PRIVMSG" and message:
             target = sender[1:].split('!')[0]
             tokens = [token.strip() for token in message.split('/') if token]
             text = tokens[-1]
@@ -97,7 +81,7 @@ class Bot:
 
             if len(langs) == 0:
                 return
-            if len(langs) == 1:
+            elif len(langs) == 1:
                 dstl, srcl = [langs[0]], "en"
             elif len(langs) > 1:
                 dstl, srcl = langs[1:], langs[0]
