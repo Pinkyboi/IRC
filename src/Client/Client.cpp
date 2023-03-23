@@ -134,6 +134,11 @@ void    Client::join_channel(const std::string &channel_name)
     _active_channel = channel_name;
 }
 
+void    Client::part_channel()
+{
+    _active_channel = "*";
+}
+
 void    Client::set_pass_validity(const bool validity)
 {
     _pass_validity = validity;

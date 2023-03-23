@@ -432,6 +432,7 @@ void    Server::part_cmd(int usr_id)
             if (t_channel.is_client_present(client))
             {
                 t_channel.part_client(usr_id);
+                client.part_channel();
                 add_info_reply(usr_id, client.get_serv_id(), "PART", c_name, message);
             }
             else
@@ -466,6 +467,7 @@ std::string Server::who_information(Client &client, const std::string &channel_n
     std::string prefix = "";
     std::string status = "H";
     std::string who_msg = "";
+
     if (channel_name != "*")
     {
         Channel &channel = _channels.at(channel_name);
@@ -474,9 +476,11 @@ std::string Server::who_information(Client &client, const std::string &channel_n
         if (channel.is_client_present(client) == false)
             status = "G";
     }
-    who_msg = "~" + client.get_username() + " " + client.get_addr();
+
+    who_msg = client.get_username() + " " + client.get_addr();
     who_msg += " " + _servername + " " + client.get_nick() + " ";
-    who_msg += status + prefix + ":0" + " " + client.get_real_name();
+    who_msg += status + prefix + " " + ":0" + " " + client.get_real_name();
+
     return who_msg;
 }
 
@@ -486,9 +490,9 @@ void    Server::who_cmd(int usr_id)
     size_t nargs = _parser.get_nargs();
     Client &client = _clients.at(usr_id);
 
-    if (nargs > 0)
+    if (nargs == 1)
     {
-        std::string t_name = args.at( nargs - 1 );
+        std::string t_name = args.at(0);
         if (_nicks.find(t_name) != _nicks.end())
         {
             Client &client = _clients.at(_nicks.at(t_name));

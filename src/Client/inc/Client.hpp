@@ -46,6 +46,7 @@ class Client
         void        unset_oper(void);
         void        update_registration();
         void        join_channel(const std::string &channel_name);
+        void        part_channel();
         void        remove_channel(const std::string &channel_name);
     public:
         int                         get_id() const;
