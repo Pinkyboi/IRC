@@ -43,7 +43,8 @@ class Channel
         std::string             get_modes() const;
         std::string             get_mode_args() const;
         std::string             get_modes_with_args() const;
-        int                     get_clients_count() const;
+        size_t                 get_clients_count() const;
+        size_t                 get_present_count() const;
         bool                    parse_mode(std::string mode, uint32_t target = 0);
     public:
         void                    set_topic(std::string topic);

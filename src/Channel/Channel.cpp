@@ -128,9 +128,14 @@ std::string Channel::get_modes_with_args() const
     return get_modes() + get_mode_args();
 }
 
-int    Channel::get_clients_count() const
+size_t    Channel::get_clients_count() const
 {
     return (_clients.size());
+}
+
+size_t    Channel::get_present_count() const
+{
+    return (_present.size());
 }
 
 void    Channel::add_operator(Client& client)

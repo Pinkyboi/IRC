@@ -106,6 +106,8 @@ void    Server::accept_connection()
 void    Server::remove_connection(int user_id)
 {
     size_t i = 0;
+    if (_clients.find(user_id) == _clients.end())
+        return;
     while (i < _nfds && _pfds[i].fd != user_id)
         i++;
     struct pollfd *userfd = &_pfds[i];
@@ -123,8 +125,18 @@ void    Server::remove_connection(int user_id)
 void    Server::quit_cmd(int usr_id)
 {
     std::string message = _parser.get_message();
+    Client &client = _clients.at(usr_id);
+    std::string active_channel = client.get_active_channel();
 
-    add_info_reply(usr_id, _servername, "QUIT", "", message);
+    if (_channels.find(active_channel) != _channels.end())
+    {
+        Channel &channel = _channels.at(active_channel);
+        std::map<int, Client&> present_list = channel.get_present_clients();
+        for (std::map<int, Client&>::iterator it = present_list.begin(); it != present_list.end(); it++)
+            add_info_reply(it->first, client.get_serv_id(), "QUIT", "", message);
+    }
+    else
+        add_info_reply(usr_id, client.get_serv_id(), "QUIT", "", message);
     _clients.at(usr_id).set_status(Client::DOWN);
 }
 
@@ -279,7 +291,7 @@ void    Server::list_cmd(int usr_id)
         {
             if (it->second.is_channel_secret() == false || it->second.is_client(usr_id))
             {
-                std::string msg = it->first + " " + convert_to_string(it->second.get_clients_count());
+                std::string msg = it->first + " " + convert_to_string(it->second.get_present_count());
                 add_reply(usr_id, _servername, RPL_LIST, nick, msg, it->second.get_topic());
             }
         }
@@ -293,7 +305,7 @@ void    Server::list_cmd(int usr_id)
             Channel &channel = _channels.at(c_name);
             if (channel.is_channel_secret() == false || channel.is_client(usr_id))
             {
-                std::string msg = c_name + " " + convert_to_string(channel.get_clients_count());
+                std::string msg = c_name + " " + convert_to_string(channel.get_present_count());
                 add_reply(usr_id, _servername, RPL_LIST, nick, msg, channel.get_topic());
             }
         }
@@ -708,7 +720,7 @@ void    Server::names_cmd(int usr_id)
                 std::string names = "";
                 for (std::map<int, Client &>::iterator it2 = clients.begin(); it2 != clients.end(); it2++)
                 {
-                    if ( !(it2->second.is_visible() || channel.is_client_operator(client) ||  it2->second.get_nick() == usr_nick) )
+                    if ( it2->second.is_visible() == false)
                         continue;
                     if (it2 != clients.begin())
                         names += " ";
@@ -766,7 +778,9 @@ void    Server::join_cmd(int usr_id)
                         channel.remove_from_invites(client.get_id());
                     channel.add_client(client);
                     client.join_channel(c_name);
-                    add_info_reply(usr_id, client.get_serv_id(), "JOIN", c_name);
+                    std::map<int, Client &> clients = channel.get_present_clients();
+                    for (std::map<int, Client &>::iterator it = clients.begin(); it != clients.end(); it++)
+                        add_info_reply(it->first, client.get_serv_id(), "JOIN", c_name);
                     add_reply(usr_id, _servername, "MODE", c_name, channel.get_modes_with_args());
                     if (channel.get_topic().size())
                         topic_cmd(usr_id);
@@ -869,19 +883,19 @@ void    Server::start()
             continue;
         for (size_t i = 0; i < _nfds; i++)
         {
-#if defined(__linux__)
-            if (_pfds[i].revents & POLLRDHUP)
-#elif defined(__APPLE__)
-            if (_pfds[i].revents & POLLHUP)
-#endif
-                remove_connection(_pfds[i].fd);
-            else if (_pfds[i].revents & POLLIN)
+            if (_pfds[i].revents & POLLIN)
             {
                 if (_pfds[i].fd != _sockfd)
                     receive_request(_pfds[i].fd);
                 else
                     accept_connection();
             }
+#if defined(__linux__)
+            if (_pfds[i].revents & POLLRDHUP)
+#elif defined(__APPLE__)
+            if (_pfds[i].revents & POLLHUP)
+#endif
+                remove_connection(_pfds[i].fd);
         }
         send_replies();
     }
