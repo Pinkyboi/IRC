@@ -138,4 +138,5 @@
 #define MSG_CANNOTSENDTOCHAN "Cannot send to channel."
 #define MSG_USERSDONTMATCH "Users don't match."
 #define MSG_NOSUCHSERVER "No such server."
+#define MSG_NONICKNAMEGIVEN "No nickname given."
 #endif
