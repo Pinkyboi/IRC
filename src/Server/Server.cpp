@@ -441,11 +441,13 @@ void    Server::part_cmd(int usr_id)
         if (_channels.find(c_name) != _channels.end())
         {
             Channel &t_channel = _channels.at(c_name);
+            std::map<int, Client&> present_clients = t_channel.get_present_clients();
             if (t_channel.is_client_present(client))
             {
-                t_channel.part_client(usr_id);
+                for (std::map<int, Client&>::iterator it = present_clients.begin(); it != present_clients.end(); it++)
+                    add_info_reply(it->first, client.get_serv_id(), "PART", c_name, message);
                 client.part_channel();
-                add_info_reply(usr_id, client.get_serv_id(), "PART", c_name, message);
+                t_channel.part_client(usr_id);
             }
             else
                 add_reply(usr_id, _servername, ERR_NOTONCHANNEL, client.get_nick(), c_name, MSG_NOTONCHANNEL);
@@ -870,8 +872,11 @@ void    Server::send_replies()
             msg_len -= send_len;
         }
         _replies.pop();
-        if (_clients.at(fd).get_status() == Client::DOWN)
-            remove_connection(fd);
+        if (_clients.find(fd) != _clients.end())
+        {
+            if (_clients.at(fd).get_status() == Client::DOWN)
+                remove_connection(fd);
+        }
     }
 }
 
