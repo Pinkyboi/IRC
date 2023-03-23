@@ -677,8 +677,6 @@ void    Server::names_cmd(int usr_id)
                 std::string names = "";
                 for (std::map<int, Client &>::iterator it = clients.begin(); it != clients.end(); it++)
                 {
-                    if ( !(it->second.is_visible() || channel.is_client_operator(client) ||  it->second.get_nick() == usr_nick) )
-                        continue;
                     if (it != clients.begin())
                         names += " ";
                     names += channel.get_member_prefix(it->second) + it->second.get_nick();
