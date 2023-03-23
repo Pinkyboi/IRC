@@ -850,7 +850,6 @@ void    Server::receive_request(int fd)
     if ( (msg_len = recv(fd, msg_buffer, MAX_COMMAND_SIZE, MSG_DONTWAIT)) > 0)
     {
         msg_buffer[msg_len] = '\0';
-        std::cout << "Serv recv:" << msg_buffer << std::endl;
         _clients.at(fd).add_command(std::string(msg_buffer));
     }
     while((command = _clients.at(fd).get_command()) != "")
@@ -865,7 +864,6 @@ void    Server::send_replies()
         const char *msg = _replies.front().second.c_str();
         size_t  msg_len = _replies.front().second.length();
         ssize_t send_len;
-        std::cout << "Serv send:" << msg << std::endl;
         while ((send_len = send(fd, msg, msg_len, 0)) > 0)
         {
             msg += msg_len;
