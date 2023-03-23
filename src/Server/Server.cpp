@@ -491,7 +491,7 @@ std::string Server::who_information(Client &client, const std::string &channel_n
             status = "G";
     }
 
-    who_msg = client.get_username() + " " + client.get_addr();
+    who_msg = "~" + client.get_username() + " " + client.get_addr();
     who_msg += " " + _servername + " " + client.get_nick() + " ";
     who_msg += status + prefix + " " + ":0" + " " + client.get_real_name();
 
@@ -509,19 +509,19 @@ void    Server::who_cmd(int usr_id)
         std::string t_name = args.at(0);
         if (_nicks.find(t_name) != _nicks.end())
         {
-            Client &client = _clients.at(_nicks.at(t_name));
-            std::string channel_name = client.get_active_channel();
-            std::string who_msg = who_information(client, channel_name);
+            Client &t_client = _clients.at(_nicks.at(t_name));
+            std::string channel_name = t_client.get_active_channel();
+            std::string who_msg = who_information(t_client, channel_name);
             add_reply(usr_id, _servername, RPL_WHOREPLY, client.get_nick(), channel_name, who_msg, false);
         }
-        if (_channels.find(t_name) != _channels.end())
+        else if (_channels.find(t_name) != _channels.end())
         {
             Channel& channel = _channels.at(t_name);
-            std::map<int, Client &> clients = channel.get_clients();
-            for (std::map<int, Client &>::iterator it = clients.begin(); it != clients.end(); it++)
+            std::map<int, Client &> clients_list = channel.get_clients();
+            for (std::map<int, Client &>::iterator it = clients_list.begin(); it != clients_list.end(); it++)
             {
-                Client &client = it->second;
-                std::string who_msg = who_information(client, t_name);
+                Client &t_client = it->second;
+                std::string who_msg = who_information(t_client, t_name);
                 add_reply(usr_id, _servername, RPL_WHOREPLY, client.get_nick(), t_name, who_msg, false);
             }
         }
